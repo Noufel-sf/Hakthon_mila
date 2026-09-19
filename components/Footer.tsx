@@ -2,9 +2,16 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { HeartHandshake, Phone, MapPin, Mail } from 'lucide-react';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <footer className="w-full pt-10 pb-12 mt-auto">
       <div className="max-w-6xl mx-auto px-4">

@@ -3,299 +3,665 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRelief } from '@/lib/store';
-import ZoneMapVisualizer from '@/components/ZoneMapVisualizer';
 import { 
   Warehouse, 
   Layers, 
   Clock, 
-  Users, 
-  PlusCircle, 
+  MoreHorizontal, 
   ArrowUpRight, 
+  ArrowDownLeft, 
+  TrendingUp, 
+  TrendingDown, 
+  Package, 
+  Truck, 
+  ShieldCheck, 
+  CheckCircle2, 
   AlertTriangle, 
-  CheckCircle2,
-  Package,
-  Edit3,
-  TrendingDown,
-  ChevronDown
+  Sparkles, 
+  Coins, 
+  PiggyBank, 
+  CreditCard, 
+  Home, 
+  Flame,
+  ChevronLeft
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/Button';
 
 export default function AdminDashboardPage() {
-  const { depots, selectedDepotId, setSelectedDepotId, getDepot, updateDepotItem } = useRelief();
+  const { depots, selectedDepotId, getDepot } = useRelief();
   const currentDepot = getDepot(selectedDepotId) || depots[0];
 
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [editStock, setEditStock] = useState<number>(0);
-  const [editTarget, setEditTarget] = useState<number>(0);
+  // Dynamic calculations from current depot
+  const totalStock = currentDepot.items.reduce((acc, item) => acc + item.currentStock, 0);
+  const totalTarget = currentDepot.items.reduce((acc, item) => acc + item.targetNeed, 0);
+  const totalDistributed = Math.max(0, totalTarget - totalStock + 12000);
+  const totalAidInflow = totalStock + totalDistributed;
 
-  const startEdit = (item: typeof currentDepot.items[0]) => {
-    setEditingItemId(item.id);
-    setEditStock(item.currentStock);
-    setEditTarget(item.targetNeed);
-  };
+  // Bar chart data matching screenshot categories
+  const barChartData = [
+    { label: 'إصلاحات', value: 2400, height: '62%' },
+    { label: 'إيجار ومأوى', value: 3519, height: '88%', isPeak: true },
+    { label: 'التراخيص', value: 2700, height: '68%' },
+    { label: 'نقل وإمداد', value: 1200, height: '32%' },
+    { label: 'صافي بيل', value: 1800, height: '46%' },
+    { label: 'حاسوب محمول', value: 2300, height: '58%' },
+    { label: 'تيار متردد', value: 1400, height: '36%' },
+    { label: 'طبق بيل', value: 800, height: '22%' },
+    { label: 'مدرسة', value: 1900, height: '48%' },
+    { label: 'النباتات والأغذية', value: 1100, height: '28%' },
+  ];
 
-  const saveEdit = (itemId: string) => {
-    updateDepotItem(currentDepot.id, itemId, editStock, editTarget);
-    setEditingItemId(null);
-    toast.success('تم تحديث بيانات المخزون والاحتياج بنجاح!');
-  };
-
-  // Find expiring items in this depot
-  const expiringBatches = currentDepot.batches.filter(b => b.status === 'expiring_soon');
+  // Recent shipments / outflows matching screenshot
+  const recentActivities = [
+    {
+      id: 1,
+      title: 'ثلاجة حفظ أدوية',
+      date: '3 يناير 2026',
+      amount: '550 طرد',
+      status: 'success',
+    },
+    {
+      id: 2,
+      title: 'فاتورة وقود الإسعاف',
+      date: '23 ديسمبر 2025',
+      amount: '17 وحدة',
+      status: 'neutral',
+    },
+    {
+      id: 3,
+      title: 'النباتات والأغذية الطازجة',
+      date: '21 ديسمبر 2025',
+      amount: '96 طرد',
+      status: 'neutral',
+    },
+    {
+      id: 4,
+      title: 'نقل وإمداد شاحنات إغاثة',
+      date: '13 ديسمبر 2025',
+      amount: '11 شاحنة',
+      status: 'neutral',
+    },
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
+    <div className="space-y-6 max-w-7xl mx-auto">
       
-      {/* Header with Depot Selector */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Badge variant="indigo" size="sm">
-              نظام إدارة المستودع الذكي
-            </Badge>
-            <Badge variant="slate" size="sm" className="font-mono">
-              Smart Staging & Ops
-            </Badge>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">
-            لوحة تسيير المستودع: {currentDepot.name}
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            الموقع: {currentDepot.address} — مسؤول المستودع: {currentDepot.manager}
-          </p>
-        </div>
-
-        {/* Switch Depot Selector */}
-        <div className="flex items-center gap-3">
-          <label className="text-xs text-slate-400 font-semibold shrink-0">
-            التبديل إلى مستودع آخر:
-          </label>
-          <select
-            value={currentDepot.id}
-            onChange={(e) => setSelectedDepotId(e.target.value)}
-            className="bg-slate-950 border border-slate-700 text-sm text-white rounded-xl px-3 py-2 focus:outline-none focus:border-amber-400"
-          >
-            {depots.map(d => (
-              <option key={d.id} value={d.id}>
-                {d.name} ({d.wilaya})
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Quick Action Hub for Warehouse Operations */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* ================= TOP SECTION: 4 KPI METRIC CARDS ================= */}
+      {/* In Arabic RTL, reading is from Right to Left:
+          Card 1: White - إجمالي الوارد الإغاثي (45,000)
+          Card 2: SOLID BRAND PRIMARY - المساعدات الموزعة (27,450)
+          Card 3: White with "عرض التفاصيل" - إجمالي المخزون (17,550)
+          Card 4: White - معظم العجز (إيجار المنزل / خيام إيواء - 1,150)
+      */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        {/* Action 1: Smart Cargo Intake (Zone Allocation) */}
-        <Link 
-          href="/admin/intake"
-          className="group rounded-2xl border border-amber-500/30 bg-gradient-to-br from-slate-900 to-amber-950/20 p-5 hover:border-amber-500 transition-all hover:shadow-xl hover:shadow-amber-950/30"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-              <Package className="w-5 h-5" />
+        {/* CARD 1 (Rightmost in RTL): White Card - إجمالي الوارد الإغاثي */}
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xs hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="خيارات">
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            <div className="h-11 w-11 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <Coins className="w-5 h-5" />
             </div>
-            <ArrowUpRight className="w-4 h-4 text-amber-400 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] transition-transform" />
           </div>
-          <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition-colors">
-            تفريغ شحنة وتوجيه المناطق (Smart Zone Staging)
-          </h3>
-          <p className="text-xs text-slate-400 mt-1">
-            وصول شاحنة جديدة وتوجيه المواد تلقائياً لـ Zone A / B / C / D لمنع خلط المساعدات.
-          </p>
-        </Link>
 
-        {/* Action 2: Expiry Tracker */}
-        <Link 
-          href="/admin/expiry"
-          className="group rounded-2xl border border-rose-500/30 bg-gradient-to-br from-slate-900 to-rose-950/20 p-5 hover:border-rose-500 transition-all hover:shadow-xl hover:shadow-rose-950/30"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <div className="h-10 w-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
-              <Clock className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
-              {expiringBatches.length} تنبيهات عاجلة
-            </span>
+          <div className="space-y-1 mb-4">
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              إجمالي الوارد الإغاثي
+            </p>
+            <h3 className="text-2xl sm:text-3xl font-black font-header tracking-tight text-slate-900 dark:text-white">
+              45,000 <span className="text-sm font-semibold text-slate-500">طرد</span>
+            </h3>
           </div>
-          <h3 className="text-base font-bold text-white group-hover:text-rose-300 transition-colors">
-            تتبع تواريخ الصلاحية (Batch & Expiration)
-          </h3>
-          <p className="text-xs text-slate-400 mt-1">
-            إدارة دفعات الحليب والأغذية سريعة التلف والتوزيع الفوري قبل الهدر.
-          </p>
-        </Link>
 
-        {/* Action 3: Public Depot View */}
-        <Link 
-          href={`/depots/${currentDepot.id}`}
-          className="group rounded-2xl border border-sky-500/30 bg-gradient-to-br from-slate-900 to-sky-950/20 p-5 hover:border-sky-500 transition-all hover:shadow-xl hover:shadow-sky-950/30"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <div className="h-10 w-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
-              <Warehouse className="w-5 h-5" />
-            </div>
-            <ArrowUpRight className="w-4 h-4 text-sky-400 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] transition-transform" />
+          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <ArrowUpRight className="w-4 h-4" />
+            <span>6% مقابل آخر 30 يوماً</span>
           </div>
-          <h3 className="text-base font-bold text-white group-hover:text-sky-300 transition-colors">
-            معاينة صفحة المستودع للجمهور
-          </h3>
-          <p className="text-xs text-slate-400 mt-1">
-            متابعة ما يظهر للمتبرعين من نسب النقص والموجود الميداني ورابط الموقع.
-          </p>
-        </Link>
+        </div>
+
+        {/* CARD 2 (FEATURED SOLID PRIMARY CARD): المساعدات الموزعة */}
+        <div className="rounded-2xl bg-primary text-white p-5 shadow-lg shadow-primary/25 relative overflow-hidden flex flex-col justify-between">
+          {/* Subtle decorative background circle */}
+          <div className="absolute -left-6 -bottom-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+
+          <div className="flex items-center justify-between mb-4 relative z-10">
+            <button className="text-white/80 hover:text-white" aria-label="خيارات">
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            <div className="h-11 w-11 rounded-full bg-white/20 text-white flex items-center justify-center backdrop-blur-xs">
+              <Sparkles className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="space-y-1 mb-4 relative z-10">
+            <p className="text-xs font-medium text-white/90">
+              المساعدات الموزعة فعلياً
+            </p>
+            <h3 className="text-2xl sm:text-3xl font-black font-header tracking-tight text-white">
+              27,450 <span className="text-sm font-medium text-white/80">طرد</span>
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-white/90 relative z-10">
+            <ArrowDownLeft className="w-4 h-4 text-white/90" />
+            <span>2% مقابل آخر 30 يوماً</span>
+          </div>
+        </div>
+
+        {/* CARD 3: White Card with "عرض التفاصيل" - المخزون الإغاثي المتاح */}
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xs hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <Link 
+              href="/depots"
+              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
+            >
+              عرض التفاصيل
+            </Link>
+            <div className="h-11 w-11 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <PiggyBank className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="space-y-1 mb-4">
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              إجمالي المخزون المتاح
+            </p>
+            <h3 className="text-2xl sm:text-3xl font-black font-header tracking-tight text-slate-900 dark:text-white">
+              17,550 <span className="text-sm font-semibold text-slate-500">طرد</span>
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs font-bold text-rose-500">
+            <ArrowDownLeft className="w-4 h-4" />
+            <span>6% مقابل آخر 30 يوماً</span>
+          </div>
+        </div>
+
+        {/* CARD 4 (Leftmost in RTL): White Card - أكبر الفئات عجزاً */}
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xs hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="خيارات">
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            <div className="h-11 w-11 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+              <Home className="w-5 h-5 text-primary" />
+            </div>
+          </div>
+
+          <div className="space-y-1 mb-4">
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              معظم العجز والاحتياج
+            </p>
+            <h3 className="text-xl sm:text-2xl font-black font-header tracking-tight text-slate-900 dark:text-white">
+              خيام وأفرشة إيواء
+            </h3>
+          </div>
+
+          <div className="text-xs font-semibold text-slate-400">
+            عجز بمقدار <span className="font-bold text-rose-500 font-header">1,150 وحدة</span>
+          </div>
+        </div>
+
       </div>
 
-      {/* Warehouse Management Tabs */}
-      <Tabs defaultValue="zones" className="w-full space-y-4">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="zones">المخطط الهيكلي والمناطق (Zones)</TabsTrigger>
-          <TabsTrigger value="inventory">جدول تعديل المخزون (Stock)</TabsTrigger>
-        </TabsList>
-
-        {/* Tab 1: Warehouse Zones */}
-        <TabsContent value="zones" className="mt-0">
-          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6">
-            <ZoneMapVisualizer 
-              zones={currentDepot.zones} 
-              items={currentDepot.items}
-            />
+      {/* ================= MIDDLE SECTION: BAR CHART + RECENT TIMELINE ================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* BAR CHART: أعلى 10 مصادر احتياج ومصروفات (~65% width in desktop, RTL right) */}
+        <div className="lg:col-span-8 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-2xs">
+          
+          {/* Card Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-base sm:text-lg font-black font-header text-slate-900 dark:text-white">
+              أعلى 10 مصادر الاحتياج والمصروفات
+            </h3>
+            <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="خيارات المخطط">
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
           </div>
-        </TabsContent>
 
-        {/* Tab 2: Stock Management */}
-        <TabsContent value="inventory" className="mt-0">
-          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-white">
-                  إدارة المخزون وتحديد الاحتياجات التقديرية
-                </h3>
-                <p className="text-xs text-slate-400">
-                  يمكنك تعديل المخزون الحالي أو رفع سقف الاحتياج ليعكس الوضع الحقيقي فوراً على الواجهة العامة
-                </p>
+          {/* Bar Chart Container */}
+          <div className="relative pt-8 pb-2">
+            
+            {/* Chart Area with Bars and Y-Axis */}
+            <div className="flex items-stretch gap-2 h-64 sm:h-72">
+              
+              {/* Bars Columns */}
+              <div className="flex-1 grid grid-cols-10 gap-1.5 sm:gap-3 items-end h-full">
+                {barChartData.map((item, idx) => (
+                  <div key={idx} className="flex flex-col items-center h-full justify-end group relative">
+                    
+                    {/* Floating Tooltip Pill for Peak Item (Matches Screenshot exactly) */}
+                    {item.isPeak && (
+                      <div className="absolute -top-7 z-20 whitespace-nowrap bg-slate-900 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-md shadow-md animate-bounce">
+                        {item.value} طرد
+                      </div>
+                    )}
+
+                    {/* Background Track Pill */}
+                    <div className="w-full max-w-[28px] sm:max-w-[36px] bg-slate-100 dark:bg-slate-800/80 rounded-xl h-full flex flex-col justify-end p-0.5 overflow-hidden transition-all group-hover:bg-slate-200 dark:group-hover:bg-slate-700">
+                      {/* Active Filled Bar */}
+                      <div 
+                        style={{ height: item.height }}
+                        className={`w-full rounded-lg transition-all duration-500 ${
+                          item.isPeak 
+                            ? 'bg-primary shadow-sm shadow-primary/30' 
+                            : 'bg-primary/85 dark:bg-primary/75 group-hover:bg-primary'
+                        }`}
+                      ></div>
+                    </div>
+
+                  </div>
+                ))}
               </div>
-              <Link href="/admin/intake">
-                <Button variant="primary" size="sm">
-                  <PlusCircle className="w-4 h-4" />
-                  <span>تسجيل تفريغ شحنة جديدة</span>
-                </Button>
-              </Link>
+
+              {/* Y-Axis scale on the far right (RTL Layout) */}
+              <div className="w-10 sm:w-12 flex flex-col justify-between items-end text-[11px] font-semibold text-slate-400 pb-2 select-none">
+                <span>٤٠٠٠</span>
+                <span>٣٥٠٠</span>
+                <span>٣٠٠٠</span>
+                <span>٢٥٠٠</span>
+                <span>٢٠٠٠</span>
+                <span>١٥٠٠</span>
+                <span>١٠٠٠</span>
+              </div>
+
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-slate-800">
-              <table className="w-full text-right text-sm">
-                <thead className="bg-slate-800 text-xs text-slate-400 border-b border-slate-700">
-                  <tr>
-                    <th className="py-3 px-4">المادة</th>
-                    <th className="py-3 px-4">المنطقة</th>
-                    <th className="py-3 px-4">المخزون الفعلي</th>
-                    <th className="py-3 px-4">سقف الاحتياج</th>
-                    <th className="py-3 px-4">الحالة</th>
-                    <th className="py-3 px-4 text-center">إجراءات</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800 text-slate-200">
-                  {currentDepot.items.map((item) => {
-                    const isEditing = editingItemId === item.id;
-                    const deficit = item.targetNeed - item.currentStock;
+            {/* X-Axis Labels */}
+            <div className="grid grid-cols-10 gap-1.5 sm:gap-3 mt-3 pr-0 pl-10 sm:pl-12 text-center">
+              {barChartData.map((item, idx) => (
+                <span 
+                  key={idx} 
+                  className="text-[9px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate block transform -rotate-45 sm:rotate-0 origin-top-right transition-colors hover:text-primary"
+                  title={item.label}
+                >
+                  {item.label}
+                </span>
+              ))}
+            </div>
 
-                    return (
-                      <tr key={item.id} className="hover:bg-slate-800/40">
-                        <td className="py-3 px-4 font-bold text-white">
-                          {item.name}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="font-mono text-xs text-slate-400">
-                            {item.assignedZone}
-                          </span>
-                        </td>
+          </div>
+        </div>
 
-                        {/* Current Stock */}
-                        <td className="py-3 px-4">
-                          {isEditing ? (
-                            <input
-                              type="number"
-                              value={editStock}
-                              onChange={(e) => setEditStock(parseInt(e.target.value) || 0)}
-                              className="w-24 bg-slate-950 border border-amber-500 rounded px-2 py-1 text-sm font-mono text-white"
-                            />
-                          ) : (
-                            <span className="font-mono font-bold text-base">
-                              {item.currentStock} {item.unit}
-                            </span>
-                          )}
-                        </td>
+        {/* TIMELINE LIST: المصروفات والشحنات الحديثة (~35% width in desktop, RTL left) */}
+        <div className="lg:col-span-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-2xs flex flex-col justify-between">
+          
+          <div>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-base sm:text-lg font-black font-header text-slate-900 dark:text-white">
+                المصروفات والشحنات الحديثة
+              </h3>
+            </div>
 
-                        {/* Target Need */}
-                        <td className="py-3 px-4">
-                          {isEditing ? (
-                            <input
-                              type="number"
-                              value={editTarget}
-                              onChange={(e) => setEditTarget(parseInt(e.target.value) || 0)}
-                              className="w-24 bg-slate-950 border border-amber-500 rounded px-2 py-1 text-sm font-mono text-white"
-                            />
-                          ) : (
-                            <span className="font-mono text-slate-400">
-                              {item.targetNeed} {item.unit}
-                            </span>
-                          )}
-                        </td>
+            {/* Timeline with vertical green/primary connector line */}
+            <div className="relative pr-6 space-y-6 before:absolute before:right-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-primary/20 dark:before:bg-primary/30">
+              {recentActivities.map((act) => (
+                <div key={act.id} className="relative flex items-center justify-between group">
+                  
+                  {/* Timeline Dot on the line */}
+                  <div className="absolute -right-6 top-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 bg-primary group-hover:scale-125 transition-transform shadow-xs"></div>
 
-                        {/* Status */}
-                        <td className="py-3 px-4">
-                          {deficit > 0 ? (
-                            <span className="text-xs font-bold text-rose-400">
-                              عجز: {deficit} {item.unit}
-                            </span>
-                          ) : (
-                            <span className="text-xs font-bold text-emerald-400">
-                              مكتفي ✅
-                            </span>
-                          )}
-                        </td>
+                  {/* Title & Date */}
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-primary transition-colors">
+                      {act.title}
+                    </h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      {act.date}
+                    </p>
+                  </div>
 
-                        {/* Actions */}
-                        <td className="py-3 px-4 text-center">
-                          {isEditing ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={() => saveEdit(item.id)}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
-                              >
-                                حفظ
-                              </button>
-                              <button
-                                onClick={() => setEditingItemId(null)}
-                                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
-                              >
-                                إلغاء
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => startEdit(item)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-slate-800 transition-colors"
-                              title="تعديل الأرقام"
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                  {/* Amount / Metric */}
+                  <div className="text-sm font-black font-header text-slate-900 dark:text-white">
+                    {act.amount}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </TabsContent>
-      </Tabs>
+
+          {/* Bottom Action Shortcut */}
+          <div className="pt-6 border-t border-slate-100 dark:border-slate-800/80 mt-6">
+            <Link 
+              href="/admin/intake"
+              className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-primary hover:text-white dark:hover:bg-primary text-xs font-bold text-slate-700 dark:text-slate-200 transition-all group"
+            >
+              <Truck className="w-4 h-4 text-primary group-hover:text-white transition-colors" />
+              <span>تسجيل وتفريغ شحنة جديدة (Staging)</span>
+            </Link>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ================= BOTTOM SECTION: LINE CHART + DONUT BREAKDOWN ================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* LINE CHART: نشاط المصاريف والإمداد (~60% width) */}
+        <div className="lg:col-span-7 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-2xs">
+          
+          {/* Header with Title and Legend */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+            <h3 className="text-base sm:text-lg font-black font-header text-slate-900 dark:text-white">
+              نشاط المصاريف والإمداد
+            </h3>
+
+            {/* Legend matching screenshot */}
+            <div className="flex items-center gap-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-0.5 bg-primary rounded-full"></span>
+                <span>المصاريف الفعلية</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <span className="w-3 h-0.5 border-b-2 border-dashed border-slate-400"></span>
+                <span>المصاريف المتوقعة</span>
+              </div>
+            </div>
+          </div>
+
+          {/* SVG Vector Line Chart with Spline and Points */}
+          <div className="relative pt-6">
+            
+            {/* Tooltip Badge on Peak */}
+            <div className="absolute top-2 right-[60%] sm:right-[62%] z-10 bg-slate-900 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-md shadow-md">
+              3519 طرد
+            </div>
+
+            <div className="flex items-stretch gap-2">
+              
+              {/* SVG Graphic */}
+              <div className="flex-1 h-56 sm:h-64">
+                <svg viewBox="0 0 500 240" className="w-full h-full overflow-visible">
+                  <defs>
+                    <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#e0533c" stopOpacity="0.18" />
+                      <stop offset="100%" stopColor="#e0533c" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Horizontal Grid lines */}
+                  <line x1="0" y1="30" x2="500" y2="30" stroke="currentColor" strokeOpacity="0.08" />
+                  <line x1="0" y1="80" x2="500" y2="80" stroke="currentColor" strokeOpacity="0.08" />
+                  <line x1="0" y1="130" x2="500" y2="130" stroke="currentColor" strokeOpacity="0.08" />
+                  <line x1="0" y1="180" x2="500" y2="180" stroke="currentColor" strokeOpacity="0.08" />
+                  <line x1="0" y1="230" x2="500" y2="230" stroke="currentColor" strokeOpacity="0.08" />
+
+                  {/* Expected line (dashed) */}
+                  <path
+                    d="M 20 160 Q 60 175, 100 130 T 180 150 T 260 90 T 340 140 T 420 120 T 480 170"
+                    fill="none"
+                    stroke="#94a3b8"
+                    strokeWidth="2"
+                    strokeDasharray="4 4"
+                  />
+
+                  {/* Actual Aid Under Area Gradient */}
+                  <path
+                    d="M 20 200 L 20 180 Q 60 190, 100 140 T 180 80 T 260 160 T 340 110 T 420 130 T 480 170 L 480 230 L 20 230 Z"
+                    fill="url(#areaGradient)"
+                  />
+
+                  {/* Actual Aid Curve (Primary Solid) */}
+                  <path
+                    d="M 20 180 Q 60 190, 100 140 T 180 80 T 260 160 T 340 110 T 420 130 T 480 170"
+                    fill="none"
+                    stroke="#e0533c"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+
+                  {/* Circular Points on the curve */}
+                  {[
+                    { cx: 20, cy: 180 },
+                    { cx: 60, cy: 190 },
+                    { cx: 100, cy: 140 },
+                    { cx: 180, cy: 80, isPeak: true },
+                    { cx: 260, cy: 160 },
+                    { cx: 340, cy: 110 },
+                    { cx: 420, cy: 130 },
+                    { cx: 480, cy: 170 },
+                  ].map((pt, i) => (
+                    <g key={i}>
+                      <circle
+                        cx={pt.cx}
+                        cy={pt.cy}
+                        r={pt.isPeak ? 6 : 4}
+                        fill="#ffffff"
+                        stroke="#e0533c"
+                        strokeWidth="2.5"
+                      />
+                      {pt.isPeak && (
+                        <circle
+                          cx={pt.cx}
+                          cy={pt.cy}
+                          r={9}
+                          fill="none"
+                          stroke="#e0533c"
+                          strokeOpacity="0.4"
+                          strokeWidth="1.5"
+                          className="animate-ping"
+                        />
+                      )}
+                    </g>
+                  ))}
+                </svg>
+              </div>
+
+              {/* Y-Axis numbers */}
+              <div className="w-10 sm:w-12 flex flex-col justify-between items-end text-[11px] font-semibold text-slate-400 select-none pb-4">
+                <span>٣٠٠٠</span>
+                <span>٢٥٠٠</span>
+                <span>٢٠٠٠</span>
+                <span>١٥٠٠</span>
+                <span>١٠٠٠</span>
+              </div>
+
+            </div>
+
+            {/* X-Axis dates */}
+            <div className="flex justify-between pl-10 sm:pl-12 pr-2 text-[10px] sm:text-xs font-semibold text-slate-400 mt-2">
+              <span>١١</span>
+              <span>١٠</span>
+              <span>٠٩</span>
+              <span>٠٨</span>
+              <span>٠٧</span>
+              <span>٠٦</span>
+              <span>٠٥</span>
+              <span>٠٤</span>
+              <span>٠٣</span>
+              <span>٠٢</span>
+              <span>٠١</span>
+            </div>
+
+          </div>
+        </div>
+
+        {/* DONUT CHART: نظرة عامة على التقرير والتوزيع (~40% width) */}
+        <div className="lg:col-span-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-2xs flex flex-col justify-between">
+          
+          <div>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-base sm:text-lg font-black font-header text-slate-900 dark:text-white">
+                نظرة عامة على التقرير والتوزيع
+              </h3>
+              <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="خيارات">
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Donut Chart & Legend Container */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 my-2">
+              
+              {/* Legend with Metrics on Left */}
+              <div className="space-y-4 w-full sm:w-auto">
+                
+                <div className="flex items-center justify-between sm:justify-start gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">وارد:</span>
+                  </div>
+                  <div className="flex items-center gap-1 font-bold text-xs font-header">
+                    <span>45,000 طرد</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-start gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">موزع:</span>
+                  </div>
+                  <div className="flex items-center gap-1 font-bold text-xs font-header">
+                    <span>27,450 طرد</span>
+                    <ArrowDownLeft className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-start gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-800 dark:bg-slate-300"></span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">مدخرات:</span>
+                  </div>
+                  <div className="flex items-center gap-1 font-bold text-xs font-header">
+                    <span>17,550 طرد</span>
+                    <ArrowDownLeft className="w-3.5 h-3.5 text-rose-500" />
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Donut Chart Ring with Embedded Percentages (Matching Screenshot) */}
+              <div className="relative w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center shrink-0">
+                <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                  {/* Segment 1: 65% (Primary Coral) */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    fill="transparent"
+                    stroke="#e0533c"
+                    strokeWidth="18"
+                    strokeDasharray="155.2 238.8"
+                    strokeDashoffset="0"
+                  />
+                  {/* Segment 2: 25% (Emerald Green) */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    fill="transparent"
+                    stroke="#10b981"
+                    strokeWidth="18"
+                    strokeDasharray="59.7 238.8"
+                    strokeDashoffset="-155.2"
+                  />
+                  {/* Segment 3: 10% (Slate) */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    fill="transparent"
+                    stroke="#1e293b"
+                    strokeWidth="18"
+                    strokeDasharray="23.9 238.8"
+                    strokeDashoffset="-214.9"
+                  />
+                </svg>
+
+                {/* Percentage Labels Inside the Donut segments */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  {/* 65% label on primary arc */}
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 text-white font-black text-xs font-header drop-shadow-xs">
+                    ٦٥%
+                  </span>
+                  {/* 25% label on green arc */}
+                  <span className="absolute right-6 top-10 text-white font-black text-xs font-header drop-shadow-xs">
+                    ٢٥%
+                  </span>
+                  {/* 10% label on dark arc */}
+                  <span className="absolute bottom-6 right-12 text-white font-black text-[10px] font-header drop-shadow-xs">
+                    ١٠%
+                  </span>
+                  {/* Center cutout circle */}
+                  <div className="w-16 h-16 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center shadow-inner">
+                    <span className="text-[10px] font-bold text-slate-400">إجمالي</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* FIFO Status Bar */}
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 mt-4 flex items-center justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400 font-medium">حالة صلاحية الدفعات (FIFO)</span>
+            <Link 
+              href="/admin/expiry"
+              className="text-primary font-bold hover:underline flex items-center gap-1"
+            >
+              <span>3 شحنات قاربت على الانتهاء</span>
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ================= FAST OPERATIONS LAUNCHPAD ================= */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+        
+        <Link
+          href="/admin/intake"
+          className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 dark:hover:border-primary/50 transition-all flex items-center justify-between group shadow-2xs"
+        >
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Truck className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-header font-black text-slate-900 dark:text-white text-base group-hover:text-primary transition-colors">
+                تفريغ شحنة إغاثة وتخصيص المناطق (Staging)
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                توجيه ذكي للشاحنات بين Zones A/B/C/D حسب الفئة وسرعة التصريف
+              </p>
+            </div>
+          </div>
+          <ChevronLeft className="w-5 h-5 text-slate-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" />
+        </Link>
+
+        <Link
+          href="/admin/expiry"
+          className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-rose-500/50 dark:hover:border-rose-500/50 transition-all flex items-center justify-between group shadow-2xs"
+        >
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Clock className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-header font-black text-slate-900 dark:text-white text-base group-hover:text-rose-500 transition-colors">
+                  تتبع الصلاحية وتدوير المخزون (FIFO)
+                </h4>
+                <Badge variant="rose" size="sm">3 تنبيهات</Badge>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                رصد الشحنات الأقرب للانتهاء لتوجيهها وتوزيعها فوراً قبل التلف
+              </p>
+            </div>
+          </div>
+          <ChevronLeft className="w-5 h-5 text-slate-400 group-hover:text-rose-500 group-hover:-translate-x-1 transition-all" />
+        </Link>
+
+      </div>
 
     </div>
   );
