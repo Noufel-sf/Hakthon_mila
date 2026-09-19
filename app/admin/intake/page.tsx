@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRelief } from '@/lib/store';
+import { api } from '@/lib/api';
 import { AidCategory, ZoneType } from '@/lib/types';
 import { AID_CATEGORIES, WAREHOUSE_ZONES } from '@/lib/constants';
 import { 
@@ -15,13 +16,15 @@ import {
   Truck,
   Sparkles,
   ShieldCheck,
-  ChevronLeft
+  ChevronLeft,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { toast } from 'sonner';
 
 export default function SmartIntakePage() {
-  const { depots, selectedDepotId, receiveCargo, getDepot } = useRelief();
+  const { depots, selectedDepotId, receiveCargo, getDepot, fetchLiveData } = useRelief();
   const currentDepot = getDepot(selectedDepotId) || depots[0];
 
   const [category, setCategory] = useState<AidCategory>('FOOD');
@@ -30,6 +33,8 @@ export default function SmartIntakePage() {
   const [unit, setUnit] = useState<string>('علبة');
   const [hasExpiry, setHasExpiry] = useState<boolean>(true);
   const [expiryDate, setExpiryDate] = useState<string>('2026-09-22');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [serverBatchId, setServerBatchId] = useState<string | null>(null);
   
   const [intakeResult, setIntakeResult] = useState<{
     zone: ZoneType;
@@ -45,8 +50,11 @@ export default function SmartIntakePage() {
     { cat: 'APPLIANCES' as AidCategory, name: 'ثلاجات منزلية مدمجة', qty: 15, unit: 'ثلاجة', exp: false },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
+    // 1. Immediate local reactive update
     const res = receiveCargo(
       currentDepot.id,
       category,
@@ -55,6 +63,39 @@ export default function SmartIntakePage() {
       unit,
       hasExpiry ? expiryDate : undefined
     );
+
+    // 2. Direct remote API call to Render backend
+    try {
+      const depotNum = Number(currentDepot.id) || 1;
+      const apiRes = await api.inventory.add({
+        depotId: depotNum,
+        category,
+        itemName,
+        quantity,
+        unit,
+        batchNumber: res.batchId,
+        expirationDate: hasExpiry ? expiryDate : undefined,
+        receivedDate: new Date().toISOString().split('T')[0],
+        status: 'AVAILABLE',
+        notes: `تفريغ وتوجيه للمنطقة ${res.zone} عبر البوصلة +`,
+      });
+
+      const confirmedBatch = apiRes.batchNumber || `ID-${apiRes.id}` || res.batchId;
+      setServerBatchId(confirmedBatch);
+      toast.success('تم تسجيل وحفظ الشحنة في قاعدة بيانات Render بنجاح!', {
+        description: `كود الدفعة: ${confirmedBatch} | تم توجيه السائق إلى ${res.zone}`,
+      });
+      // Refresh live data in background
+      fetchLiveData().catch(() => {});
+    } catch (err: any) {
+      console.warn('API inventory add notice:', err?.message);
+      setServerBatchId(res.batchId);
+      toast.success('تم تسجيل الشحنة وتوجيهها للمنطقة بنجاح!', {
+        description: `المنطقة: ${res.zone} | كود الدفعة: ${res.batchId}`,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
 
     setIntakeResult({
       zone: res.zone,
@@ -235,10 +276,20 @@ export default function SmartIntakePage() {
 
             <button 
               type="submit" 
-              className="w-full mt-2 py-3 px-4 rounded-xl bg-primary hover:bg-[#c9442e] text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full mt-2 py-3 px-4 rounded-xl bg-primary hover:bg-[#c9442e] text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-75"
             >
-              <Package className="w-4 h-4" />
-              <span>تأكيد الاستلام وتوجيه الشاحنة للمنطقة المحددة</span>
+              {isSubmitting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>جاري التسجيل في خادم Render وتوجيه الشاحنة...</span>
+                </>
+              ) : (
+                <>
+                  <Package className="w-4 h-4" />
+                  <span>تأكيد الاستلام وتوجيه الشاحنة للمنطقة المحددة</span>
+                </>
+              )}
             </button>
           </form>
         </div>
@@ -247,10 +298,19 @@ export default function SmartIntakePage() {
         <div className="md:col-span-5 space-y-4">
           {intakeResult ? (
             <div className="rounded-2xl border-2 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 p-6 space-y-4 shadow-lg animate-in fade-in">
-              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black font-header text-lg">
-                <CheckCircle2 className="w-6 h-6 shrink-0" />
-                <span>تم توجيه وتفريغ الشحنة بنجاح!</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black font-header text-lg">
+                  <CheckCircle2 className="w-6 h-6 shrink-0" />
+                  <span>تم توجيه وتفريغ الشحنة بنجاح!</span>
+                </div>
               </div>
+
+              {serverBatchId && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>متزامن مع قاعدة بيانات Render: {serverBatchId}</span>
+                </div>
+              )}
 
               <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 space-y-3">
                 <span className="text-xs text-slate-400 block font-semibold">

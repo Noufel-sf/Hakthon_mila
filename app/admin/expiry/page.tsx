@@ -1,28 +1,72 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRelief } from '@/lib/store';
+import { api } from '@/lib/api';
+import { getZoneForCategory } from '@/lib/constants';
 import { 
   Clock, 
   AlertTriangle, 
   ChevronLeft, 
   Calendar, 
   PackageCheck,
-  Plus
+  Plus,
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { getRelativeTime } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function ExpiryManagementPage() {
-  const { depots, selectedDepotId, getDepot } = useRelief();
+  const { depots, selectedDepotId, getDepot, fetchLiveData } = useRelief();
   const currentDepot = getDepot(selectedDepotId) || depots[0];
 
-  const batches = currentDepot.batches;
+  const [liveBatches, setLiveBatches] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const fetchLiveExpiringInventory = async () => {
+    setIsLoading(true);
+    try {
+      const expiringRes = await api.inventory.getExpiring(90).catch(() => []);
+      if (expiringRes && expiringRes.length > 0) {
+        const mapped = expiringRes.map(item => ({
+          id: item.batchNumber || `BATCH-${item.id}`,
+          depotId: String(item.depotId),
+          depotName: item.depotName || currentDepot.name,
+          itemName: item.itemName,
+          quantity: item.quantity,
+          unit: item.unit,
+          expiryDate: item.expirationDate || '2026-10-01',
+          receivedDate: item.receivedDate || '2026-09-14',
+          zone: getZoneForCategory(item.category),
+          status: (item.isExpiringSoon || (item.daysUntilExpiration && item.daysUntilExpiration <= 15)) ? 'expiring_soon' : 'good',
+          batchNumber: item.batchNumber,
+          isLiveRemote: true,
+        }));
+        setLiveBatches(mapped);
+      }
+    } catch (err: any) {
+      console.warn('Could not load expiring inventory:', err?.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveExpiringInventory();
+  }, [currentDepot.id]);
+
+  const allBatches = [...liveBatches];
+  currentDepot.batches.forEach(b => {
+    if (!allBatches.some(x => x.id === b.id || x.itemName === b.itemName)) {
+      allBatches.push(b);
+    }
+  });
 
   // Sort batches by earliest expiry date
-  const sortedBatches = [...batches].sort((a, b) => {
+  const sortedBatches = [...allBatches].sort((a, b) => {
     return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime();
   });
 
@@ -38,13 +82,28 @@ export default function ExpiryManagementPage() {
           <ChevronLeft className="w-4 h-4 rotate-180" />
           <span>العودة للوحة القيادة</span>
         </Link>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-black font-header text-slate-900 dark:text-white">
-            تتبع الصلاحية وتدوير المخزون (FIFO Tracking)
-          </h1>
-          <Badge variant="rose" size="md">
-            {currentDepot.name}
-          </Badge>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-black font-header text-slate-900 dark:text-white">
+              تتبع الصلاحية وتدوير المخزون (FIFO Tracking)
+            </h1>
+            <Badge variant="rose" size="md">
+              {currentDepot.name}
+            </Badge>
+          </div>
+
+          <button
+            onClick={() => {
+              fetchLiveExpiringInventory();
+              fetchLiveData().catch(() => {});
+            }}
+            disabled={isLoading}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>خادم حي (Render)</span>
+            <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           متابعة دقيقة لدفعات المواد الغذائية والحليب والأدوية لضمان توزيعها وفق مبدأ (FIFO: الأقرب انتهاءً يُوزع أولاً) وتفادي تلف أي مساعدة.

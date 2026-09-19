@@ -24,6 +24,8 @@ import { AID_CATEGORIES } from '@/lib/constants';
 
 export default function HomePage() {
   const depots = useReliefStore((state) => state.depots);
+  const isLiveApiConnected = useReliefStore((state) => state.isLiveApiConnected);
+  const fetchLiveData = useReliefStore((state) => state.fetchLiveData);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -53,13 +55,14 @@ export default function HomePage() {
     return matchesCategory && matchesSearch;
   });
 
-  // Filter categories for the floating search card pills
+  // Filter categories for the floating search card pills (OpenAPI AidCategory)
   const pillFilters = [
     { id: 'all', label: 'كافة الاحتياجات' },
-    { id: 'furniture', label: 'أرائك وأثاث' },
-    { id: 'bedding', label: 'أفرشة وبطانيات' },
-    { id: 'appliances', label: 'أجهزة كهرومنزلية' },
-    { id: 'food', label: 'مواد غذائية' },
+    { id: 'FOOD', label: 'مواد غذائية' },
+    { id: 'WATER', label: 'مياه شرب' },
+    { id: 'MATTRESSES', label: 'أفرشة وبطانيات' },
+    { id: 'APPLIANCES', label: 'أجهزة كهرومنزلية' },
+    { id: 'FURNITURE', label: 'أثاث وأرائك' },
   ];
 
   return (
@@ -79,8 +82,19 @@ export default function HomePage() {
         <div className="relative z-10 max-w-4xl mx-auto space-y-5 px-4">
           
           {/* Top Pill Tag (Like 'لتسيير تجارتك' in screenshot) */}
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs sm:text-sm font-header font-bold bg-primary text-white  border border-[#C6EFF2] dark:border-[#1E525B] shadow-2xs">
-            <span>لتنسيق إغاثة الكوارث</span>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs sm:text-sm font-header font-bold bg-primary text-white border border-[#C6EFF2] dark:border-[#1E525B] shadow-2xs">
+              <span>لتنسيق إغاثة الكوارث</span>
+            </div>
+
+            <button
+              onClick={() => fetchLiveData()}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"
+              title="تحديث البيانات من خادم Render"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>خادم حي (Render)</span>
+            </button>
           </div>
 
           {/* Main Headline with Highlight box (Font: Zain) */}
@@ -178,13 +192,20 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <Link
-            href="/depots"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#E0533C] hover:underline"
-          >
-            <span>عرض دليل المستودعات بالكامل</span>
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>خادم حي (Live API Render)</span>
+            </span>
+
+            <Link
+              href="/depots"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#E0533C] hover:underline"
+            >
+              <span>عرض دليل المستودعات بالكامل</span>
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
 
         {filteredDepots.length > 0 ? (

@@ -16,7 +16,9 @@ import {
   CheckCircle2,
   Layers,
   Clock,
-  ChevronLeft
+  ChevronLeft,
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -24,6 +26,10 @@ import { Progress } from '@/components/ui/progress';
 
 export default function DepotsDirectoryPage() {
   const depots = useReliefStore((state) => state.depots);
+  const isLoadingApi = useReliefStore((state) => state.isLoadingApi);
+  const isLiveApiConnected = useReliefStore((state) => state.isLiveApiConnected);
+  const fetchLiveData = useReliefStore((state) => state.fetchLiveData);
+
   const [selectedWilaya, setSelectedWilaya] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -45,9 +51,22 @@ export default function DepotsDirectoryPage() {
       
       {/* Centered Page Header */}
       <div className="flex flex-col items-center mt-5 text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-header font-bold">
-          <Warehouse className="w-3.5 h-3.5" />
-          <span>دليل مستودعات ونقاط التفريغ المعتمدة</span>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-header font-bold">
+            <Warehouse className="w-3.5 h-3.5" />
+            <span>دليل مستودعات ونقاط التفريغ المعتمدة</span>
+          </div>
+
+          <button
+            onClick={() => fetchLiveData()}
+            disabled={isLoadingApi}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"
+            title="تحديث البيانات مباشرة من خادم Render"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>خادم حي (Render)</span>
+            <RefreshCw className={`w-3 h-3 ${isLoadingApi ? 'animate-spin' : ''}`} />
+          </button>
         </div>
         
         <h1 className="font-header text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">

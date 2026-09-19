@@ -177,3 +177,18 @@ export const DEPOT_STATUS_LABELS: Record<DepotStatus, { label: string; color: st
   AT_CAPACITY: { label: 'مكتمل الطاقة الاستيعابية', color: 'rose' },
   TEMPORARILY_CLOSED: { label: 'مغلق مؤقتاً', color: 'amber' },
 };
+
+export function getZoneForCategory(category: AidCategory | string): ZoneType {
+  const cat = String(category).toUpperCase();
+  if (cat === 'FOOD' || cat === 'WATER' || cat === 'MEDICAL' || cat === 'HYGIENE') {
+    return 'Zone A';
+  }
+  if (cat === 'CLOTHES' || cat === 'BLANKETS' || cat === 'MATTRESSES') {
+    return 'Zone B';
+  }
+  if (cat === 'APPLIANCES') {
+    return 'Zone C';
+  }
+  return 'Zone D';
+}
+

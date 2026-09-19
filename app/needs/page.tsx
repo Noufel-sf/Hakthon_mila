@@ -16,13 +16,19 @@ import {
   ExternalLink,
   Navigation,
   ChevronLeft,
-  Info
+  Info,
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
 
 export default function NeedsPage() {
   const depots = useReliefStore((state) => state.depots);
+  const isLoadingApi = useReliefStore((state) => state.isLoadingApi);
+  const isLiveApiConnected = useReliefStore((state) => state.isLiveApiConnected);
+  const fetchLiveData = useReliefStore((state) => state.fetchLiveData);
+
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -93,17 +99,30 @@ export default function NeedsPage() {
       
       {/* Centered Page Header */}
       <div className="flex flex-col items-center mt-5 text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-header font-bold">
-          <ClipboardList className="w-3.5 h-3.5" />
-          <span>المرصد الميداني لاحتياجات ونواقص الإغاثة</span>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-header font-bold">
+            <ClipboardList className="w-3.5 h-3.5" />
+            <span>المرصد الميداني لاحتياجات ونواقص الإغاثة</span>
+          </div>
+
+          <button
+            onClick={() => fetchLiveData()}
+            disabled={isLoadingApi}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"
+            title="تحديث الاحتياجات مباشرة من خادم Render"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>خادم حي (Render)</span>
+            <RefreshCw className={`w-3 h-3 ${isLoadingApi ? 'animate-spin' : ''}`} />
+          </button>
         </div>
         
         <h1 className="font-header text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-          جدول الاحتياجات الميدانية <span className="text-primary">والأولويات العاجلة</span>
+          احتياجات ونواقص المستودعات
         </h1>
         
         <p className="font-sub text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
-          بيان شفاف يوضح السلع الأكثر طلباً في كل ولاية ومستودع (أرائك، أفرشة، ثلاجات، مواد تموين)، لتوجيه التبرع بذكاء ومنع تكدس المواد الفائضة.
+          جدول تفصيلي يوضح حجم العجز الفعلي في كل مادة عبر جميع المستودعات لتوجيه قوافل التبرعات للمكان الأشد احتياجاً.
         </p>
       </div>
 

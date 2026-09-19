@@ -20,7 +20,8 @@ import {
   ShieldCheck,
   Package,
   Layers,
-  Sparkles
+  Sparkles,
+  RefreshCw
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/Badge';
@@ -31,7 +32,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { depots, selectedDepotId, setSelectedDepotId, getDepot } = useRelief();
+  const { depots, selectedDepotId, setSelectedDepotId, getDepot, fetchLiveData, isLoadingApi } = useRelief();
   const currentDepot = getDepot(selectedDepotId) || depots[0];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -242,6 +243,18 @@ export default function AdminLayout({
           {/* Left Header Section: Date Range Selector, Search, Bell, Profile Avatar, ThemeToggle */}
           <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* Live Render API Sync Pill */}
+            <button
+              onClick={() => fetchLiveData()}
+              disabled={isLoadingApi}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-all cursor-pointer"
+              title="مزامنة وتحديث البيانات من خادم Render"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="hidden lg:inline">خادم حي (Render)</span>
+              <RefreshCw className={`w-3 h-3 ${isLoadingApi ? 'animate-spin' : ''}`} />
+            </button>
+
             {/* Date Range Selector Pill (matches reference design "آخر 30 يوماً") */}
             <div className="relative">
               <button
