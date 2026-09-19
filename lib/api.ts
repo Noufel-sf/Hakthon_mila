@@ -30,7 +30,7 @@ import {
   CategoryResponse,
 } from './types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://madad-dbnd.onrender.com';
 
 /**
  * Configured Axios Instance for the Humanitarian Aid Backend

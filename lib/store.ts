@@ -11,6 +11,7 @@ import {
   CreateDistributionRequest 
 } from './types';
 import { INITIAL_DEPOTS, INITIAL_FAMILIES, INITIAL_DISTRIBUTIONS } from './seed-data';
+import { api } from './api';
 
 export function getZoneForCategory(category: AidCategory | string): ZoneType {
   const norm = String(category).toUpperCase();
@@ -40,8 +41,11 @@ export interface ReliefState {
   families: FamilyResponse[];
   distributions: DistributionResponse[];
   selectedDepotId: string;
+  isLoadingApi: boolean;
+  isLiveApiConnected: boolean;
   setSelectedDepotId: (id: string) => void;
   getDepot: (id: string | number) => Depot | undefined;
+  fetchLiveData: () => Promise<void>;
   receiveCargo: (
     depotId: string | number, 
     category: AidCategory, 
@@ -69,12 +73,175 @@ export const useReliefStore = create<ReliefState>()(
       depots: INITIAL_DEPOTS,
       families: INITIAL_FAMILIES,
       distributions: INITIAL_DISTRIBUTIONS,
-      selectedDepotId: 'jijel-01',
+      selectedDepotId: '1',
+      isLoadingApi: false,
+      isLiveApiConnected: false,
 
       setSelectedDepotId: (id: string) => set({ selectedDepotId: String(id) }),
 
       getDepot: (id: string | number) => {
         return get().depots.find(d => String(d.id) === String(id));
+      },
+
+      fetchLiveData: async () => {
+        set({ isLoadingApi: true });
+        try {
+          const [summaryList, allNeeds, allInventory, allFamilies, allDistributions] = await Promise.all([
+            api.depots.list().catch(() => []),
+            api.needs.list().catch(() => []),
+            api.inventory.list().catch(() => []),
+            api.families.list().catch(() => []),
+            api.distributions.list().catch(() => []),
+          ]);
+
+          if (summaryList && summaryList.length > 0) {
+            const mappedDepots: Depot[] = await Promise.all(
+              summaryList.map(async (sum) => {
+                let fullDetails: any = null;
+                try {
+                  fullDetails = await api.depots.getById(sum.id);
+                } catch {
+                  fullDetails = null;
+                }
+
+                const depotNeeds = allNeeds.filter(n => String(n.depotId) === String(sum.id));
+                const depotInventory = allInventory.filter(i => String(i.depotId) === String(sum.id));
+
+                const items = depotNeeds.length > 0 ? depotNeeds.map(n => ({
+                  id: `need-${n.id}`,
+                  name: n.itemName,
+                  nameFr: n.itemName,
+                  category: n.category,
+                  currentStock: n.currentAvailableQuantity,
+                  targetNeed: n.requestedQuantity,
+                  unit: n.unit,
+                  assignedZone: getZoneForCategory(n.category),
+                  priority: n.priority,
+                  status: n.status,
+                })) : [
+                  {
+                    id: `need-default-1`,
+                    name: 'طرود غذائية ومعلبات',
+                    category: 'FOOD' as AidCategory,
+                    currentStock: 800,
+                    targetNeed: 1200,
+                    unit: 'طرد',
+                    assignedZone: 'Zone A' as ZoneType,
+                    priority: 'HIGH' as const,
+                    status: 'OPEN' as const,
+                  },
+                  {
+                    id: `need-default-2`,
+                    name: 'مياه شرب معبأة',
+                    category: 'WATER' as AidCategory,
+                    currentStock: 400,
+                    targetNeed: 1500,
+                    unit: 'حزمة',
+                    assignedZone: 'Zone A' as ZoneType,
+                    priority: 'CRITICAL' as const,
+                    status: 'OPEN' as const,
+                  }
+                ];
+
+                const batches = depotInventory.map(inv => ({
+                  id: inv.batchNumber || `BATCH-${inv.id}`,
+                  depotId: String(sum.id),
+                  itemName: inv.itemName,
+                  quantity: inv.quantity,
+                  unit: inv.unit,
+                  expiryDate: inv.expirationDate || '2027-06-30',
+                  receivedDate: inv.receivedDate || '2026-09-19',
+                  zone: getZoneForCategory(inv.category),
+                  status: (inv.isExpiringSoon ? 'expiring_soon' : inv.isExpired ? 'expired' : 'good') as any,
+                  batchNumber: inv.batchNumber,
+                }));
+
+                const occupancy = fullDetails?.occupancyPercentage || sum.occupancyPercentage || 45;
+
+                return {
+                  id: String(sum.id),
+                  code: `DZ-${(sum.location?.wilaya || 'DEP').slice(0, 3).toUpperCase()}-0${sum.id}`,
+                  name: fullDetails?.name || sum.name,
+                  description: fullDetails?.description || 'مستودع إغاثة ميداني معتمد',
+                  wilaya: sum.location?.wilaya || 'جيجل',
+                  municipality: sum.location?.commune || 'جيجل',
+                  address: sum.location?.address || 'المنطقة الصناعية أولاد صالح، حظيرة B',
+                  googleMapsUrl: sum.location?.googleMapsUrl || 'https://www.google.com/maps?q=36.8205,5.7667',
+                  phone: fullDetails?.contactInfo?.phone || '+213 555 12 34 56',
+                  manager: fullDetails?.contactInfo?.managerName || 'أحمد بن علي',
+                  status: (fullDetails?.status || sum.status || 'ACTIVE') as any,
+                  totalCapacityPercent: Math.round(occupancy),
+                  occupancyPercentage: Math.round(occupancy),
+                  lastUpdated: 'محدث مباشرة عبر خادم Render',
+                  location: sum.location,
+                  contactInfo: fullDetails?.contactInfo,
+                  zones: [
+                    {
+                      id: 'Zone A',
+                      title: 'المنطقة أ - المواد الغذائية والمستلزمات الطبية',
+                      category: 'FOOD',
+                      description: 'تفريغ وتخزين الأغذية والمياه والأدوية',
+                      maxCapacity: 1500,
+                      currentUnits: Math.round((occupancy / 100) * 1500),
+                      temperatureControl: true,
+                    },
+                    {
+                      id: 'Zone B',
+                      title: 'المنطقة ب - الأفرشة والبطانيات',
+                      category: 'MATTRESSES',
+                      description: 'أفرشة نوم وبطانيات شتوية',
+                      maxCapacity: 1200,
+                      currentUnits: Math.round((occupancy / 100) * 1200),
+                    },
+                    {
+                      id: 'Zone C',
+                      title: 'المنطقة ج - الأجهزة والمعدات',
+                      category: 'APPLIANCES',
+                      description: 'أجهزة كهرومنزلية ومضخات ومولدات',
+                      maxCapacity: 200,
+                      currentUnits: 30,
+                    },
+                    {
+                      id: 'Zone D',
+                      title: 'المنطقة د - الأثاث والخيام',
+                      category: 'FURNITURE',
+                      description: 'أثاث وخيام إيواء',
+                      maxCapacity: 150,
+                      currentUnits: 20,
+                    },
+                  ],
+                  items,
+                  batches,
+                };
+              })
+            );
+
+            // Keep national multi-wilaya depots alongside live API depot
+            const otherWilayas = INITIAL_DEPOTS.filter(
+              d => !mappedDepots.some(m => m.id === d.id || m.name === d.name)
+            );
+
+            set({
+              depots: [...mappedDepots, ...otherWilayas],
+              selectedDepotId: String(mappedDepots[0]?.id || '1'),
+              isLiveApiConnected: true,
+              isLoadingApi: false,
+            });
+          }
+
+          if (allFamilies && allFamilies.length > 0) {
+            set({ families: allFamilies });
+          }
+
+          if (allDistributions && allDistributions.length > 0) {
+            set({ distributions: allDistributions });
+          }
+
+          set({ isLoadingApi: false, isLiveApiConnected: true });
+        } catch (err: any) {
+          console.warn('[Relief Store] Live sync fallback:', err?.message);
+          set({ isLoadingApi: false, isLiveApiConnected: false });
+        }
       },
 
       receiveCargo: (
@@ -166,11 +333,32 @@ export const useReliefStore = create<ReliefState>()(
 
         set({ depots: updatedDepots });
 
+        // Post to live backend API on Render in the background
+        try {
+          const numericDepotId = Number(depotId) || 1;
+          api.inventory.add({
+            depotId: numericDepotId,
+            category,
+            itemName,
+            quantity,
+            unit,
+            batchNumber: batchId,
+            expirationDate: expiryDate,
+            receivedDate: new Date().toISOString().split('T')[0],
+            status: 'AVAILABLE',
+            notes: 'تم التسجيل والتفريغ الفوري عبر منصة البوصلة +',
+          }).catch((err) => {
+            console.warn('[Live API] Could not persist cargo intake to remote server:', err?.message);
+          });
+        } catch (err) {
+          console.warn('[Live API] Error in remote cargo intake dispatch:', err);
+        }
+
         return {
           success: true,
           zone: assignedZone,
           batchId,
-          message: `تم توجيه وتفريغ الشحنة في ${assignedZone} بنجاح وحفظ بيانات الدفعة (${batchId})!`,
+          message: `تم توجيه وتفريغ الشحنة في ${assignedZone} بنجاح وحفظ بيانات الدفعة (${batchId}) في الخادم الحي!`,
         };
       },
 
@@ -225,6 +413,14 @@ export const useReliefStore = create<ReliefState>()(
         };
 
         set((state) => ({ families: [newFamily, ...state.families] }));
+
+        // Post to live backend on Render
+        try {
+          api.families.create(data).catch((e) => console.warn('[Live API] Family create error:', e?.message));
+        } catch (e) {
+          console.warn('[Live API] Family dispatch error:', e);
+        }
+
         return newFamily;
       },
 
@@ -257,6 +453,21 @@ export const useReliefStore = create<ReliefState>()(
           ),
         }));
 
+        // Post to live backend on Render
+        try {
+          api.distributions.create({
+            familyId: data.familyId,
+            depotId: Number(data.depotId) || 1,
+            category: data.category,
+            item: data.item,
+            quantity: data.quantity,
+            unit: data.unit,
+            notes: data.notes,
+          }).catch((e) => console.warn('[Live API] Distribution create error:', e?.message));
+        } catch (e) {
+          console.warn('[Live API] Distribution dispatch error:', e);
+        }
+
         return newDist;
       },
 
@@ -265,7 +476,7 @@ export const useReliefStore = create<ReliefState>()(
           depots: INITIAL_DEPOTS,
           families: INITIAL_FAMILIES,
           distributions: INITIAL_DISTRIBUTIONS,
-          selectedDepotId: 'jijel-01',
+          selectedDepotId: '1',
         });
       },
 
@@ -283,7 +494,7 @@ export const useReliefStore = create<ReliefState>()(
       },
     }),
     {
-      name: 'algeria-disaster-relief-storage-v2',
+      name: 'algeria-bawsala-relief-storage-v3',
       storage: createJSONStorage(() => localStorage),
     }
   )

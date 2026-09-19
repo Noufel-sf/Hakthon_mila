@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import LiveCrisisTicker from "@/components/LiveCrisisTicker";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import ApiSyncProvider from "@/components/ApiSyncProvider";
 
 const alexandria = Alexandria({
   variable: "--font-alexandria",
@@ -38,13 +39,15 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground font-sans antialiased selection:bg-[#E0533C] selection:text-white">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <Toaster richColors position="top-center" dir="rtl" />
-          {/* <LiveCrisisTicker /> */}
-          <Navbar />
-          <main className="flex-1 pb-16">
-            {children}
-          </main>
-          <Footer />
+          <ApiSyncProvider>
+            <Toaster richColors position="top-center" dir="rtl" />
+            {/* <LiveCrisisTicker /> */}
+            <Navbar />
+            <main className="flex-1 pb-16">
+              {children}
+            </main>
+            <Footer />
+          </ApiSyncProvider>
         </ThemeProvider>
       </body>
     </html>
