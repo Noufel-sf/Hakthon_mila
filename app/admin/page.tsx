@@ -130,25 +130,24 @@ export default function AdminDashboardPage() {
           </p>
         </Link>
 
-        {/* Action 3: Family Distribution */}
+        {/* Action 3: Convoy Traffic & Guidance */}
         <Link 
-          href="/families"
-          className="group rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 to-emerald-950/20 p-5 hover:border-emerald-500 transition-all hover:shadow-xl hover:shadow-emerald-950/30"
+          href="/convoy"
+          className="group rounded-2xl border border-sky-500/30 bg-gradient-to-br from-slate-900 to-sky-950/20 p-5 hover:border-sky-500 transition-all hover:shadow-xl hover:shadow-sky-950/30"
         >
           <div className="flex items-center justify-between mb-3">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <Users className="w-5 h-5" />
+            <div className="h-10 w-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
+              <Package className="w-5 h-5" />
             </div>
-            <ArrowUpRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] transition-transform" />
+            <ArrowUpRight className="w-4 h-4 text-sky-400 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] transition-transform" />
           </div>
-          <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">
-            بطاقة العائلة الموحدة (One Family ID)
+          <h3 className="text-base font-bold text-white group-hover:text-sky-300 transition-colors">
+            موجّه القوافل والشاحنات الواردة
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            تسجيل توزيع الحصص، التحقق من الاستفادة المسبقة، وضمان التكافؤ.
+            متابعة توجيه الشاحنات نحو المستودعات الأكثر عجزاً ومنع تدفق السلع الفائضة.
           </p>
         </Link>
-
       </div>
 
       {/* Warehouse Management Tabs */}

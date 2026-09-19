@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Depot } from '@/lib/types';
-import { MapPin, Phone, Warehouse, ArrowLeft, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { MapPin, Phone, Warehouse, ArrowLeft, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
 
 interface DepotCardProps {
   depot: Depot;
@@ -47,11 +47,25 @@ export default function DepotCard({ depot, highlightCategory }: DepotCardProps) 
           </div>
         </div>
 
-        {/* Address and Manager */}
+        {/* Address, Maps link and Manager */}
         <div className="space-y-1.5 text-xs text-slate-400 mb-4">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="truncate">{depot.address}</span>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 truncate">
+              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="truncate">{depot.address}</span>
+            </div>
+            {depot.googleMapsUrl && (
+              <a
+                href={depot.googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 font-semibold shrink-0 bg-sky-950/60 border border-sky-800/40 px-2 py-0.5 rounded-md transition-colors"
+                title="فتح الموقع في خرائط Google Maps"
+              >
+                <span>Google Maps</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />

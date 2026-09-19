@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { getRelativeTime } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export default function ExpiryManagementPage() {
   const { depots, selectedDepotId, getDepot } = useRelief();
@@ -65,12 +66,18 @@ export default function ExpiryManagementPage() {
           يرجى إدراجها كأولوية قصوى في قوافل التوزيع الميدانية للعائلات قبل تاريخ 22 سبتمبر لتفادي تلفها في المستودع.
         </p>
         <div className="pt-2">
-          <Link href="/families">
-            <Button variant="danger" size="sm">
-              <Users className="w-4 h-4" />
-              <span>توجيه هذه الدفعة فوراً إلى بطاقات العائلات المستحقة</span>
-            </Button>
-          </Link>
+          <Button 
+            variant="danger" 
+            size="sm"
+            onClick={() => {
+              toast.warning('تم رفع أولوية صرف دفعة الحليب فوراً!', {
+                description: 'تم إشعار قوافل التوزيع الميدانية لمنع تلف الـ 300 علبة وتفريغها اليوم.',
+              });
+            }}
+          >
+            <PackageCheck className="w-4 h-4" />
+            <span>تعيين أولوية صرف عاجلة لهذه الدفعة (FIFO Priority)</span>
+          </Button>
         </div>
       </div>
 
@@ -153,11 +160,12 @@ export default function ExpiryManagementPage() {
 
                       {/* Action */}
                       <td className="py-3.5 px-4 text-center">
-                        <Link href="/families">
-                          <button className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-amber-500 transition-all">
-                            توزيع هذه الدفعة
-                          </button>
-                        </Link>
+                        <button 
+                          onClick={() => toast.success(`تم إدراج دفعة (${batch.itemName}) في خطة الصرف العاجل (FIFO)!`)}
+                          className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-amber-500 transition-all cursor-pointer"
+                        >
+                          جدولة صرف عاجل
+                        </button>
                       </td>
                     </tr>
                   );

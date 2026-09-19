@@ -17,7 +17,8 @@ import {
   Clock, 
   ShieldCheck,
   Share2,
-  Navigation
+  Navigation,
+  ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -88,13 +89,29 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
       {/* Info Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Address Card */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-2">
-          <span className="text-xs text-slate-400 flex items-center gap-1.5 font-semibold">
-            <MapPin className="w-4 h-4 text-rose-500" />
-            الموقع ونقطة التفريغ
-          </span>
-          <p className="text-sm font-bold text-white">{depot.address}</p>
-          <p className="text-xs text-slate-400">البلدية: {depot.municipality} — {depot.wilaya}</p>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-2 flex flex-col justify-between">
+          <div>
+            <span className="text-xs text-slate-400 flex items-center gap-1.5 font-semibold mb-1">
+              <MapPin className="w-4 h-4 text-rose-500" />
+              الموقع ونقطة التفريغ الميدانية
+            </span>
+            <p className="text-sm font-bold text-white">{depot.address}</p>
+            <p className="text-xs text-slate-400">البلدية: {depot.municipality} — {depot.wilaya}</p>
+          </div>
+          {depot.googleMapsUrl && (
+            <div className="pt-2 border-t border-slate-800/80">
+              <a
+                href={depot.googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-sky-300 bg-sky-950/60 border border-sky-800/50 px-3 py-1.5 rounded-xl transition-all"
+              >
+                <Navigation className="w-3.5 h-3.5" />
+                <span>فتح نقطة التفريغ في Google Maps</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Contact & Manager */}

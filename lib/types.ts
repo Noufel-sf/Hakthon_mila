@@ -50,6 +50,7 @@ export interface Depot {
   wilaya: string;
   municipality: string;
   address: string;
+  googleMapsUrl: string;
   phone: string;
   manager: string;
   status: 'active' | 'urgent' | 'saturated';
@@ -58,31 +59,6 @@ export interface Depot {
   items: DepotItem[];
   zones: DepotZoneInfo[];
   batches: BatchItem[];
-}
-
-export interface ReceivedAidItem {
-  id: string;
-  itemName: string;
-  category: AidCategory;
-  quantity: number;
-  unit: string;
-  date: string;
-  depotName: string;
-  depotId: string;
-}
-
-export interface FamilyBeneficiary {
-  id: string; // e.g. "JIJ-AID-82931"
-  nationalId: string;
-  headName: string;
-  familyName: string;
-  wilaya: string;
-  municipality: string;
-  phone: string;
-  familyMembers: number;
-  damageLevel: 'severe' | 'partial' | 'minor'; // درجة التضرر
-  registrationDate: string;
-  receivedAids: ReceivedAidItem[];
 }
 
 export interface ConvoyCargoInput {

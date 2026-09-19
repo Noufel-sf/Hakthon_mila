@@ -120,9 +120,9 @@ export default function HomePage() {
           </div>
 
           <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-            <span className="text-xs text-slate-400 block">نظام التوزيع العادل</span>
-            <span className="text-sm font-bold text-amber-400 mt-1 block">One Family ID</span>
-            <span className="text-[10px] text-slate-400 block">منع الازدواجية والتكرار</span>
+            <span className="text-xs text-slate-400 block">نظام التخزين الذكي</span>
+            <span className="text-sm font-bold text-amber-400 mt-1 block">Zone A / B / C / D</span>
+            <span className="text-[10px] text-slate-400 block">تفريغ مباشر ومنع الفوضى</span>
           </div>
         </div>
       </div>
@@ -241,9 +241,9 @@ export default function HomePage() {
             </p>
           </div>
           <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80">
-            <span className="text-emerald-400 font-bold text-sm block mb-1">3. التوزيع العادل (One Family ID)</span>
+            <span className="text-emerald-400 font-bold text-sm block mb-1">3. التفريغ الذكي (Smart Staging)</span>
             <p>
-              ربط المساعدات بمعرّف العائلة الموحد يضمن عدم استفادة عائلة 3 مرات بينما عائلات أخرى لا تصلها أي مساعدة، مع حفظ كرامة المستفيدين.
+              توجيه الشاحنات لحظة الوصول لأرصفة التخزين المخصصة (غذاء: Zone A، أفرشة: Zone B، كهرومنزلي: Zone C، أثاث: Zone D) لمنع خلط السلع وتوفير عمال الفرز والتحميل.
             </p>
           </div>
         </div>

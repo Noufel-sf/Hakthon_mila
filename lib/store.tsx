@@ -1,16 +1,14 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Depot, FamilyBeneficiary, AidCategory, ZoneType, BatchItem } from './types';
-import { INITIAL_DEPOTS, INITIAL_FAMILIES } from './seed-data';
+import { Depot, AidCategory, ZoneType, BatchItem } from './types';
+import { INITIAL_DEPOTS } from './seed-data';
 
 interface ReliefContextType {
   depots: Depot[];
-  families: FamilyBeneficiary[];
   selectedDepotId: string;
   setSelectedDepotId: (id: string) => void;
   getDepot: (id: string) => Depot | undefined;
-  getFamily: (idOrNationalId: string) => FamilyBeneficiary | undefined;
   receiveCargo: (
     depotId: string, 
     category: AidCategory, 
@@ -19,12 +17,6 @@ interface ReliefContextType {
     unit: string, 
     expiryDate?: string
   ) => { success: boolean; zone: ZoneType; message: string };
-  distributeToFamily: (
-    familyId: string,
-    depotId: string,
-    itemsToDistribute: { itemName: string; category: AidCategory; quantity: number; unit: string }[]
-  ) => { success: boolean; message: string };
-  registerFamily: (family: Omit<FamilyBeneficiary, 'receivedAids'>) => FamilyBeneficiary;
   updateDepotItem: (
     depotId: string, 
     itemId: string, 
@@ -38,8 +30,7 @@ interface ReliefContextType {
 
 const ReliefContext = createContext<ReliefContextType | null>(null);
 
-const STORAGE_KEY_DEPOTS = 'ighatha_depots_v1';
-const STORAGE_KEY_FAMILIES = 'ighatha_families_v1';
+const STORAGE_KEY_DEPOTS = 'ighatha_depots_v2';
 
 export function getZoneForCategory(category: AidCategory): ZoneType {
   switch (category) {
@@ -60,7 +51,6 @@ export function getZoneForCategory(category: AidCategory): ZoneType {
 
 export function ReliefProvider({ children }: { children: React.ReactNode }) {
   const [depots, setDepots] = useState<Depot[]>(INITIAL_DEPOTS);
-  const [families, setFamilies] = useState<FamilyBeneficiary[]>(INITIAL_FAMILIES);
   const [selectedDepotId, setSelectedDepotId] = useState<string>('jijel-01');
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -68,12 +58,8 @@ export function ReliefProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const savedDepots = localStorage.getItem(STORAGE_KEY_DEPOTS);
-      const savedFamilies = localStorage.getItem(STORAGE_KEY_FAMILIES);
       if (savedDepots) {
         setDepots(JSON.parse(savedDepots));
-      }
-      if (savedFamilies) {
-        setFamilies(JSON.parse(savedFamilies));
       }
     } catch (e) {
       console.error('Failed to parse saved data', e);
@@ -87,20 +73,12 @@ export function ReliefProvider({ children }: { children: React.ReactNode }) {
     if (!isLoaded) return;
     try {
       localStorage.setItem(STORAGE_KEY_DEPOTS, JSON.stringify(depots));
-      localStorage.setItem(STORAGE_KEY_FAMILIES, JSON.stringify(families));
     } catch (e) {
       console.error('Failed to save data', e);
     }
-  }, [depots, families, isLoaded]);
+  }, [depots, isLoaded]);
 
   const getDepot = (id: string) => depots.find(d => d.id === id);
-
-  const getFamily = (idOrNationalId: string) => {
-    const query = idOrNationalId.trim().toLowerCase();
-    return families.find(
-      f => f.id.toLowerCase() === query || f.nationalId.toLowerCase() === query
-    );
-  };
 
   const receiveCargo = (
     depotId: string,
@@ -191,74 +169,6 @@ export function ReliefProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
-  const distributeToFamily = (
-    familyId: string,
-    depotId: string,
-    itemsToDistribute: { itemName: string; category: AidCategory; quantity: number; unit: string }[]
-  ) => {
-    const depot = depots.find(d => d.id === depotId);
-    const depotName = depot ? depot.name : 'مستودع الإغاثة';
-
-    // 1. Record aid to the family
-    setFamilies(prevFamilies => {
-      return prevFamilies.map(fam => {
-        if (fam.id !== familyId) return fam;
-        const newRecords = itemsToDistribute.map(item => ({
-          id: `rec-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
-          itemName: item.itemName,
-          category: item.category,
-          quantity: item.quantity,
-          unit: item.unit,
-          date: new Date().toLocaleString('ar-DZ'),
-          depotName,
-          depotId,
-        }));
-        return {
-          ...fam,
-          receivedAids: [...newRecords, ...fam.receivedAids],
-        };
-      });
-    });
-
-    // 2. Deduct from depot inventory
-    setDepots(prevDepots => {
-      return prevDepots.map(d => {
-        if (d.id !== depotId) return d;
-        const updatedItems = d.items.map(item => {
-          const distributed = itemsToDistribute.find(
-            dist => dist.itemName.toLowerCase() === item.name.toLowerCase() || dist.category === item.category
-          );
-          if (distributed) {
-            return {
-              ...item,
-              currentStock: Math.max(0, item.currentStock - distributed.quantity),
-            };
-          }
-          return item;
-        });
-        return {
-          ...d,
-          items: updatedItems,
-          lastUpdated: 'الآن',
-        };
-      });
-    });
-
-    return {
-      success: true,
-      message: 'تم تسجيل التوزيع وتحديث بطاقة العائلة ورصيد المستودع بنجاح',
-    };
-  };
-
-  const registerFamily = (familyData: Omit<FamilyBeneficiary, 'receivedAids'>): FamilyBeneficiary => {
-    const newFamily: FamilyBeneficiary = {
-      ...familyData,
-      receivedAids: [],
-    };
-    setFamilies(prev => [newFamily, ...prev]);
-    return newFamily;
-  };
-
   const updateDepotItem = (
     depotId: string,
     itemId: string,
@@ -279,13 +189,10 @@ export function ReliefProvider({ children }: { children: React.ReactNode }) {
 
   const resetAllData = () => {
     setDepots(INITIAL_DEPOTS);
-    setFamilies(INITIAL_FAMILIES);
     localStorage.removeItem(STORAGE_KEY_DEPOTS);
-    localStorage.removeItem(STORAGE_KEY_FAMILIES);
   };
 
   const findBestDepotForCargo = (category: AidCategory, quantity: number) => {
-    // Rank depots by who has the biggest deficit in that category
     const ranked = depots.map(depot => {
       const categoryItems = depot.items.filter(i => i.category === category);
       let totalDeficit = 0;
@@ -306,14 +213,10 @@ export function ReliefProvider({ children }: { children: React.ReactNode }) {
     <ReliefContext.Provider
       value={{
         depots,
-        families,
         selectedDepotId,
         setSelectedDepotId,
         getDepot,
-        getFamily,
         receiveCargo,
-        distributeToFamily,
-        registerFamily,
         updateDepotItem,
         resetAllData,
         getZoneForCategory,

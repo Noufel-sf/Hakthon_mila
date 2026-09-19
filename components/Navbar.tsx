@@ -36,11 +36,6 @@ export default function Navbar() {
       label: 'إدارة المستودع (Depot Ops)',
       icon: Layers,
     },
-    {
-      href: '/families',
-      label: 'بطاقة العائلة الموحدة',
-      icon: Users,
-    },
   ];
 
   const handleReset = () => {

@@ -1,4 +1,4 @@
-import { Depot, FamilyBeneficiary } from './types';
+import { Depot } from './types';
 
 export const INITIAL_DEPOTS: Depot[] = [
   {
@@ -8,6 +8,7 @@ export const INITIAL_DEPOTS: Depot[] = [
     wilaya: 'جيجل',
     municipality: 'العوانة',
     address: 'القاعة متعددة الرياضات، الطريق الوطني رقم 43',
+    googleMapsUrl: 'https://maps.google.com/?q=36.7828,5.7667',
     phone: '034 50 12 88',
     manager: 'السيد أحمد بن شريف',
     status: 'urgent',
@@ -162,6 +163,7 @@ export const INITIAL_DEPOTS: Depot[] = [
     wilaya: 'ميلة',
     municipality: 'القرارم قوقة',
     address: 'مستودع ديوان الحبوب، المنطقة الصناعية',
+    googleMapsUrl: 'https://maps.google.com/?q=36.4503,6.2644',
     phone: '031 57 44 20',
     manager: 'السيدة فتيحة قادري',
     status: 'urgent',
@@ -292,6 +294,7 @@ export const INITIAL_DEPOTS: Depot[] = [
     wilaya: 'سكيكدة',
     municipality: 'القل',
     address: 'مجمع التكوين المهني الشهيد زايدي',
+    googleMapsUrl: 'https://maps.google.com/?q=37.0069,6.5622',
     phone: '038 72 19 05',
     manager: 'السيد كمال بوساحة',
     status: 'urgent',
@@ -378,110 +381,5 @@ export const INITIAL_DEPOTS: Depot[] = [
       }
     ],
     batches: []
-  }
-];
-
-export const INITIAL_FAMILIES: FamilyBeneficiary[] = [
-  {
-    id: 'JIJ-AID-82931',
-    nationalId: '19841802938129',
-    headName: 'عمر بوعبد الله',
-    familyName: 'بوعبد الله',
-    wilaya: 'جيجل',
-    municipality: 'العوانة',
-    phone: '0661 23 45 67',
-    familyMembers: 5,
-    damageLevel: 'severe',
-    registrationDate: '2026-09-14',
-    receivedAids: [
-      {
-        id: 'rec-1',
-        itemName: 'أفرشة إسفنجية',
-        category: 'bedding',
-        quantity: 4,
-        unit: 'فراش',
-        date: '2026-09-15 14:30',
-        depotName: 'مستودع إغاثة جيجل 01 - العوانة',
-        depotId: 'jijel-01',
-      },
-      {
-        id: 'rec-2',
-        itemName: 'أغطية صوفية شتوية',
-        category: 'bedding',
-        quantity: 2,
-        unit: 'بطانية',
-        date: '2026-09-15 14:30',
-        depotName: 'مستودع إغاثة جيجل 01 - العوانة',
-        depotId: 'jijel-01',
-      },
-      {
-        id: 'rec-3',
-        itemName: 'طرد تمويني غذائي',
-        category: 'food',
-        quantity: 1,
-        unit: 'طرد',
-        date: '2026-09-16 11:00',
-        depotName: 'مستودع إغاثة جيجل 01 - العوانة',
-        depotId: 'jijel-01',
-      }
-    ]
-  },
-  {
-    id: 'MIL-AID-44910',
-    nationalId: '19790518928374',
-    headName: 'خالد مرابط',
-    familyName: 'مرابط',
-    wilaya: 'ميلة',
-    municipality: 'القرارم قوقة',
-    phone: '0555 88 12 90',
-    familyMembers: 6,
-    damageLevel: 'severe',
-    registrationDate: '2026-09-15',
-    receivedAids: [
-      {
-        id: 'rec-4',
-        itemName: 'طرد تمويني غذائي',
-        category: 'food',
-        quantity: 1,
-        unit: 'طرد',
-        date: '2026-09-16 10:15',
-        depotName: 'مستودع إغاثة ميلة 01 - القرارم قوقة',
-        depotId: 'mila-01',
-      },
-      {
-        id: 'rec-5',
-        itemName: 'أغطية وبطانيات',
-        category: 'bedding',
-        quantity: 3,
-        unit: 'بطانية',
-        date: '2026-09-16 10:15',
-        depotName: 'مستودع إغاثة ميلة 01 - القرارم قوقة',
-        depotId: 'mila-01',
-      }
-    ]
-  },
-  {
-    id: 'JIJ-AID-10294',
-    nationalId: '19911204938210',
-    headName: 'سليمان قرفي',
-    familyName: 'قرفي',
-    wilaya: 'جيجل',
-    municipality: 'جيجل وسط',
-    phone: '0770 14 99 32',
-    familyMembers: 3,
-    damageLevel: 'partial',
-    registrationDate: '2026-09-16',
-    receivedAids: [
-      {
-        id: 'rec-6',
-        itemName: 'طرد تمويني غذائي',
-        category: 'food',
-        quantity: 1,
-        unit: 'طرد',
-        date: '2026-09-17 09:30',
-        depotName: 'مستودع إغاثة جيجل 01 - العوانة',
-        depotId: 'jijel-01',
-      }
-    ]
   }
 ];
