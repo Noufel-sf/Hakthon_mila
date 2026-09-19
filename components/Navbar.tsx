@@ -46,7 +46,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-3 z-40 max-w-6xl mx-auto px-4 w-full">
+    <header className="sticky top-3 z-40 max-w-6xl mt-5 mx-auto px-4 w-full">
       <div className="rounded-full border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-sm px-5 sm:px-7 py-2.5 flex items-center justify-between gap-4 transition-all">
         
         {/* Right: Brand Logo (RTL layout) */}

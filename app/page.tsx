@@ -17,7 +17,8 @@ import {
   ClipboardList,
   Warehouse,
   Flame,
-  ArrowUpRight
+  ArrowUpRight,
+  HeartHandshake
 } from 'lucide-react';
 import { AID_CATEGORIES } from '@/lib/constants';
 
@@ -68,24 +69,24 @@ export default function HomePage() {
       <div className="relative pt-12 pb-10 sm:pt-16 sm:pb-14 flex flex-col items-center text-center overflow-hidden">
         
         {/* Subtle delicate background sparkles and soft ambient glow */}
-        <div className="absolute top-1/4 right-1/6 text-slate-300 dark:text-slate-700 text-sm select-none pointer-events-none animate-pulse">✦</div>
-        <div className="absolute top-1/3 left-1/5 text-slate-300 dark:text-slate-700 text-xs select-none pointer-events-none">✦</div>
-        <div className="absolute bottom-1/4 right-1/4 text-slate-200 dark:text-slate-800 text-base select-none pointer-events-none">✦</div>
-        <div className="absolute top-1/6 left-1/3 w-1.5 h-1.5 rounded-full bg-cyan-300/40 pointer-events-none"></div>
-        <div className="absolute top-1/2 right-1/3 w-1 h-1 rounded-full bg-rose-300/40 pointer-events-none"></div>
-        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[600px] h-[260px] bg-gradient-to-t from-cyan-100/40 dark:from-cyan-950/20 via-transparent to-transparent rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-1/4 right-1/6 text-primary dark:text-primary text-sm select-none pointer-events-none animate-pulse">✦</div>
+        <div className="absolute top-1/3 left-1/5 text-primary dark:text-primary text-xs select-none pointer-events-none">✦</div>
+        <div className="absolute bottom-1/4 right-1/4 text-primary dark:text-primary text-base select-none pointer-events-none">✦</div>
+        <div className="absolute top-1/6 left-1/3 w-1.5 h-1.5 rounded-full bg-primary/40 pointer-events-none"></div>
+        <div className="absolute top-1/2 right-1/3 w-1 h-1 rounded-full bg-primary/40 pointer-events-none"></div>
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[600px] h-[260px] bg-gradient-to-t from-primary/40 dark:from-primary/20 via-transparent to-transparent rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-5 px-4">
           
           {/* Top Pill Tag (Like 'لتسيير تجارتك' in screenshot) */}
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs sm:text-sm font-header font-bold bg-[#E6F8F9] dark:bg-[#11353B] text-[#126972] dark:text-[#5EEAD4] border border-[#C6EFF2] dark:border-[#1E525B] shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs sm:text-sm font-header font-bold bg-primary text-white  border border-[#C6EFF2] dark:border-[#1E525B] shadow-2xs">
             <span>لتنسيق إغاثة الكوارث</span>
           </div>
 
           {/* Main Headline with Highlight box (Font: Zain) */}
           <h1 className="font-header text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.2]">
             وجّه ونسّق المساعدات الميدانية <br />
-            <span className="relative inline-block mt-2 px-5 py-1 bg-[#D3F4F6] dark:bg-[#14444D] text-[#0A565E] dark:text-[#67E8F9] rounded-2xl shadow-xs">
+            <span className="relative inline-block mt-2 px-5 py-1 bg-primary text-white  rounded-2xl shadow-xs">
               من منصة واحدة
             </span>
           </h1>
@@ -203,55 +204,78 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Core Philosophy Section (3 clean cards in modern light theme) */}
-      <div className="rounded-[2.5rem] border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/40 p-8 sm:p-10">
-        <div className="max-w-2xl mb-6">
-          <span className="text-xs font-bold text-[#E0533C] uppercase tracking-wider block mb-1">
-            لماذا منصة إغاثة؟
+      {/* 🌟 Our Values & Core Philosophy Section */}
+      <section id="values" className="space-y-8 pt-4">
+        <div className="flex flex-col items-center text-center max-w-3xl mx-auto space-y-3">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-header font-bold bg-primary/10 text-primary border border-primary/20">
+            <span>قيمنا ومبادئ العمل الميداني</span>
           </span>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-            توفير المعلومة الدقيقة بدل فرض البيروقراطية
-          </h3>
+          <h2 className="font-header text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            لماذا نعتمد منظومة إغاثة الذكية؟
+          </h2>
+          <p className="font-sub text-base text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
+            توفير المعلومة الدقيقة للمواطنين والمتبرعين لترشيد العطاء ومنع البيروقراطية وحماية المساعدات من التلف.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-600 dark:text-slate-300">
-          <div className="p-6 rounded-2xl bg-white dark:bg-slate-950/50 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
-            <div className="h-9 w-9 rounded-xl bg-[#FFF2F0] dark:bg-[#341611] text-[#E0533C] flex items-center justify-center font-bold text-sm">
-              1
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Value 1 */}
+          <div className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 shadow-xs hover:shadow-md transition-all hover:-translate-y-0.5 space-y-4 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="h-11 w-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                <HeartHandshake className="w-5 h-5" />
+              </div>
+              <h3 className="font-header text-xl font-bold text-slate-900 dark:text-white">
+                التبرع العفوي الواعي
+              </h3>
+              <p className="font-sub text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                المواطنون يتبرعون بتلقائية وحرية. لا نطلب تسجيل قوافل ولا نفرض قيوداً إدارية، بل نكشف بشفافية أين يوجد النقص الحقيقي لتوجيه القوافل إليه مباشرة.
+              </p>
             </div>
-            <h4 className="text-slate-900 dark:text-white font-bold text-sm">
-              التبرع العفوي الواعي
-            </h4>
-            <p className="leading-relaxed">
-              المواطنون يتبرعون تلقائياً. المنصة لا تطلب تسجيل قوافل ولا تفرض قيوداً، بل تعرض بوضوح أين يوجد النقص الحقيقي.
-            </p>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs font-header font-semibold text-primary">
+              حرية التبرع • دقة التوجيه
+            </div>
           </div>
 
-          <div className="p-6 rounded-2xl bg-white dark:bg-slate-950/50 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
-            <div className="h-9 w-9 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 flex items-center justify-center font-bold text-sm">
-              2
+          {/* Value 2 */}
+          <div className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 shadow-xs hover:shadow-md transition-all hover:-translate-y-0.5 space-y-4 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="h-11 w-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
+                <Clock className="w-5 h-5" />
+              </div>
+              <h3 className="font-header text-xl font-bold text-slate-900 dark:text-white">
+                منع تلف المساعدات (FIFO)
+              </h3>
+              <p className="font-sub text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                تسجيل ومتابعة تواريخ انتهاء الدفعات الحساسة كالحليب والمواد التموينية، وإطلاق إنذارات استباقية لصرفها وفق أولوية التاريخ قبل أن تفسد في المستودعات.
+              </p>
             </div>
-            <h4 className="text-slate-900 dark:text-white font-bold text-sm">
-              منع تلف المساعدات (FIFO)
-            </h4>
-            <p className="leading-relaxed">
-              تسجيل تواريخ انتهاء الدفعات وإطلاق تنبيهات استباقية للمواد الغذائية سريعة التلف لتوزيعها قبل أن تفسد في المستودعات.
-            </p>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs font-header font-semibold text-amber-500">
+              صفر هدر • أولوية الصلاحية
+            </div>
           </div>
 
-          <div className="p-6 rounded-2xl bg-white dark:bg-slate-950/50 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
-            <div className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 flex items-center justify-center font-bold text-sm">
-              3
+          {/* Value 3 */}
+          <div className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 shadow-xs hover:shadow-md transition-all hover:-translate-y-0.5 space-y-4 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="h-11 w-11 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
+                <Warehouse className="w-5 h-5" />
+              </div>
+              <h3 className="font-header text-xl font-bold text-slate-900 dark:text-white">
+                التفريغ والتوجيه الذكي
+              </h3>
+              <p className="font-sub text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                توجيه الشاحنات فور وصولها لأرصفة محددة (Zone A, B, C, D) وفق صنف الشحنة، لمنع تفريغ المواد بشكل عشوائي وتوفير عمال الفرز والتحميل الميداني.
+              </p>
             </div>
-            <h4 className="text-slate-900 dark:text-white font-bold text-sm">
-              التفريغ الذكي (Smart Staging)
-            </h4>
-            <p className="leading-relaxed">
-              توجيه الشاحنات لحظة الوصول للأرصفة المحددة (Zone A, B, C, D) حسب الصنف لمنع التفريغ المخلط وتوفير عمال الفرز والتحميل.
-            </p>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs font-header font-semibold text-emerald-500">
+              تنظيم الأرصفة • تسريع الإغاثة
+            </div>
           </div>
+
         </div>
-      </div>
+      </section>
 
     </div>
   );

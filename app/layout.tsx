@@ -39,7 +39,7 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-background text-foreground font-sans antialiased selection:bg-[#E0533C] selection:text-white">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <Toaster richColors position="top-center" dir="rtl" />
-          <LiveCrisisTicker />
+          {/* <LiveCrisisTicker /> */}
           <Navbar />
           <main className="flex-1 pb-16">
             {children}
