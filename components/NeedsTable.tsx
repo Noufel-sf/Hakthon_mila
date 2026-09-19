@@ -7,10 +7,9 @@ import { Progress } from '@/components/ui/progress';
 
 interface NeedsTableProps {
   items: DepotItem[];
-  showZone?: boolean;
 }
 
-export default function NeedsTable({ items, showZone = true }: NeedsTableProps) {
+export default function NeedsTable({ items }: NeedsTableProps) {
   return (
     <div className="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm transition-colors">
       <table className="w-full text-right text-sm">
@@ -20,7 +19,6 @@ export default function NeedsTable({ items, showZone = true }: NeedsTableProps) 
             <th className="py-4 px-5">الموجود حالياً</th>
             <th className="py-4 px-5">الاحتياج المقدر</th>
             <th className="py-4 px-5">حالة النقص / الوفرة</th>
-            {showZone && <th className="py-4 px-5">منطقة التخزين</th>}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
@@ -81,15 +79,6 @@ export default function NeedsTable({ items, showZone = true }: NeedsTableProps) 
                     />
                   </div>
                 </td>
-
-                {/* Storage Zone */}
-                {showZone && (
-                  <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                      🏢 {item.assignedZone}
-                    </span>
-                  </td>
-                )}
               </tr>
             );
           })}

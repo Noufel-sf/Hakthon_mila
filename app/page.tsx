@@ -84,6 +84,7 @@ export default function HomePage() {
     { id: 'all', label: 'كافة الاحتياجات' },
     { id: 'FOOD', label: 'مواد غذائية' },
     { id: 'WATER', label: 'مياه شرب' },
+    
     { id: 'MATTRESSES', label: 'أفرشة وبطانيات' },
     { id: 'APPLIANCES', label: 'أجهزة كهرومنزلية' },
     { id: 'FURNITURE', label: 'أثاث وأرائك' },

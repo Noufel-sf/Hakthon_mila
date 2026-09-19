@@ -665,10 +665,10 @@ export default function AdminDashboardPage() {
             </div>
             <div>
               <h4 className="font-header font-black text-slate-900 dark:text-white text-base group-hover:text-primary transition-colors">
-                تفريغ شحنة إغاثة وتخصيص المناطق (Staging)
+                استلام وتسجيل الشحنات (Cargo Intake)
               </h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                توجيه ذكي للشاحنات بين Zones A/B/C/D حسب الفئة وسرعة التصريف
+                تسجيل الشاحنات الواردة وإصدار أرقام الدفعات وتتبع الصلاحية
               </p>
             </div>
           </div>

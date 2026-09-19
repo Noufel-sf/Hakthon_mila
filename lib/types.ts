@@ -26,8 +26,6 @@ export type NeedStatus = 'OPEN' | 'PARTIALLY_FULFILLED' | 'FULFILLED' | 'CLOSED'
 
 export type FamilyStatus = 'AFFECTED_DISPLACED' | 'SHELTERED' | 'RETURNED' | 'SUPPORTED' | 'INACTIVE';
 
-export type ZoneType = 'Zone A' | 'Zone B' | 'Zone C' | 'Zone D';
-
 // Location and Contact DTOs
 export interface LocationDTO {
   wilaya: string;
@@ -168,7 +166,6 @@ export interface InventoryResponse {
   notes?: string;
   createdAt?: string;
   updatedAt?: string;
-  zone?: ZoneType;
 }
 
 export interface CreateInventoryRequest {
@@ -350,9 +347,9 @@ export interface DepotItem {
   currentStock: number;
   targetNeed: number;
   unit: string;
-  assignedZone: ZoneType;
   priority: Priority;
   status?: NeedStatus;
+  notes?: string;
 }
 
 export interface BatchItem {
@@ -364,19 +361,9 @@ export interface BatchItem {
   unit: string;
   expiryDate: string; // ISO date YYYY-MM-DD
   receivedDate: string;
-  zone: ZoneType;
   status: 'good' | 'expiring_soon' | 'expired';
   batchNumber?: string;
-}
-
-export interface DepotZoneInfo {
-  id: ZoneType;
-  title: string;
-  category: AidCategory;
-  description: string;
-  maxCapacity: number;
-  currentUnits: number;
-  temperatureControl?: boolean;
+  notes?: string;
 }
 
 export interface Depot {
@@ -397,7 +384,6 @@ export interface Depot {
   contactInfo?: ContactInfoDTO;
   occupancyPercentage?: number;
   items: DepotItem[];
-  zones: DepotZoneInfo[];
   batches: BatchItem[];
 }
 

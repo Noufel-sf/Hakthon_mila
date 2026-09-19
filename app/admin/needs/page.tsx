@@ -1,0 +1,721 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { api } from '@/lib/api';
+import { NeedResponse, DepotSummaryResponse, AidCategory, Priority, NeedStatus } from '@/lib/types';
+import { AID_CATEGORIES, getItemNameAr, getUnitNameAr, PRIORITY_LABELS } from '@/lib/constants';
+import { 
+  ClipboardList, 
+  Plus, 
+  Search, 
+  Warehouse, 
+  AlertCircle, 
+  CheckCircle2, 
+  Edit3, 
+  Trash2, 
+  RefreshCw, 
+  X, 
+  FileText,
+  AlertTriangle,
+  ChevronLeft
+} from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Progress } from '@/components/ui/progress';
+import { toast } from 'sonner';
+
+export default function AdminNeedsPage() {
+  const [needs, setNeeds] = useState<NeedResponse[]>([]);
+  const [depots, setDepots] = useState<DepotSummaryResponse[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [filterDepot, setFilterDepot] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editingNeedId, setEditingNeedId] = useState<number | string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [deletingNeed, setDeletingNeed] = useState<NeedResponse | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Form fields
+  const [depotId, setDepotId] = useState<string>('');
+  const [category, setCategory] = useState<AidCategory>('FOOD');
+  const [itemName, setItemName] = useState<string>('');
+  const [requestedQuantity, setRequestedQuantity] = useState<number>(1000);
+  const [currentAvailableQuantity, setCurrentAvailableQuantity] = useState<number>(0);
+  const [unit, setUnit] = useState<string>('PACKS');
+  const [priority, setPriority] = useState<Priority>('HIGH');
+  const [status, setStatus] = useState<NeedStatus>('OPEN');
+  const [notes, setNotes] = useState<string>('');
+
+  const fetchData = async () => {
+    try {
+      setIsRefreshing(true);
+      const [needsList, depotList] = await Promise.all([
+        api.needs.list().catch(() => []),
+        api.depots.list().catch(() => []),
+      ]);
+      setNeeds(needsList || []);
+      setDepots(depotList || []);
+      if (depotList && depotList.length > 0 && !depotId) {
+        setDepotId(String(depotList[0].id));
+      }
+    } catch (err: any) {
+      console.warn('[Admin Needs] Fetch error:', err);
+      toast.error('تعذر جلب سجل الاحتياجات من الخادم');
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const resetForm = () => {
+    setItemName('');
+    setRequestedQuantity(1000);
+    setCurrentAvailableQuantity(0);
+    setUnit('PACKS');
+    setCategory('FOOD');
+    setPriority('HIGH');
+    setStatus('OPEN');
+    setNotes('');
+    setIsEditing(false);
+    setEditingNeedId(null);
+    if (depots.length > 0) setDepotId(String(depots[0].id));
+  };
+
+  const handleOpenCreate = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (need: NeedResponse) => {
+    resetForm();
+    setIsEditing(true);
+    setEditingNeedId(need.id);
+    setDepotId(String(need.depotId));
+    setCategory(need.category);
+    setItemName(need.itemName);
+    setRequestedQuantity(need.requestedQuantity);
+    setCurrentAvailableQuantity(need.currentAvailableQuantity || 0);
+    setUnit(need.unit);
+    setPriority(need.priority);
+    setStatus(need.status || 'OPEN');
+    setNotes(need.notes || '');
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      if (isEditing && editingNeedId) {
+        await api.needs.update(editingNeedId, {
+          requestedQuantity: Number(requestedQuantity),
+          currentAvailableQuantity: Number(currentAvailableQuantity),
+          unit,
+          priority,
+          status,
+          notes: notes || undefined,
+        });
+        toast.success(`تم تحديث الاحتياج (${getItemNameAr(itemName)}) بنجاح!`);
+      } else {
+        await api.needs.create({
+          depotId: Number(depotId) || Number(depots[0]?.id) || 4,
+          category,
+          itemName,
+          requestedQuantity: Number(requestedQuantity),
+          currentAvailableQuantity: Number(currentAvailableQuantity),
+          unit,
+          priority,
+          notes: notes || undefined,
+        });
+        toast.success(`تم إنشاء طلب الاحتياج الجديد (${getItemNameAr(itemName)}) بنجاح!`);
+      }
+
+      setIsModalOpen(false);
+      resetForm();
+      fetchData();
+    } catch (err: any) {
+      console.warn('[Admin Needs] Submit error:', err);
+      toast.error('حدث خطأ أثناء حفظ طلب الاحتياج في الخادم');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingNeed) return;
+    setIsSubmitting(true);
+    try {
+      await api.needs.delete(deletingNeed.id);
+      toast.success(`تم حذف الاحتياج (${getItemNameAr(deletingNeed.itemName)}) بنجاح`);
+      setIsDeleting(false);
+      setDeletingNeed(null);
+      fetchData();
+    } catch (err: any) {
+      console.warn('[Admin Needs] Delete error:', err);
+      toast.error('تعذر حذف الاحتياج من الخادم');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Filtered needs
+  const filteredNeeds = needs.filter((n) => {
+    const matchesCategory = filterCategory === 'all' || n.category === filterCategory;
+    const matchesPriority = filterPriority === 'all' || n.priority === filterPriority;
+    const matchesDepot = filterDepot === 'all' || String(n.depotId) === filterDepot;
+    const matchesStatus = filterStatus === 'all' || n.status === filterStatus;
+    const matchesSearch = 
+      n.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      getItemNameAr(n.itemName).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (n.depotName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (n.notes || '').toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesPriority && matchesDepot && matchesStatus && matchesSearch;
+  });
+
+  const totalDeficitsCount = needs.filter(n => n.shortage > 0).length;
+  const criticalCount = needs.filter(n => n.priority === 'CRITICAL').length;
+  const totalShortageQuantity = needs.reduce((sum, n) => sum + (n.shortage > 0 ? n.shortage : 0), 0);
+
+  return (
+    <div className="space-y-8 pb-16">
+      
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+              إدارة الاحتياجات والنواقص (Needs CRUD)
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              خادم حي
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            سجل الاحتياجات والمطالب الميدانية
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            تسجيل وحصر النواقص والعجز التقديري في المواد وتحديث مستويات الإلحاح في الوقت الحقيقي
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchData} 
+            disabled={isRefreshing}
+            className="border-slate-200 dark:border-slate-700"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-primary ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>تحديث</span>
+          </Button>
+
+          <Button 
+            variant="primary" 
+            size="sm" 
+            onClick={handleOpenCreate}
+            className="shadow-sm shadow-primary/20 font-bold"
+          >
+            <Plus className="w-4 h-4" />
+            <span>تسجيل احتياج جديد</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* KPI Stats Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-1">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">إجمالي الطلبات المسجلة</span>
+          <p className="text-2xl font-mono font-black text-slate-900 dark:text-white">{needs.length}</p>
+          <span className="text-[11px] text-slate-400">عبر جميع المستودعات النشطة</span>
+        </div>
+
+        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-1">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">طلبات ذات أولوية حرجة</span>
+          <p className="text-2xl font-mono font-black text-rose-600 dark:text-rose-400">{criticalCount}</p>
+          <span className="text-[11px] text-rose-500 font-medium">تتطلب تدخلاً عاجلاً</span>
+        </div>
+
+        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-1">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">المواد التي تعاني من عجز</span>
+          <p className="text-2xl font-mono font-black text-amber-600 dark:text-amber-400">{totalDeficitsCount}</p>
+          <span className="text-[11px] text-amber-600 font-medium">الكمية المتوفرة أقل من المطلوب</span>
+        </div>
+
+        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-1">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">حجم العجز التراكمي</span>
+          <p className="text-2xl font-mono font-black text-primary">
+            {totalShortageQuantity.toLocaleString('ar-DZ')}
+          </p>
+          <span className="text-[11px] text-slate-400">وحدة إجمالية مطلوبة للتغطية</span>
+        </div>
+      </div>
+
+      {/* Filters Bar */}
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col lg:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full lg:max-w-xs">
+          <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="بحث بالصنف، المستودع، أو الملاحظة..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full pr-10 pl-4 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-primary transition-colors"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          {/* Depot Filter */}
+          <select
+            value={filterDepot}
+            onChange={(e) => setFilterDepot(e.target.value)}
+            className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full px-3.5 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-primary transition-colors"
+          >
+            <option value="all">جميع المستودعات</option>
+            {depots.map(d => (
+              <option key={d.id} value={String(d.id)}>{d.name}</option>
+            ))}
+          </select>
+
+          {/* Category Filter */}
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full px-3.5 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-primary transition-colors"
+          >
+            <option value="all">جميع الفئات</option>
+            {AID_CATEGORIES.map(c => (
+              <option key={c.id} value={c.id}>{c.nameAr.split(' ')[0]}</option>
+            ))}
+          </select>
+
+          {/* Priority Filter */}
+          <select
+            value={filterPriority}
+            onChange={(e) => setFilterPriority(e.target.value)}
+            className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full px-3.5 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-primary transition-colors"
+          >
+            <option value="all">جميع الأولويات</option>
+            <option value="CRITICAL">حرج جداً</option>
+            <option value="HIGH">أولوية قصوى</option>
+            <option value="MEDIUM">متوسط</option>
+            <option value="LOW">مستقر</option>
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full px-3.5 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-primary transition-colors"
+          >
+            <option value="all">جميع الحالات</option>
+            <option value="OPEN">مفتوح للتبرع</option>
+            <option value="PARTIALLY_FULFILLED">مغطى جزئياً</option>
+            <option value="FULFILLED">مكتمل التغطية</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Needs CRUD Table */}
+      <div className="overflow-x-auto rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+        <table className="w-full text-right text-sm">
+          <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+            <tr>
+              <th className="py-4 px-5">المادة / الصنف</th>
+              <th className="py-4 px-5">المستودع المستفيد</th>
+              <th className="py-4 px-5">المتوفر / المطلوب</th>
+              <th className="py-4 px-5">العجز الفعلي</th>
+              <th className="py-4 px-5">الأولوية</th>
+              <th className="py-4 px-5">ملاحظات الميدان</th>
+              <th className="py-4 px-5 text-center">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
+            {isLoading ? (
+              <tr>
+                <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
+                  <span>جاري تحميل سجل الاحتياجات من خادم Render...</span>
+                </td>
+              </tr>
+            ) : filteredNeeds.length > 0 ? (
+              filteredNeeds.map((need) => {
+                const arName = getItemNameAr(need.itemName);
+                const arUnit = getUnitNameAr(need.unit);
+                const isDeficit = need.shortage > 0;
+                const fulfillmentPct = Math.min(100, Math.round((need.currentAvailableQuantity / (need.requestedQuantity || 1)) * 100));
+                const priorityMeta = PRIORITY_LABELS[need.priority] || { label: need.priority, color: 'slate' };
+
+                return (
+                  <tr key={need.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                    {/* Item Name */}
+                    <td className="py-4 px-5">
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-slate-900 dark:text-white block text-base leading-snug">
+                          {arName}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-mono text-slate-400">{need.itemName}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary/10 text-primary">
+                            {need.category}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Depot Name */}
+                    <td className="py-4 px-5 text-xs">
+                      <Link 
+                        href={`/depots/${need.depotId}`}
+                        className="font-bold text-slate-800 dark:text-slate-200 hover:text-primary transition-colors flex items-center gap-1"
+                      >
+                        <Warehouse className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>{need.depotName || `مستودع #${need.depotId}`}</span>
+                      </Link>
+                    </td>
+
+                    {/* Stock vs Target Need */}
+                    <td className="py-4 px-5">
+                      <div className="space-y-1 w-32">
+                        <div className="flex justify-between text-xs font-mono font-bold">
+                          <span>{need.currentAvailableQuantity}</span>
+                          <span className="text-slate-400">/ {need.requestedQuantity} {arUnit}</span>
+                        </div>
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${isDeficit ? 'bg-rose-500' : 'bg-primary'}`}
+                            style={{ width: `${fulfillmentPct}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Deficit Badge */}
+                    <td className="py-4 px-5">
+                      {isDeficit ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse"></span>
+                          <span>عجز {need.shortage} {arUnit}</span>
+                        </span>
+                      ) : (
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>مكتفي</span>
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Priority */}
+                    <td className="py-4 px-5">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                        need.priority === 'CRITICAL' 
+                          ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                          : need.priority === 'HIGH'
+                          ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                          : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
+                      }`}>
+                        {priorityMeta.label}
+                      </span>
+                    </td>
+
+                    {/* Notes */}
+                    <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400 max-w-xs">
+                      {need.notes ? (
+                        <span className="block truncate" title={need.notes}>
+                          {need.notes}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-4 px-5">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEdit(need)}
+                          className="p-2 rounded-xl text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors cursor-pointer"
+                          title="تعديل الاحتياج"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setDeletingNeed(need);
+                            setIsDeleting(true);
+                          }}
+                          className="p-2 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                          title="حذف الاحتياج"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={7} className="py-12 text-center text-slate-400">
+                  لا توجد طلبات احتياج مطابقة للفلاتر المحددة
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ================= CREATE / EDIT NEED MODAL ================= */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl">
+            
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                  <ClipboardList className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">
+                    {isEditing ? `تعديل طلب الاحتياج (#${editingNeedId})` : 'تسجيل طلب احتياج جديد'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    تحديث مباشر في قاعدة بيانات الميدان (Render API)
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              
+              {/* Target Depot */}
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
+                  المستودع المحتاج <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={depotId}
+                  onChange={(e) => setDepotId(e.target.value)}
+                  disabled={isEditing}
+                  className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors disabled:opacity-60"
+                >
+                  {depots.map(d => (
+                    <option key={d.id} value={String(d.id)}>{d.name} ({d.location?.wilaya})</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Category */}
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
+                  الفئة الإغاثية <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as AidCategory)}
+                  disabled={isEditing}
+                  className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors disabled:opacity-60"
+                >
+                  {AID_CATEGORIES.map(c => (
+                    <option key={c.id} value={c.id}>{c.icon} {c.nameAr}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Item Name */}
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
+                  اسم المادة أو الصنف (بالإنجليزية) <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                  placeholder="مثال: Bottled Mineral Water 1.5L Packs"
+                  className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors font-mono"
+                />
+              </div>
+
+              {/* Quantities & Unit */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-slate-300">الكمية المطلوبة <span className="text-rose-500">*</span></label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={requestedQuantity}
+                    onChange={(e) => setRequestedQuantity(Number(e.target.value))}
+                    className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white font-mono font-bold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-slate-300">المتوفر حالياً</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={currentAvailableQuantity}
+                    onChange={(e) => setCurrentAvailableQuantity(Number(e.target.value))}
+                    className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white font-mono font-bold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-slate-300">الوحدة <span className="text-rose-500">*</span></label>
+                  <select
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors"
+                  >
+                    <option value="PACKS">PACKS (حزمة)</option>
+                    <option value="PIECES">PIECES (قطعة)</option>
+                    <option value="BOXES">BOXES (طرد)</option>
+                    <option value="CANS">CANS (علبة)</option>
+                    <option value="KITS">KITS (حقيبة)</option>
+                    <option value="TENTS">TENTS (خيمة)</option>
+                    <option value="CARTONS">CARTONS (كرتون)</option>
+                    <option value="UNITS">UNITS (وحدة)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Priority & Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-slate-300">درجة الإلحاح والأولوية</label>
+                  <select
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value as Priority)}
+                    className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors"
+                  >
+                    <option value="CRITICAL">حرج جداً (CRITICAL)</option>
+                    <option value="HIGH">أولوية قصوى (HIGH)</option>
+                    <option value="MEDIUM">متوسط (MEDIUM)</option>
+                    <option value="LOW">مستقر (LOW)</option>
+                  </select>
+                </div>
+
+                {isEditing && (
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-slate-300">حالة الطلب</label>
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value as NeedStatus)}
+                      className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors"
+                    >
+                      <option value="OPEN">مفتوح للتبرع (OPEN)</option>
+                      <option value="PARTIALLY_FULFILLED">مغطى جزئياً (PARTIALLY)</option>
+                      <option value="FULFILLED">مكتمل التغطية (FULFILLED)</option>
+                      <option value="CLOSED">مغلق (CLOSED)</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* Field Notes */}
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-slate-300">ملاحظات التوجيه الميداني</label>
+                <textarea
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="سبب العجز، المراكز المستهدفة، أو تعليمات خاصة للسائقين..."
+                  className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  إلغاء
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isSubmitting}
+                  className="px-6 font-bold"
+                >
+                  {isSubmitting ? 'جاري الحفظ...' : isEditing ? 'تحديث الاحتياج' : 'تسجيل الاحتياج'}
+                </Button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= DELETE CONFIRMATION MODAL ================= */}
+      {isDeleting && deletingNeed && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-rose-200 dark:border-rose-900 max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="h-10 w-10 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">تأكيد حذف طلب الاحتياج</h3>
+                <p className="text-xs text-slate-500">سيتم حذف هذا الطلب نهائياً من قاعدة البيانات</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              هل أنت متأكد من رغبتك في حذف طلب <strong className="text-rose-600 font-bold">{getItemNameAr(deletingNeed.itemName)}</strong> المسجل لمستودع {deletingNeed.depotName || deletingNeed.depotId}؟
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsDeleting(false);
+                  setDeletingNeed(null);
+                }}
+              >
+                تراجع
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={isSubmitting}
+                onClick={handleDeleteConfirm}
+                className="bg-rose-600 hover:bg-rose-700 text-white font-bold"
+              >
+                {isSubmitting ? 'جاري الحذف...' : 'نعم، احذف الاحتياج'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

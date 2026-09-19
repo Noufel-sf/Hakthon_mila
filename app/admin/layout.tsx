@@ -21,7 +21,8 @@ import {
   Package,
   Layers,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  Users
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/Badge';
@@ -60,10 +61,24 @@ export default function AdminLayout({
       exact: true,
     },
     {
-      href: '/admin/intake',
-      label: 'تفريغ الشحنات (Staging)',
-      icon: Truck,
-      badge: 'ذكي',
+      href: '/admin/depots',
+      label: 'إدارة المستودعات',
+      icon: Warehouse,
+    },
+    {
+      href: '/admin/needs',
+      label: 'إدارة الاحتياجات',
+      icon: ClipboardList,
+    },
+    {
+      href: '/admin/families',
+      label: 'العائلات المستفيدة',
+      icon: Users,
+    },
+    {
+      href: '/admin/distributions',
+      label: 'سجل التوزيع الميداني',
+      icon: Package,
     },
     {
       href: '/admin/expiry',
@@ -73,14 +88,9 @@ export default function AdminLayout({
       badgeColor: 'bg-rose-500 text-white',
     },
     {
-      href: '/depots',
-      label: 'المستودعات والجرد',
-      icon: Warehouse,
-    },
-    {
-      href: '/needs',
-      label: 'الاحتياجات والنواقص',
-      icon: ClipboardList,
+      href: '/admin/intake',
+      label: 'استلام الشحنات',
+      icon: Truck,
     },
   ];
 
@@ -320,7 +330,7 @@ export default function AdminLayout({
                       <span className="text-[10px] text-slate-400">مستودع ميلة • متبقي 3 أيام</span>
                     </div>
                     <div className="py-2">
-                      <p className="font-semibold text-slate-800 dark:text-slate-200">تم تفريغ شحنة أفرشة بنجاح (Zone B)</p>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">تم استلام شحنة أفرشة بنجاح</p>
                       <span className="text-[10px] text-slate-400">اليوم 10:45 ص</span>
                     </div>
                   </div>

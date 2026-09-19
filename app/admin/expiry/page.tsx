@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRelief } from '@/lib/store';
 import { api } from '@/lib/api';
-import { getZoneForCategory } from '@/lib/constants';
 import { 
   Clock, 
   AlertTriangle, 
@@ -40,7 +39,6 @@ export default function ExpiryManagementPage() {
           unit: item.unit,
           expiryDate: item.expirationDate || '2026-10-01',
           receivedDate: item.receivedDate || '2026-09-14',
-          zone: getZoneForCategory(item.category),
           status: (item.isExpiringSoon || (item.daysUntilExpiration !== null && item.daysUntilExpiration !== undefined && item.daysUntilExpiration <= 15)) ? 'expiring_soon' : 'good',
           batchNumber: item.batchNumber,
           daysUntilExpiration: item.daysUntilExpiration,
@@ -152,7 +150,6 @@ export default function ExpiryManagementPage() {
                 <tr>
                   <th className="py-3 px-4">رقم الدفعة / الصنف</th>
                   <th className="py-3 px-4">الكمية المسجلة</th>
-                  <th className="py-3 px-4">منطقة التخزين</th>
                   <th className="py-3 px-4">تاريخ الانتهاء</th>
                   <th className="py-3 px-4">الوقت المتبقي</th>
                   <th className="py-3 px-4 text-center">أولوية الصرف</th>
@@ -181,13 +178,6 @@ export default function ExpiryManagementPage() {
                       {/* Quantity */}
                       <td className="py-3.5 px-4 font-header font-bold text-base text-slate-900 dark:text-white">
                         {batch.quantity} <span className="text-xs text-slate-400 font-normal">{batch.unit}</span>
-                      </td>
-
-                      {/* Zone */}
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-700 dark:text-slate-300">
-                          {batch.zone}
-                        </span>
                       </td>
 
                       {/* Expiry Date */}

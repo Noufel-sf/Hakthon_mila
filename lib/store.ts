@@ -3,7 +3,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { 
   Depot, 
   AidCategory, 
-  ZoneType, 
   BatchItem, 
   FamilyResponse, 
   DistributionResponse, 
@@ -15,29 +14,6 @@ import {
 } from './types';
 import { api } from './api';
 
-export function getZoneForCategory(category: AidCategory | string): ZoneType {
-  const norm = String(category).toUpperCase();
-  switch (norm) {
-    case 'FOOD':
-    case 'WATER':
-    case 'MEDICAL':
-      return 'Zone A';
-    case 'MATTRESSES':
-    case 'BLANKETS':
-    case 'CLOTHES':
-    case 'HYGIENE':
-    case 'BEDDING':
-      return 'Zone B';
-    case 'APPLIANCES':
-    case 'OTHER':
-      return 'Zone C';
-    case 'FURNITURE':
-      return 'Zone D';
-    default:
-      return 'Zone A';
-  }
-}
-
 export function mapSummaryToDepot(
   sum: DepotSummaryResponse, 
   needs: NeedResponse[] = [], 
@@ -46,7 +22,7 @@ export function mapSummaryToDepot(
   const depotNeeds = needs.filter(n => String(n.depotId) === String(sum.id));
   const depotInventory = inventory.filter(i => String(i.depotId) === String(sum.id));
 
-  // Pure real needs only — zero fake fallbacks
+  // Pure real needs only
   const items = depotNeeds.map(n => ({
     id: `need-${n.id}`,
     name: n.itemName,
@@ -55,12 +31,12 @@ export function mapSummaryToDepot(
     currentStock: n.currentAvailableQuantity,
     targetNeed: n.requestedQuantity,
     unit: n.unit,
-    assignedZone: getZoneForCategory(n.category),
     priority: n.priority,
     status: n.status,
+    notes: n.notes,
   }));
 
-  // Pure real inventory only — zero fake fallbacks
+  // Pure real inventory only
   const batches: BatchItem[] = depotInventory.map(inv => ({
     id: inv.batchNumber || `BATCH-${inv.id}`,
     depotId: String(sum.id),
@@ -69,9 +45,9 @@ export function mapSummaryToDepot(
     unit: inv.unit,
     expiryDate: inv.expirationDate || '',
     receivedDate: inv.receivedDate || '',
-    zone: getZoneForCategory(inv.category),
     status: (inv.isExpiringSoon ? 'expiring_soon' : inv.isExpired ? 'expired' : 'good') as any,
     batchNumber: inv.batchNumber,
+    notes: inv.notes,
   }));
 
   const occupancy = sum.occupancyPercentage || 0;
@@ -84,49 +60,14 @@ export function mapSummaryToDepot(
     wilaya: sum.location?.wilaya || '',
     municipality: sum.location?.commune || '',
     address: sum.location?.address || '',
-    googleMapsUrl: sum.location?.googleMapsUrl || `https://www.google.com/maps?q=${sum.location?.latitude || 36.8},${sum.location?.longitude || 5.7}`,
-    phone: '+213 555 12 34 56',
+    googleMapsUrl: sum.location?.googleMapsUrl || '',
+    phone: '',
     manager: 'مسؤول المستودع الميداني',
     status: (sum.status || 'ACTIVE') as any,
     totalCapacityPercent: Math.round(occupancy),
     occupancyPercentage: Math.round(occupancy),
     lastUpdated: 'محدث مباشرة عبر خادم Render',
     location: sum.location,
-    zones: [
-      {
-        id: 'Zone A',
-        title: 'المنطقة أ - المواد الغذائية والمستلزمات الطبية',
-        category: 'FOOD',
-        description: 'تفريغ وتخزين الأغذية والمياه والأدوية',
-        maxCapacity: 1500,
-        currentUnits: Math.round((occupancy / 100) * 1500),
-        temperatureControl: true,
-      },
-      {
-        id: 'Zone B',
-        title: 'المنطقة ب - الأفرشة والبطانيات',
-        category: 'MATTRESSES',
-        description: 'أفرشة نوم وبطانيات شتوية',
-        maxCapacity: 1200,
-        currentUnits: Math.round((occupancy / 100) * 1200),
-      },
-      {
-        id: 'Zone C',
-        title: 'المنطقة ج - الأجهزة والمعدات',
-        category: 'APPLIANCES',
-        description: 'أجهزة كهرومنزلية ومضخات ومولدات',
-        maxCapacity: 200,
-        currentUnits: 30,
-      },
-      {
-        id: 'Zone D',
-        title: 'المنطقة د - الأثاث والخيام',
-        category: 'FURNITURE',
-        description: 'أثاث وخيام إيواء',
-        maxCapacity: 150,
-        currentUnits: 20,
-      },
-    ],
     items,
     batches,
   };
@@ -151,7 +92,7 @@ export interface ReliefState {
     quantity: number, 
     unit: string, 
     expiryDate?: string
-  ) => { success: boolean; zone: ZoneType; message: string; batchId: string };
+  ) => { success: boolean; message: string; batchId: string };
   updateDepotItem: (
     depotId: string | number, 
     itemId: string, 
@@ -161,7 +102,6 @@ export interface ReliefState {
   addFamily: (family: CreateFamilyRequest) => FamilyResponse;
   recordDistribution: (dist: CreateDistributionRequest) => DistributionResponse;
   resetAllData: () => void;
-  getZoneForCategory: (category: AidCategory | string) => ZoneType;
   findBestDepotForCargo: (category: AidCategory, quantity: number) => { depot: Depot; deficit: number }[];
 }
 
@@ -253,7 +193,6 @@ export const useReliefStore = create<ReliefState>()(
         unit: string,
         expiryDate?: string
       ) => {
-        const assignedZone = getZoneForCategory(category);
         const { depots } = get();
         const batchId = `BATCH-${new Date().getFullYear()}-ALG-${Math.floor(1000 + Math.random() * 9000)}`;
 
@@ -280,7 +219,6 @@ export const useReliefStore = create<ReliefState>()(
               currentStock: quantity,
               targetNeed: 0,
               unit,
-              assignedZone,
               priority: 'LOW',
               status: 'OPEN',
             });
@@ -295,26 +233,16 @@ export const useReliefStore = create<ReliefState>()(
             unit,
             expiryDate: expiryDate || '2027-12-31',
             receivedDate: new Date().toISOString().split('T')[0],
-            zone: assignedZone,
             status: 'good',
             batchNumber: batchId,
           };
 
           const updatedBatches = [newBatch, ...depot.batches];
 
-          // Update zone usage
-          const updatedZones = depot.zones.map(z => {
-            if (z.id === assignedZone) {
-              return { ...z, currentUnits: z.currentUnits + quantity };
-            }
-            return z;
-          });
-
           return {
             ...depot,
             items: updatedItems,
             batches: updatedBatches,
-            zones: updatedZones,
             lastUpdated: 'الآن',
           };
         });
@@ -323,9 +251,8 @@ export const useReliefStore = create<ReliefState>()(
 
         return {
           success: true,
-          zone: assignedZone,
           batchId,
-          message: `تم توجيه الشحنة بنجاح إلى رصيف ${assignedZone} بمستودع التخزين`,
+          message: `تم تسجيل واستلام الشحنة بنجاح برقم الدفعة ${batchId}`,
         };
       },
 
@@ -438,8 +365,6 @@ export const useReliefStore = create<ReliefState>()(
           selectedDepotId: '1',
         });
       },
-
-      getZoneForCategory,
 
       findBestDepotForCargo: (category: AidCategory, quantity: number) => {
         const { depots } = get();

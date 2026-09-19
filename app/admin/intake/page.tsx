@@ -4,103 +4,114 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRelief } from '@/lib/store';
 import { api } from '@/lib/api';
-import { AidCategory, ZoneType } from '@/lib/types';
-import { AID_CATEGORIES, WAREHOUSE_ZONES } from '@/lib/constants';
+import { AidCategory } from '@/lib/types';
+import { AID_CATEGORIES, getItemNameAr, getUnitNameAr } from '@/lib/constants';
 import { 
   Package, 
   ArrowRight, 
   CheckCircle2, 
-  Layers, 
   Calendar, 
   AlertCircle,
   Truck,
-  Sparkles,
   ShieldCheck,
   ChevronLeft,
-  RefreshCw
+  Warehouse,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { toast } from 'sonner';
 
-export default function SmartIntakePage() {
+export default function CargoIntakePage() {
   const { depots, selectedDepotId, receiveCargo, getDepot } = useRelief();
   const currentDepot = (selectedDepotId ? getDepot(selectedDepotId) : null) || depots[0];
 
+  const [depotId, setDepotId] = useState<string>(selectedDepotId || (depots[0]?.id ? String(depots[0].id) : '4'));
   const [category, setCategory] = useState<AidCategory>('FOOD');
-  const [itemName, setItemName] = useState<string>('حليب معقم 1 لتر');
-  const [quantity, setQuantity] = useState<number>(300);
-  const [unit, setUnit] = useState<string>('علبة');
+  const [itemName, setItemName] = useState<string>('Bottled Mineral Water 1.5L Packs');
+  const [quantity, setQuantity] = useState<number>(500);
+  const [unit, setUnit] = useState<string>('PACKS');
   const [hasExpiry, setHasExpiry] = useState<boolean>(true);
-  const [expiryDate, setExpiryDate] = useState<string>('2026-09-22');
+  const [expiryDate, setExpiryDate] = useState<string>('2027-09-19');
+  const [notes, setNotes] = useState<string>('شحنة إغاثة عاجلة واردة من قوافل المتبرعين');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [serverBatchId, setServerBatchId] = useState<string | null>(null);
-  
   const [intakeResult, setIntakeResult] = useState<{
-    zone: ZoneType;
-    message: string;
-    allocated: boolean;
+    batchNumber: string;
+    depotName: string;
+    itemName: string;
+    quantity: number;
+    unit: string;
   } | null>(null);
 
-  // Suggested item presets
+  // Suggested item presets based on real backend items
   const presets = [
-    { cat: 'FOOD' as AidCategory, name: 'حليب معقم كامل الدسم (1 لتر)', qty: 300, unit: 'علبة', exp: true },
-    { cat: 'MATTRESSES' as AidCategory, name: 'أفرشة نوم إسفنجية مفردة', qty: 100, unit: 'فراش', exp: false },
-    { cat: 'FURNITURE' as AidCategory, name: 'أرائك وكنبات صالون', qty: 40, unit: 'كنبة', exp: false },
-    { cat: 'APPLIANCES' as AidCategory, name: 'ثلاجات منزلية مدمجة', qty: 15, unit: 'ثلاجة', exp: false },
+    { cat: 'WATER' as AidCategory, name: 'Bottled Mineral Water 1.5L Packs', qty: 1000, unit: 'PACKS', exp: true, expDate: '2028-03-19' },
+    { cat: 'FOOD' as AidCategory, name: 'Canned Tuna 160g in Vegetable Oil', qty: 600, unit: 'CANS', exp: true, expDate: '2027-09-19' },
+    { cat: 'MATTRESSES' as AidCategory, name: 'Single Bed High Density Foam Mattress', qty: 150, unit: 'PIECES', exp: false, expDate: '' },
+    { cat: 'BLANKETS' as AidCategory, name: 'Thermal Winter Wool Blanket', qty: 300, unit: 'PIECES', exp: false, expDate: '' },
+    { cat: 'HYGIENE' as AidCategory, name: 'Family Emergency Hygiene Kit', qty: 200, unit: 'KITS', exp: false, expDate: '' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    const depotNum = Number(currentDepot?.id) || Number(selectedDepotId) || 1;
+    const numericDepotId = Number(depotId) || Number(currentDepot?.id) || 4;
+    const generatedBatchNumber = `BATCH-${category.slice(0, 4)}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // 1. Immediate local reactive update if currentDepot exists
-    const res = receiveCargo(
-      depotNum,
-      category,
-      itemName,
-      quantity,
-      unit,
-      hasExpiry ? expiryDate : undefined
-    );
-
-    // 2. Direct remote API call to Render backend
     try {
+      // 1. Send directly to live API
       const apiRes = await api.inventory.add({
-        depotId: depotNum,
+        depotId: numericDepotId,
         category,
         itemName,
         quantity,
         unit,
-        batchNumber: res.batchId,
-        expirationDate: hasExpiry ? expiryDate : undefined,
+        batchNumber: generatedBatchNumber,
+        expirationDate: hasExpiry && expiryDate ? expiryDate : undefined,
         receivedDate: new Date().toISOString().split('T')[0],
         status: 'AVAILABLE',
-        notes: `تفريغ وتوجيه للمنطقة ${res.zone} عبر البوصلة +`,
+        notes: notes || undefined,
       });
 
-      const confirmedBatch = apiRes.batchNumber || `ID-${apiRes.id}` || res.batchId;
-      setServerBatchId(confirmedBatch);
-      toast.success('تم تسجيل وحفظ الشحنة في قاعدة بيانات Render بنجاح!', {
-        description: `كود الدفعة: ${confirmedBatch} | تم توجيه السائق إلى ${res.zone}`,
+      const confirmedBatch = apiRes.batchNumber || generatedBatchNumber;
+      const targetDepot = depots.find(d => String(d.id) === String(numericDepotId));
+
+      setIntakeResult({
+        batchNumber: confirmedBatch,
+        depotName: targetDepot?.name || `مستودع #${numericDepotId}`,
+        itemName: getItemNameAr(itemName),
+        quantity,
+        unit: getUnitNameAr(unit),
+      });
+
+      toast.success('تم تسجيل وحفظ الشحنة في قاعدة البيانات الحية بنجاح!', {
+        description: `رقم الدفعة: ${confirmedBatch} | الكمية: ${quantity} ${getUnitNameAr(unit)}`,
       });
     } catch (err: any) {
       console.warn('API inventory add notice:', err?.message);
-      setServerBatchId(res.batchId);
-      toast.success('تم تسجيل الشحنة وتوجيهها للمنطقة بنجاح!', {
-        description: `المنطقة: ${res.zone} | كود الدفعة: ${res.batchId}`,
+      // Fallback local update
+      receiveCargo(
+        numericDepotId,
+        category,
+        itemName,
+        quantity,
+        unit,
+        hasExpiry ? expiryDate : undefined
+      );
+
+      setIntakeResult({
+        batchNumber: generatedBatchNumber,
+        depotName: currentDepot?.name || `مستودع #${numericDepotId}`,
+        itemName: getItemNameAr(itemName),
+        quantity,
+        unit: getUnitNameAr(unit),
       });
+
+      toast.success('تم تسجيل الشحنة بنجاح في المستودع!');
     } finally {
       setIsSubmitting(false);
     }
-
-    setIntakeResult({
-      zone: res.zone,
-      message: res.message,
-      allocated: true,
-    });
   };
 
   const handleApplyPreset = (p: typeof presets[0]) => {
@@ -109,273 +120,282 @@ export default function SmartIntakePage() {
     setQuantity(p.qty);
     setUnit(p.unit);
     setHasExpiry(p.exp);
+    if (p.expDate) setExpiryDate(p.expDate);
     setIntakeResult(null);
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
       
       {/* Header */}
       <div>
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-primary transition-colors mb-2"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-primary transition-colors mb-2"
         >
-          <ChevronLeft className="w-4 h-4 rotate-180" />
+          <ArrowRight className="w-4 h-4" />
           <span>العودة للوحة القيادة</span>
         </Link>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-black font-header text-slate-900 dark:text-white">
-            تفريغ الشحنات والتوجيه الذكي (Smart Zone Staging)
-          </h1>
-          <Badge variant="primary" size="md">
-            {currentDepot?.name || 'مستودع إغاثة'}
-          </Badge>
-        </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          بمجرد وصول الشاحنة، يُدخل المتطوع الصنف ليوجه النظام السائق مباشرة إلى الرصيف أو المنطقة المخصصة لمنع التكدس وإعادة الفرز.
-        </p>
-      </div>
-
-      {/* Preset Buttons */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-2 shadow-2xs">
-        <span className="text-xs text-slate-500 dark:text-slate-400 font-bold block">
-          ⚡ تفريغ سريع لسيناريوهات العرض:
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {presets.map((preset, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => handleApplyPreset(preset)}
-              className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>{preset.name.split(' ')[0]}:</span>
-              <strong className="text-primary font-header">{preset.qty} {preset.unit}</strong>
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              استلام وتسجيل الشحنات (Cargo Intake)
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              تسجيل الشاحنات الواردة، إصدار أرقام الشحنات (Batches)، وتوثيق تواريخ الصلاحية مباشرة
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 self-start sm:self-auto">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>خادم حي (Render API)</span>
+          </span>
         </div>
       </div>
 
-      {/* Main Intake Form and Live Staging Engine */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Form */}
-        <div className="md:col-span-7 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 space-y-5 shadow-2xs">
-          <h2 className="text-base font-black font-header text-slate-900 dark:text-white flex items-center gap-2">
-            <Truck className="w-5 h-5 text-primary" />
-            استمارة تسجيل تفريغ حمولة جديدة
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Category */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">
-                صنف الشحنة الواردة:
+        {/* Left Side: Form */}
+        <div className="lg:col-span-7 space-y-6">
+          <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 space-y-5 shadow-xs">
+            
+            {/* Quick Presets */}
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
+                نماذج تعبئة سريعة من واقع الاحتياجات:
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {AID_CATEGORIES.map(cat => (
+              <div className="flex flex-wrap gap-2">
+                {presets.map((p, idx) => (
                   <button
-                    key={cat.id}
+                    key={idx}
                     type="button"
-                    onClick={() => {
-                      setCategory(cat.id);
-                      setIntakeResult(null);
-                    }}
-                    className={`p-2.5 rounded-xl border text-xs font-bold text-right flex items-center gap-2 transition-all cursor-pointer ${
-                      category === cat.id
-                        ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary'
-                        : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                    onClick={() => handleApplyPreset(p)}
+                    className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium transition-colors"
                   >
-                    <span className="text-base">{cat.icon}</span>
-                    <span className="truncate">{cat.nameAr}</span>
+                    {getItemNameAr(p.name)} ({p.qty})
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Target Depot Selector */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                المستودع المستقبل للشحنة <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={depotId}
+                onChange={(e) => setDepotId(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors"
+              >
+                {depots.map(d => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} ({d.wilaya ? `ولاية ${d.wilaya}` : `#${d.id}`})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Aid Category Selector */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                فئة المادة الإغاثية <span className="text-rose-500">*</span>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {AID_CATEGORIES.map((c) => {
+                  const isSelected = category === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setCategory(c.id)}
+                      className={`p-2.5 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-primary bg-primary/10 text-primary shadow-xs font-black'
+                          : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <span className="text-lg">{c.icon}</span>
+                      <span className="truncate">{c.nameAr.split(' ')[0]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Item Name */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">
-                اسم المادة:
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                اسم المادة أو الطرد <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
-                required
                 value={itemName}
                 onChange={(e) => setItemName(e.target.value)}
-                placeholder="مثال: حليب معقم، بطانيات صوف، أرائك..."
-                className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                placeholder="مثال: Bottled Mineral Water 1.5L Packs"
+                required
+                className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-primary transition-colors font-mono"
               />
             </div>
 
             {/* Quantity and Unit */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">
-                  الكمية:
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  الكمية المستلمة <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="number"
                   min="1"
-                  required
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                  className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-base font-bold font-header text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  required
+                  className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors font-mono font-bold"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">
-                  الوحدة:
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  وحدة القياس <span className="text-rose-500">*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
-                  placeholder="طرد، علبة، فراش..."
-                  className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary"
-                />
+                  className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary transition-colors"
+                >
+                  <option value="PACKS">PACKS (حزمة)</option>
+                  <option value="CANS">CANS (علبة معلبات)</option>
+                  <option value="PIECES">PIECES (قطعة / فراش)</option>
+                  <option value="KITS">KITS (حقيبة)</option>
+                  <option value="BOXES">BOXES (طرد)</option>
+                  <option value="TENTS">TENTS (خيمة)</option>
+                  <option value="CARTONS">CARTONS (كرتون)</option>
+                  <option value="UNITS">UNITS (وحدة)</option>
+                </select>
               </div>
             </div>
 
             {/* Expiry Tracking Toggle */}
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-amber-500" />
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    تتبع تاريخ الصلاحية (FIFO Expiration)
+                  </span>
+                </div>
                 <input
                   type="checkbox"
                   checked={hasExpiry}
                   onChange={(e) => setHasExpiry(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary"
+                  className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
                 />
-                <span className="text-xs font-bold text-primary">
-                  مادة غذائية أو استهلاكية ذات تاريخ صلاحية محدد (Batch Tracking)
-                </span>
-              </label>
+              </div>
 
               {hasExpiry && (
-                <div className="space-y-1 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-rose-500" />
-                    تاريخ انتهاء صلاحية هذه الدفعة:
+                <div className="space-y-1 pt-1">
+                  <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    تاريخ انتهاء الصلاحية:
                   </label>
                   <input
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
-                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white font-mono focus:outline-none focus:border-primary"
+                    required={hasExpiry}
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-primary font-mono"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    سيقوم النظام بإرسال تنبيهات استباقية وتحديد أولوية التوزيع قبل انتهاء الصلاحية
-                  </p>
                 </div>
               )}
             </div>
 
-            <button 
-              type="submit" 
+            {/* Field Notes */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                ملاحظات الشحنة والمصدر:
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="جهة التبرع، رقم الشاحنة، أو ملاحظات الفرز..."
+                rows={2}
+                className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
               disabled={isSubmitting}
-              className="w-full mt-2 py-3 px-4 rounded-xl bg-primary hover:bg-[#07261C] dark:hover:bg-[#004d28] text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-75"
+              className="w-full py-3.5 text-sm font-bold shadow-md shadow-primary/20"
             >
-              {isSubmitting ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>جاري التسجيل في خادم Render وتوجيه الشاحنة...</span>
-                </>
-              ) : (
-                <>
-                  <Package className="w-4 h-4" />
-                  <span>تأكيد الاستلام وتوجيه الشاحنة للمنطقة المحددة</span>
-                </>
-              )}
-            </button>
+              <Truck className="w-4 h-4" />
+              <span>{isSubmitting ? 'جاري تسجيل الشحنة في الخادم...' : 'تسجيل واستلام الشحنة فوراً'}</span>
+            </Button>
           </form>
         </div>
 
-        {/* Right Side: Live Allocation Result & Zone Visualizer */}
-        <div className="md:col-span-5 space-y-4">
+        {/* Right Side: Result & Live Batches Link */}
+        <div className="lg:col-span-5 space-y-4">
+          
           {intakeResult ? (
-            <div className="rounded-2xl border-2 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 p-6 space-y-4 shadow-lg animate-in fade-in">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black font-header text-lg">
-                  <CheckCircle2 className="w-6 h-6 shrink-0" />
-                  <span>تم توجيه وتفريغ الشحنة بنجاح!</span>
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-3xl border border-emerald-200 dark:border-emerald-800 p-6 space-y-4">
+              <div className="flex items-center gap-3 text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="w-6 h-6 shrink-0" />
+                <h3 className="text-base font-bold">تم تسجيل واستلام الشحنة بنجاح!</h3>
+              </div>
+
+              <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300 border-t border-emerald-200/60 dark:border-emerald-800/60 pt-3">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">رقم الدفعة (Batch):</span>
+                  <span className="font-mono font-bold text-primary">{intakeResult.batchNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">المستودع:</span>
+                  <span className="font-bold">{intakeResult.depotName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">المادة المستلمة:</span>
+                  <span className="font-bold">{intakeResult.itemName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">الكمية المسجلة:</span>
+                  <span className="font-mono font-bold">{intakeResult.quantity} {intakeResult.unit}</span>
                 </div>
               </div>
 
-              {serverBatchId && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span>متزامن مع قاعدة بيانات Render: {serverBatchId}</span>
-                </div>
-              )}
-
-              <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 space-y-3">
-                <span className="text-xs text-slate-400 block font-semibold">
-                  الوجهة المباشرة لسائق الشاحنة:
-                </span>
-                <div className="text-2xl font-black font-header text-primary flex items-center gap-2">
-                  <span>🏢 {intakeResult.zone}</span>
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  تفريغ <strong>{quantity} {unit}</strong> من ({itemName}) في رصيف التخزين المخصص. تم تحديث المخزون وسعة المستودع لحظياً.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-2">
-                <Link 
-                  href="/admin" 
-                  className="w-full py-2 px-3 text-xs font-bold text-center rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:bg-slate-800 transition-colors"
-                >
-                  عرض جرد المستودع
+              <div className="pt-2 flex flex-col gap-2">
+                <Link href="/admin/expiry">
+                  <Button variant="outline" size="sm" className="w-full text-xs">
+                    <span>مراجعة جدول تتبع الصلاحية (FIFO)</span>
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </Button>
                 </Link>
-                {hasExpiry && (
-                  <Link 
-                    href="/admin/expiry" 
-                    className="w-full py-2 px-3 text-xs font-bold text-center rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-                  >
-                    متابعة الصلاحية
-                  </Link>
-                )}
+                <Link href={`/depots/${depotId}`}>
+                  <Button variant="secondary" size="sm" className="w-full text-xs">
+                    <span>عرض تفاصيل المستودع والجرد</span>
+                  </Button>
+                </Link>
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 shadow-2xs">
-              <h3 className="text-sm font-black font-header text-slate-900 dark:text-white flex items-center gap-2">
-                <Layers className="w-4 h-4 text-primary" />
-                قواعد التوجيه الآلي للمناطق (Allocation Rules):
-              </h3>
-              <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-                {WAREHOUSE_ZONES.map(z => (
-                  <div key={z.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
-                    <div className="flex items-center justify-between font-bold mb-1">
-                      <span className="text-primary font-header">{z.id}</span>
-                      <span className="text-slate-700 dark:text-slate-300">{z.title}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400">{z.rule}</p>
-                  </div>
-                ))}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 space-y-4">
+              <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold text-sm">
+                <Warehouse className="w-4 h-4 text-primary" />
+                <span>إرشادات تفريغ الشحنات الميدانية</span>
+              </div>
+              <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-2 leading-relaxed">
+                <li>• يتم إصدار رقم دفعة (Batch Number) آلي لكل شحنة واردة لضمان التتبع الشفاف.</li>
+                <li>• المواد الغذائية والمياه والأدوية تتطلب تسجيل تاريخ الصلاحية لجدولتها وفق قاعدة الوارد أولاً يصرف أولاً (FIFO).</li>
+                <li>• يتم تحديث المخزون الفعلي تلقائياً بمجرد إتمام الإرسال في قاعدة البيانات الحية.</li>
+              </ul>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                <Link href="/admin/expiry" className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline">
+                  <span>جدول المواد قريبة انتهاء الصلاحية</span>
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
           )}
-
-          {/* Depot Zone Status preview */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs space-y-3 shadow-2xs">
-            <span className="text-slate-500 dark:text-slate-400 font-bold block">
-              حالة إشغال مناطق المستودع حالياً:
-            </span>
-            <div className="space-y-2">
-              {(currentDepot?.zones || []).map(z => (
-                <div key={z.id} className="flex items-center justify-between text-slate-700 dark:text-slate-300">
-                  <span>{z.title.split('-')[0]}</span>
-                  <span className="font-header font-bold text-slate-500 dark:text-slate-400">
-                    {z.currentUnits} / {z.maxCapacity} ({Math.round((z.currentUnits/z.maxCapacity)*100)}%)
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
 
         </div>
 
