@@ -3,15 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { Depot } from '@/lib/types';
-import { MapPin, Phone, Warehouse, ArrowLeft, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
+import { MapPin, Phone, ArrowLeft, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
+import { Progress } from '@/components/ui/progress';
 
 interface DepotCardProps {
   depot: Depot;
-  highlightCategory?: string;
 }
 
-export default function DepotCard({ depot, highlightCategory }: DepotCardProps) {
-  // Calculate critical deficits
+export default function DepotCard({ depot }: DepotCardProps) {
   const criticalItems = depot.items.filter(
     item => item.targetNeed - item.currentStock > 0
   );
@@ -21,36 +21,36 @@ export default function DepotCard({ depot, highlightCategory }: DepotCardProps) 
   );
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm p-5 hover:border-slate-700 transition-all hover:shadow-xl hover:shadow-slate-900/50 flex flex-col justify-between group">
+    <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-all hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/40 hover:-translate-y-0.5 flex flex-col justify-between group">
       <div>
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-start justify-between gap-3 mb-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                 {depot.code}
               </span>
-              <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+              <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-[#FFF2F0] dark:bg-[#341611] text-[#E0533C]">
                 ولاية {depot.wilaya}
               </span>
             </div>
-            <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
+            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white group-hover:text-[#E0533C] transition-colors">
               {depot.name}
             </h3>
           </div>
 
           <div className="text-left shrink-0">
-            <span className="text-xs text-slate-400 block">نسبة الاستيعاب</span>
-            <span className="text-base font-mono font-bold text-slate-200">
+            <span className="text-[11px] text-slate-400 block">الإشغال</span>
+            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">
               {depot.totalCapacityPercent}%
             </span>
           </div>
         </div>
 
-        {/* Address, Maps link and Manager */}
-        <div className="space-y-1.5 text-xs text-slate-400 mb-4">
+        {/* Address & Google Maps link */}
+        <div className="space-y-2 text-xs text-slate-500 dark:text-slate-400 mb-5">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 truncate">
+            <div className="flex items-center gap-1.5 truncate">
               <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <span className="truncate">{depot.address}</span>
             </div>
@@ -59,30 +59,30 @@ export default function DepotCard({ depot, highlightCategory }: DepotCardProps) 
                 href={depot.googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 font-semibold shrink-0 bg-sky-950/60 border border-sky-800/40 px-2 py-0.5 rounded-md transition-colors"
-                title="فتح الموقع في خرائط Google Maps"
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/50 hover:bg-sky-100 px-2 py-0.5 rounded-md transition-colors shrink-0"
               >
                 <span>Google Maps</span>
-                <ExternalLink className="w-3 h-3" />
+                <ExternalLink className="w-2.5 h-2.5" />
               </a>
             )}
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-2 text-[11px]">
             <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span dir="ltr">{depot.phone}</span>
-            <span className="text-slate-400">• {depot.manager}</span>
+            <span dir="ltr" className="font-mono text-slate-600 dark:text-slate-300">{depot.phone}</span>
+            <span>• {depot.manager}</span>
           </div>
         </div>
 
-        {/* Critical Needs Snapshot */}
-        <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/80 mb-4">
-          <div className="flex items-center justify-between text-xs font-semibold mb-2">
-            <span className="text-rose-400 flex items-center gap-1">
+        {/* Critical Needs Snapshot Box */}
+        <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 mb-5">
+          <div className="flex items-center justify-between text-xs font-bold mb-2">
+            <span className="text-[#E0533C] flex items-center gap-1">
               <AlertCircle className="w-3.5 h-3.5" />
               أكبر نواقص هذا المستودع:
             </span>
-            <span className="text-[11px] text-slate-400">
-              {criticalItems.length} أصناف بحاجة لدعم
+            <span className="text-[11px] text-slate-400 font-normal">
+              {criticalItems.length} مواد
             </span>
           </div>
 
@@ -93,18 +93,16 @@ export default function DepotCard({ depot, highlightCategory }: DepotCardProps) 
                 return (
                   <span
                     key={item.id}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/20"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-[#FFF2F0] dark:bg-[#341611] text-[#9A2D1F] dark:text-[#FCA597] border border-[#FCD3CD] dark:border-[#52231A]"
                   >
                     <span>{item.name}:</span>
-                    <span className="text-rose-400 underline font-mono">
-                      نقص {deficit} {item.unit}
-                    </span>
+                    <span className="underline font-mono">نقص {deficit} {item.unit}</span>
                   </span>
                 );
               })}
             </div>
           ) : (
-            <p className="text-xs text-emerald-400 flex items-center gap-1">
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" />
               جميع الاحتياجات الأساسية مغطاة حالياً
             </p>
@@ -112,22 +110,22 @@ export default function DepotCard({ depot, highlightCategory }: DepotCardProps) 
 
           {/* Quick Notice on Sufficient Items */}
           {sufficientItems.length > 0 && (
-            <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-1.5">
-              <span className="text-emerald-400 font-bold">✅ متوفر بكثرة:</span>
-              <span>{sufficientItems.map(i => i.name).slice(0, 2).join('، ')} (لا داعي للتبرع به هنا)</span>
+            <div className="mt-2.5 pt-2 border-t border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">✅ متوفر بكثرة:</span>
+              <span className="truncate">{sufficientItems.map(i => i.name).slice(0, 2).join('، ')}</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Footer Action */}
-      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
         <span className="text-[11px] text-slate-400">
-          آخر تحديث: {depot.lastUpdated}
+          تحديث: {depot.lastUpdated}
         </span>
         <Link
           href={`/depots/${depot.id}`}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg transition-all"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E0533C] hover:text-[#C9442E] transition-colors"
         >
           <span>عرض الجرد الكامل</span>
           <ArrowLeft className="w-3.5 h-3.5" />

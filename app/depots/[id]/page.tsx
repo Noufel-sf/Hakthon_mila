@@ -51,22 +51,22 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors mb-2"
+            href="/depots"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-[#E0533C] dark:hover:text-[#E0533C] transition-colors mb-2"
           >
             <ArrowRight className="w-4 h-4" />
-            <span>العودة لكل المستودعات</span>
+            <span>العودة لدليل المستودعات</span>
           </Link>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
               {depot.name}
             </h1>
-            <Badge variant="rose" size="md">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#FFF2F0] dark:bg-[#341611] text-[#E0533C] border border-[#FCD3CD] dark:border-[#52231A]">
               ولاية {depot.wilaya}
-            </Badge>
-            <Badge variant="slate" size="md" className="font-mono">
+            </span>
+            <span className="px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
               {depot.code}
-            </Badge>
+            </span>
           </div>
         </div>
 
@@ -79,9 +79,9 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
               rel="noopener noreferrer"
               className="w-full sm:w-auto"
             >
-              <Button variant="primary" className="w-full">
+              <Button variant="primary" className="w-full shadow-md shadow-[#E0533C]/20">
                 <Navigation className="w-4 h-4" />
-                <span>الاتجاه إلى المستودع (Google Maps)</span>
+                <span>الاتجاه للمستودع (Google Maps)</span>
               </Button>
             </a>
           )}
@@ -96,22 +96,22 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
       {/* Info Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Address Card */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-2 flex flex-col justify-between">
+        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 flex flex-col justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-400 flex items-center gap-1.5 font-semibold mb-1">
-              <MapPin className="w-4 h-4 text-rose-500" />
+            <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-semibold mb-1">
+              <MapPin className="w-4 h-4 text-[#E0533C]" />
               الموقع ونقطة التفريغ الميدانية
             </span>
-            <p className="text-sm font-bold text-white">{depot.address}</p>
-            <p className="text-xs text-slate-400">البلدية: {depot.municipality} — {depot.wilaya}</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white">{depot.address}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">البلدية: {depot.municipality} — ولاية {depot.wilaya}</p>
           </div>
           {depot.googleMapsUrl && (
-            <div className="pt-2 border-t border-slate-800/80">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
               <a
                 href={depot.googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-sky-300 bg-sky-950/60 border border-sky-800/50 px-3 py-1.5 rounded-xl transition-all"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/50 px-3 py-1.5 rounded-xl transition-all"
               >
                 <Navigation className="w-3.5 h-3.5" />
                 <span>فتح نقطة التفريغ في Google Maps</span>
@@ -122,47 +122,54 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Contact & Manager */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-2">
-          <span className="text-xs text-slate-400 flex items-center gap-1.5 font-semibold">
-            <Phone className="w-4 h-4 text-emerald-400" />
-            المسؤول الميداني والتواصل
+        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 flex flex-col justify-between shadow-sm">
+          <div>
+            <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-semibold mb-1">
+              <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              المسؤول الميداني والتواصل
+            </span>
+            <p className="text-base font-bold text-slate-900 dark:text-white">{depot.manager}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300 font-mono mt-0.5" dir="ltr">{depot.phone}</p>
+          </div>
+          <span className="text-[11px] text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
+            متاح لاستقبال اتصالات المتبرعين وتنسيق الشاحنات
           </span>
-          <p className="text-sm font-bold text-white">{depot.manager}</p>
-          <p className="text-xs text-slate-300 font-mono" dir="ltr">{depot.phone}</p>
         </div>
 
         {/* Capacity & Status */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-2">
-          <span className="text-xs text-slate-400 flex items-center gap-1.5 font-semibold">
-            <Warehouse className="w-4 h-4 text-amber-400" />
-            حالة الإشغال الميداني
-          </span>
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-mono font-bold text-white">
-              {depot.totalCapacityPercent}% ممتلئ
+        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3 flex flex-col justify-between shadow-sm">
+          <div>
+            <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-semibold mb-1">
+              <Warehouse className="w-4 h-4 text-amber-500" />
+              حالة الإشغال الميداني
             </span>
-            <span className="text-xs text-slate-400">آخر تحديث: {depot.lastUpdated}</span>
+            <div className="flex items-center justify-between">
+              <span className="text-xl font-mono font-bold text-slate-900 dark:text-white">
+                {depot.totalCapacityPercent}% ممتلئ
+              </span>
+              <span className="text-[11px] text-slate-400">آخر تحديث: {depot.lastUpdated}</span>
+            </div>
           </div>
-          <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-amber-500 rounded-full"
+              className="h-full bg-amber-500 rounded-full transition-all"
               style={{ width: `${depot.totalCapacityPercent}%` }}
             ></div>
           </div>
         </div>
       </div>
 
-      {/* Convoy Guidance Notice */}
-      <div className="rounded-2xl border border-rose-900/40 bg-rose-950/20 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      {/* Guidance Notice Banner */}
+      <div className="rounded-3xl border border-[#FCD3CD] dark:border-[#52231A] bg-[#FFF8F7] dark:bg-[#2A1512] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+          <AlertTriangle className="w-5 h-5 text-[#E0533C] shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-sm font-bold text-rose-200">
-              توجيه هام لأصحاب القوافل والشاحنات المتجهة نحو {depot.name}:
+            <h4 className="text-sm font-bold text-slate-900 dark:text-[#FED7D2]">
+              توجيه عاجل لأصحاب المبادرات والشاحنات المتجهة نحو {depot.name}:
             </h4>
-            <p className="text-xs text-rose-300/80 mt-0.5">
-              هذا المستودع يعاني من عجز في <strong className="text-white underline">{urgentDeficits.map(i => i.name).join('، ')}</strong>. 
-              إذا كانت شاحنتك تحمل مواداً أخرى مغطاة (مثل المواد الغذائية)، يرجى توجيهها لمستودع آخر حتى لا تتكدس وتتعرض للتلف.
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+              هذا المستودع يعاني من عجز في <strong className="text-[#E0533C] dark:text-white font-bold">{urgentDeficits.map(i => i.name).join('، ')}</strong>. 
+              إذا كانت شاحنتك تحمل مواداً أخرى مغطاة، يرجى توجيهها لمستودع آخر يعاني من نقص حتى لا تتكدس وتتعرض للتلف.
             </p>
           </div>
         </div>
@@ -172,10 +179,10 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               جدول الاحتياجات والمخزون الحالي (Live Inventory Breakdown)
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               بيان شفاف يوضح الكميات الموجودة، الاحتياج التقديري، وحجم العجز أو الوفرة
             </p>
           </div>
@@ -185,7 +192,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
       </div>
 
       {/* Warehouse Staging Zones */}
-      <div className="pt-4 border-t border-slate-800">
+      <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800">
         <ZoneMapVisualizer 
           zones={depot.zones} 
           items={depot.items}
