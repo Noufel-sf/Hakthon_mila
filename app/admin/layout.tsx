@@ -84,14 +84,14 @@ export default function AdminLayout({
         <div className="h-18 px-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-md shadow-primary/20 group-hover:scale-105 transition-transform">
-              <span className="font-header">إ</span>
+              <span className="font-header">ب+</span>
             </div>
             <div>
               <div className="font-header font-black text-xl tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
-                إكسوناد
+                البوصلة <span className="text-primary">+</span>
                 <span className="text-xs px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-bold">أدمن</span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium">نظام الإدارة اللوجستية والإغاثة</p>
+              <p className="text-[11px] text-slate-400 font-medium">منظومة الإدارة والتوجيه اللوجستي</p>
             </div>
           </Link>
         </div>

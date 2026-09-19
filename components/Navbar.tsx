@@ -10,7 +10,8 @@ import {
   SlidersHorizontal,
   RotateCcw,
   HeartHandshake,
-  ArrowLeft
+  ArrowLeft,
+  Compass
 } from 'lucide-react';
 import { useReliefStore } from '@/lib/store';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -56,11 +57,11 @@ export default function Navbar() {
         {/* Right: Brand Logo (RTL layout) */}
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
           <div className="h-9 w-9 rounded-full bg-[#FFF2F0] dark:bg-[#341611] border border-[#FAD8D2] dark:border-[#52231A] flex items-center justify-center text-[#E0533C] shadow-2xs group-hover:scale-105 transition-transform">
-            <HeartHandshake className="w-5 h-5" />
+            <Compass className="w-5 h-5 text-primary" />
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="font-header text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">
-              إغاثــة
+              البوصلة <span className="text-primary">+</span>
             </span>
             <span className="text-[10px] font-bold font-mono tracking-wider text-[#E0533C] hidden sm:inline">
               DZ

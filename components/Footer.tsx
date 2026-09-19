@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HeartHandshake, Phone, MapPin, Mail } from 'lucide-react';
+import { HeartHandshake, Phone, MapPin, Mail, Compass } from 'lucide-react';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -79,7 +79,7 @@ export default function Footer() {
 
             {/* Bottom Row: Copyright and Socials */}
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-              <span>© 2026 IGHATHA DZ — هاكاثون ميلة للإغاثة الذكية</span>
+              <span>© 2026 البوصلة + (Al-Bawsala +) — هاكاثون ميلة للإغاثة الذكية</span>
               
               <div className="flex items-center gap-4 text-slate-400">
                 {/* Twitter / X Icon */}
@@ -105,16 +105,16 @@ export default function Footer() {
             {/* Top Brand Logo */}
             <div className="flex items-center gap-2.5">
               <div className="h-8 w-8 rounded-full bg-[#FFF2F0] dark:bg-[#341611] text-[#E0533C] flex items-center justify-center font-bold">
-                <HeartHandshake className="w-4 h-4" />
+                <Compass className="w-4 h-4" />
               </div>
               <span className="font-header text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                إغاثــة
+                البوصلة <span className="text-primary">+</span>
               </span>
             </div>
 
             {/* Meaningful Arabic Mission Text */}
             <p className="font-sub text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              إغاثة خلاتك ترتاح — كلشي منظم، شفاف ومباشر. وجّه تبرعك بناءً على العجز الحقيقي وتفادى تكدس المساعدات وتلفها في الميدان.
+              البوصلة + خلاتك ترتاح — كلشي منظم، شفاف ومباشر. وجّه تبرعك بناءً على العجز الحقيقي وتفادى تكدس المساعدات وتلفها في الميدان.
             </p>
 
             {/* Primary Action Button */}

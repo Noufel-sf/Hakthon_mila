@@ -211,7 +211,7 @@ export default function HomePage() {
             <span>قيمنا ومبادئ العمل الميداني</span>
           </span>
           <h2 className="font-header text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            لماذا نعتمد منظومة إغاثة الذكية؟
+            لماذا نعتمد منظومة البوصلة + الذكية؟
           </h2>
           <p className="font-sub text-base text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
             توفير المعلومة الدقيقة للمواطنين والمتبرعين لترشيد العطاء ومنع البيروقراطية وحماية المساعدات من التلف.
