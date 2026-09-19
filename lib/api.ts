@@ -1,11 +1,12 @@
 /**
  * ============================================================================
- * Humanitarian Aid & Disaster Relief Platform API Client
+ * Humanitarian Aid & Disaster Relief Platform API Client (Axios)
  * OpenAPI 3.1.0 Contract Integration
  * Server: http://localhost:8081
  * ============================================================================
  */
 
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import {
   PublicDepotResponse,
   PublicDepotDetailResponse,
@@ -31,34 +32,36 @@ import {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
 
-async function fetcher<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-  try {
-    const res = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        ...(options?.headers || {}),
-      },
-    });
+/**
+ * Configured Axios Instance for the Humanitarian Aid Backend
+ */
+export const apiClient: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
+});
 
-    if (!res.ok) {
-      const errorText = await res.text().catch(() => '');
-      throw new Error(`API error (${res.status} ${res.statusText}): ${errorText}`);
+// Response interceptor for unified logging and error handling
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      console.warn(`[Relief API ${error.response.status}] ${error.config?.url}:`, error.response.data);
+    } else if (error.request) {
+      console.warn(`[Relief API Network Error] Backend not reachable at ${API_BASE_URL}`);
+    } else {
+      console.warn('[Relief API Error]', error.message);
     }
-
-    if (res.status === 204) {
-      return {} as T;
-    }
-
-    return await res.json();
-  } catch (err) {
-    console.warn(`[Relief API] Request to ${endpoint} failed:`, err);
-    throw err;
+    return Promise.reject(error);
   }
-}
+);
 
+/**
+ * Typed API service mapping all OpenAPI 3.1.0 endpoints
+ */
 export const api = {
   // ==========================================
   // 1. PUBLIC PORTAL ENDPOINTS
@@ -69,8 +72,10 @@ export const api = {
      * GET /api/v1/public/depots?wilaya={wilaya}
      */
     getDepots: async (wilaya?: string): Promise<PublicDepotResponse[]> => {
-      const query = wilaya ? `?wilaya=${encodeURIComponent(wilaya)}` : '';
-      return fetcher<PublicDepotResponse[]>(`/api/v1/public/depots${query}`);
+      const response: AxiosResponse<PublicDepotResponse[]> = await apiClient.get('/api/v1/public/depots', {
+        params: wilaya ? { wilaya } : undefined,
+      });
+      return response.data;
     },
 
     /**
@@ -78,7 +83,8 @@ export const api = {
      * GET /api/v1/public/depots/{id}
      */
     getDepotDetails: async (id: number | string): Promise<PublicDepotDetailResponse> => {
-      return fetcher<PublicDepotDetailResponse>(`/api/v1/public/depots/${id}`);
+      const response: AxiosResponse<PublicDepotDetailResponse> = await apiClient.get(`/api/v1/public/depots/${id}`);
+      return response.data;
     },
 
     /**
@@ -86,8 +92,10 @@ export const api = {
      * GET /api/v1/public/shortages?wilaya={wilaya}
      */
     getShortages: async (wilaya?: string): Promise<PublicShortageDTO[]> => {
-      const query = wilaya ? `?wilaya=${encodeURIComponent(wilaya)}` : '';
-      return fetcher<PublicShortageDTO[]>(`/api/v1/public/shortages${query}`);
+      const response: AxiosResponse<PublicShortageDTO[]> = await apiClient.get('/api/v1/public/shortages', {
+        params: wilaya ? { wilaya } : undefined,
+      });
+      return response.data;
     },
   },
 
@@ -100,8 +108,10 @@ export const api = {
      * GET /api/v1/depots?wilaya={wilaya}
      */
     list: async (wilaya?: string): Promise<DepotSummaryResponse[]> => {
-      const query = wilaya ? `?wilaya=${encodeURIComponent(wilaya)}` : '';
-      return fetcher<DepotSummaryResponse[]>(`/api/v1/depots${query}`);
+      const response: AxiosResponse<DepotSummaryResponse[]> = await apiClient.get('/api/v1/depots', {
+        params: wilaya ? { wilaya } : undefined,
+      });
+      return response.data;
     },
 
     /**
@@ -109,7 +119,8 @@ export const api = {
      * GET /api/v1/depots/{id}
      */
     getById: async (id: number | string): Promise<DepotResponse> => {
-      return fetcher<DepotResponse>(`/api/v1/depots/${id}`);
+      const response: AxiosResponse<DepotResponse> = await apiClient.get(`/api/v1/depots/${id}`);
+      return response.data;
     },
 
     /**
@@ -117,10 +128,8 @@ export const api = {
      * POST /api/v1/depots
      */
     create: async (data: CreateDepotRequest): Promise<DepotResponse> => {
-      return fetcher<DepotResponse>('/api/v1/depots', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      const response: AxiosResponse<DepotResponse> = await apiClient.post('/api/v1/depots', data);
+      return response.data;
     },
 
     /**
@@ -128,10 +137,8 @@ export const api = {
      * PUT /api/v1/depots/{id}
      */
     update: async (id: number | string, data: UpdateDepotRequest): Promise<DepotResponse> => {
-      return fetcher<DepotResponse>(`/api/v1/depots/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      const response: AxiosResponse<DepotResponse> = await apiClient.put(`/api/v1/depots/${id}`, data);
+      return response.data;
     },
 
     /**
@@ -139,9 +146,7 @@ export const api = {
      * DELETE /api/v1/depots/{id}
      */
     delete: async (id: number | string): Promise<void> => {
-      return fetcher<void>(`/api/v1/depots/${id}`, {
-        method: 'DELETE',
-      });
+      await apiClient.delete(`/api/v1/depots/${id}`);
     },
   },
 
@@ -154,11 +159,10 @@ export const api = {
      * GET /api/v1/inventory?depotId={id}&category={cat}
      */
     list: async (params?: { depotId?: number | string; category?: string }): Promise<InventoryResponse[]> => {
-      const searchParams = new URLSearchParams();
-      if (params?.depotId) searchParams.set('depotId', String(params.depotId));
-      if (params?.category) searchParams.set('category', params.category);
-      const q = searchParams.toString() ? `?${searchParams.toString()}` : '';
-      return fetcher<InventoryResponse[]>(`/api/v1/inventory${q}`);
+      const response: AxiosResponse<InventoryResponse[]> = await apiClient.get('/api/v1/inventory', {
+        params,
+      });
+      return response.data;
     },
 
     /**
@@ -166,7 +170,10 @@ export const api = {
      * GET /api/v1/inventory/expiring?daysAhead={days}
      */
     getExpiring: async (daysAhead: number = 30): Promise<InventoryResponse[]> => {
-      return fetcher<InventoryResponse[]>(`/api/v1/inventory/expiring?daysAhead=${daysAhead}`);
+      const response: AxiosResponse<InventoryResponse[]> = await apiClient.get('/api/v1/inventory/expiring', {
+        params: { daysAhead },
+      });
+      return response.data;
     },
 
     /**
@@ -174,7 +181,8 @@ export const api = {
      * GET /api/v1/inventory/{id}
      */
     getById: async (id: number | string): Promise<InventoryResponse> => {
-      return fetcher<InventoryResponse>(`/api/v1/inventory/${id}`);
+      const response: AxiosResponse<InventoryResponse> = await apiClient.get(`/api/v1/inventory/${id}`);
+      return response.data;
     },
 
     /**
@@ -182,10 +190,8 @@ export const api = {
      * POST /api/v1/inventory
      */
     add: async (data: CreateInventoryRequest): Promise<InventoryResponse> => {
-      return fetcher<InventoryResponse>('/api/v1/inventory', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      const response: AxiosResponse<InventoryResponse> = await apiClient.post('/api/v1/inventory', data);
+      return response.data;
     },
 
     /**
@@ -193,10 +199,8 @@ export const api = {
      * PUT /api/v1/inventory/{id}
      */
     update: async (id: number | string, data: UpdateInventoryRequest): Promise<InventoryResponse> => {
-      return fetcher<InventoryResponse>(`/api/v1/inventory/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      const response: AxiosResponse<InventoryResponse> = await apiClient.put(`/api/v1/inventory/${id}`, data);
+      return response.data;
     },
 
     /**
@@ -204,9 +208,7 @@ export const api = {
      * DELETE /api/v1/inventory/{id}
      */
     delete: async (id: number | string): Promise<void> => {
-      return fetcher<void>(`/api/v1/inventory/${id}`, {
-        method: 'DELETE',
-      });
+      await apiClient.delete(`/api/v1/inventory/${id}`);
     },
   },
 
@@ -219,11 +221,10 @@ export const api = {
      * GET /api/v1/needs?depotId={id}&priority={priority}
      */
     list: async (params?: { depotId?: number | string; priority?: string }): Promise<NeedResponse[]> => {
-      const searchParams = new URLSearchParams();
-      if (params?.depotId) searchParams.set('depotId', String(params.depotId));
-      if (params?.priority) searchParams.set('priority', params.priority);
-      const q = searchParams.toString() ? `?${searchParams.toString()}` : '';
-      return fetcher<NeedResponse[]>(`/api/v1/needs${q}`);
+      const response: AxiosResponse<NeedResponse[]> = await apiClient.get('/api/v1/needs', {
+        params,
+      });
+      return response.data;
     },
 
     /**
@@ -231,7 +232,8 @@ export const api = {
      * GET /api/v1/needs/{id}
      */
     getById: async (id: number | string): Promise<NeedResponse> => {
-      return fetcher<NeedResponse>(`/api/v1/needs/${id}`);
+      const response: AxiosResponse<NeedResponse> = await apiClient.get(`/api/v1/needs/${id}`);
+      return response.data;
     },
 
     /**
@@ -239,10 +241,8 @@ export const api = {
      * POST /api/v1/needs
      */
     create: async (data: CreateNeedRequest): Promise<NeedResponse> => {
-      return fetcher<NeedResponse>('/api/v1/needs', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      const response: AxiosResponse<NeedResponse> = await apiClient.post('/api/v1/needs', data);
+      return response.data;
     },
 
     /**
@@ -250,10 +250,8 @@ export const api = {
      * PUT /api/v1/needs/{id}
      */
     update: async (id: number | string, data: UpdateNeedRequest): Promise<NeedResponse> => {
-      return fetcher<NeedResponse>(`/api/v1/needs/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      const response: AxiosResponse<NeedResponse> = await apiClient.put(`/api/v1/needs/${id}`, data);
+      return response.data;
     },
 
     /**
@@ -261,9 +259,7 @@ export const api = {
      * DELETE /api/v1/needs/{id}
      */
     delete: async (id: number | string): Promise<void> => {
-      return fetcher<void>(`/api/v1/needs/${id}`, {
-        method: 'DELETE',
-      });
+      await apiClient.delete(`/api/v1/needs/${id}`);
     },
   },
 
@@ -276,11 +272,10 @@ export const api = {
      * GET /api/v1/distributions?familyId={familyId}&depotId={depotId}
      */
     list: async (params?: { familyId?: number; depotId?: number | string }): Promise<DistributionResponse[]> => {
-      const searchParams = new URLSearchParams();
-      if (params?.familyId) searchParams.set('familyId', String(params.familyId));
-      if (params?.depotId) searchParams.set('depotId', String(params.depotId));
-      const q = searchParams.toString() ? `?${searchParams.toString()}` : '';
-      return fetcher<DistributionResponse[]>(`/api/v1/distributions${q}`);
+      const response: AxiosResponse<DistributionResponse[]> = await apiClient.get('/api/v1/distributions', {
+        params,
+      });
+      return response.data;
     },
 
     /**
@@ -288,10 +283,8 @@ export const api = {
      * POST /api/v1/distributions
      */
     create: async (data: CreateDistributionRequest): Promise<DistributionResponse> => {
-      return fetcher<DistributionResponse>('/api/v1/distributions', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      const response: AxiosResponse<DistributionResponse> = await apiClient.post('/api/v1/distributions', data);
+      return response.data;
     },
 
     /**
@@ -299,7 +292,8 @@ export const api = {
      * GET /api/v1/distributions/{id}
      */
     getById: async (id: number | string): Promise<DistributionResponse> => {
-      return fetcher<DistributionResponse>(`/api/v1/distributions/${id}`);
+      const response: AxiosResponse<DistributionResponse> = await apiClient.get(`/api/v1/distributions/${id}`);
+      return response.data;
     },
 
     /**
@@ -307,9 +301,7 @@ export const api = {
      * DELETE /api/v1/distributions/{id}
      */
     delete: async (id: number | string): Promise<void> => {
-      return fetcher<void>(`/api/v1/distributions/${id}`, {
-        method: 'DELETE',
-      });
+      await apiClient.delete(`/api/v1/distributions/${id}`);
     },
   },
 
@@ -322,12 +314,10 @@ export const api = {
      * GET /api/v1/families?wilaya={w}&commune={c}&status={s}
      */
     list: async (params?: { wilaya?: string; commune?: string; status?: string }): Promise<FamilyResponse[]> => {
-      const searchParams = new URLSearchParams();
-      if (params?.wilaya) searchParams.set('wilaya', params.wilaya);
-      if (params?.commune) searchParams.set('commune', params.commune);
-      if (params?.status) searchParams.set('status', params.status);
-      const q = searchParams.toString() ? `?${searchParams.toString()}` : '';
-      return fetcher<FamilyResponse[]>(`/api/v1/families${q}`);
+      const response: AxiosResponse<FamilyResponse[]> = await apiClient.get('/api/v1/families', {
+        params,
+      });
+      return response.data;
     },
 
     /**
@@ -335,10 +325,8 @@ export const api = {
      * POST /api/v1/families
      */
     create: async (data: CreateFamilyRequest): Promise<FamilyResponse> => {
-      return fetcher<FamilyResponse>('/api/v1/families', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      const response: AxiosResponse<FamilyResponse> = await apiClient.post('/api/v1/families', data);
+      return response.data;
     },
 
     /**
@@ -346,7 +334,8 @@ export const api = {
      * GET /api/v1/families/{id}
      */
     getById: async (id: number | string): Promise<FamilyResponse> => {
-      return fetcher<FamilyResponse>(`/api/v1/families/${id}`);
+      const response: AxiosResponse<FamilyResponse> = await apiClient.get(`/api/v1/families/${id}`);
+      return response.data;
     },
 
     /**
@@ -354,10 +343,8 @@ export const api = {
      * PUT /api/v1/families/{id}
      */
     update: async (id: number | string, data: UpdateFamilyRequest): Promise<FamilyResponse> => {
-      return fetcher<FamilyResponse>(`/api/v1/families/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      const response: AxiosResponse<FamilyResponse> = await apiClient.put(`/api/v1/families/${id}`, data);
+      return response.data;
     },
 
     /**
@@ -365,9 +352,7 @@ export const api = {
      * DELETE /api/v1/families/{id}
      */
     delete: async (id: number | string): Promise<void> => {
-      return fetcher<void>(`/api/v1/families/${id}`, {
-        method: 'DELETE',
-      });
+      await apiClient.delete(`/api/v1/families/${id}`);
     },
   },
 
@@ -380,8 +365,10 @@ export const api = {
      * GET /api/v1/cities?query={query}
      */
     search: async (query?: string): Promise<CityResponse[]> => {
-      const q = query ? `?query=${encodeURIComponent(query)}` : '';
-      return fetcher<CityResponse[]>(`/api/v1/cities${q}`);
+      const response: AxiosResponse<CityResponse[]> = await apiClient.get('/api/v1/cities', {
+        params: query ? { query } : undefined,
+      });
+      return response.data;
     },
   },
 
@@ -391,7 +378,10 @@ export const api = {
      * GET /api/v1/categories
      */
     list: async (): Promise<CategoryResponse[]> => {
-      return fetcher<CategoryResponse[]>('/api/v1/categories');
+      const response: AxiosResponse<CategoryResponse[]> = await apiClient.get('/api/v1/categories');
+      return response.data;
     },
   },
 };
+
+export default api;
