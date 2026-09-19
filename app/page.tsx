@@ -87,14 +87,7 @@ export default function HomePage() {
               <span>لتنسيق إغاثة الكوارث</span>
             </div>
 
-            <button
-              onClick={() => fetchLiveData()}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"
-              title="تحديث البيانات من خادم Render"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>خادم حي (Render)</span>
-            </button>
+       
           </div>
 
           {/* Main Headline with Highlight box (Font: Zain) */}
