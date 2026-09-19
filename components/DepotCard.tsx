@@ -59,7 +59,7 @@ export default function DepotCard({ depot }: DepotCardProps) {
                 href={depot.googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/50 hover:bg-sky-100 px-2 py-0.5 rounded-md transition-colors shrink-0"
+                className="inline-flex items-center gap-1 text-[11px] font-bold bg-primary text-white px-2 py-0.5 rounded-md transition-colors shrink-0"
               >
                 <span>Google Maps</span>
                 <ExternalLink className="w-2.5 h-2.5" />
