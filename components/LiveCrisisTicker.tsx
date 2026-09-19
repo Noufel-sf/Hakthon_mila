@@ -9,7 +9,7 @@ export default function LiveCrisisTicker() {
 
   const urgentNeeds = depots.flatMap(depot => {
     return depot.items
-      .filter(item => item.targetNeed - item.currentStock > 0 && item.priority === 'urgent')
+      .filter(item => item.targetNeed - item.currentStock > 0 && (item.priority === 'CRITICAL' || item.priority === 'HIGH' || (item.priority as any) === 'urgent'))
       .map(item => ({
         depotName: depot.name,
         wilaya: depot.wilaya,

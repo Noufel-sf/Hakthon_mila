@@ -29,7 +29,7 @@ export default function NeedsPage() {
   // Collect and aggregate items across all depots
   interface AggregatedItem {
     name: string;
-    nameFr: string;
+    nameFr?: string;
     category: AidCategory;
     totalStock: number;
     totalNeed: number;
@@ -50,7 +50,7 @@ export default function NeedsPage() {
       if (!itemsMap.has(key)) {
         itemsMap.set(key, {
           name: item.name,
-          nameFr: item.nameFr,
+          nameFr: item.nameFr || item.name,
           category: item.category,
           totalStock: item.currentStock,
           totalNeed: item.targetNeed,
@@ -81,7 +81,7 @@ export default function NeedsPage() {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     const matchesSearch = 
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.nameFr.toLowerCase().includes(searchQuery.toLowerCase());
+      (item.nameFr?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 

@@ -24,7 +24,7 @@ export default function SmartIntakePage() {
   const { depots, selectedDepotId, receiveCargo, getDepot } = useRelief();
   const currentDepot = getDepot(selectedDepotId) || depots[0];
 
-  const [category, setCategory] = useState<AidCategory>('food');
+  const [category, setCategory] = useState<AidCategory>('FOOD');
   const [itemName, setItemName] = useState<string>('حليب معقم 1 لتر');
   const [quantity, setQuantity] = useState<number>(300);
   const [unit, setUnit] = useState<string>('علبة');
@@ -39,10 +39,10 @@ export default function SmartIntakePage() {
 
   // Suggested item presets
   const presets = [
-    { cat: 'food' as AidCategory, name: 'حليب معقم كامل الدسم (1 لتر)', qty: 300, unit: 'علبة', exp: true },
-    { cat: 'bedding' as AidCategory, name: 'أفرشة نوم إسفنجية مفردة', qty: 100, unit: 'فراش', exp: false },
-    { cat: 'furniture' as AidCategory, name: 'أرائك وكنبات صالون', qty: 40, unit: 'كنبة', exp: false },
-    { cat: 'appliances' as AidCategory, name: 'ثلاجات منزلية مدمجة', qty: 15, unit: 'ثلاجة', exp: false },
+    { cat: 'FOOD' as AidCategory, name: 'حليب معقم كامل الدسم (1 لتر)', qty: 300, unit: 'علبة', exp: true },
+    { cat: 'MATTRESSES' as AidCategory, name: 'أفرشة نوم إسفنجية مفردة', qty: 100, unit: 'فراش', exp: false },
+    { cat: 'FURNITURE' as AidCategory, name: 'أرائك وكنبات صالون', qty: 40, unit: 'كنبة', exp: false },
+    { cat: 'APPLIANCES' as AidCategory, name: 'ثلاجات منزلية مدمجة', qty: 15, unit: 'ثلاجة', exp: false },
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
