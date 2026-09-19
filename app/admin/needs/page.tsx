@@ -18,7 +18,8 @@ import {
   X, 
   FileText,
   AlertTriangle,
-  ChevronLeft
+  ChevronLeft,
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
@@ -38,6 +39,7 @@ export default function AdminNeedsPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
   // Modal states
+  const [viewingNeed, setViewingNeed] = useState<NeedResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingNeedId, setEditingNeedId] = useState<number | string | null>(null);
@@ -337,19 +339,16 @@ export default function AdminNeedsPage() {
         <table className="w-full text-right text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
-              <th className="py-4 px-5">المادة / الصنف</th>
+              <th className="py-4 px-5">المادة والصنف</th>
               <th className="py-4 px-5">المستودع المستفيد</th>
-              <th className="py-4 px-5">المتوفر / المطلوب</th>
-              <th className="py-4 px-5">العجز الفعلي</th>
-              <th className="py-4 px-5">الأولوية</th>
-              <th className="py-4 px-5">ملاحظات الميدان</th>
+              <th className="py-4 px-5">العجز والأولوية</th>
               <th className="py-4 px-5 text-center">الإجراءات</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-400">
+                <td colSpan={4} className="py-12 text-center text-slate-400">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
                   <span>جاري تحميل سجل الاحتياجات من خادم Render...</span>
                 </td>
@@ -359,15 +358,18 @@ export default function AdminNeedsPage() {
                 const arName = getItemNameAr(need.itemName);
                 const arUnit = getUnitNameAr(need.unit);
                 const isDeficit = need.shortage > 0;
-                const fulfillmentPct = Math.min(100, Math.round((need.currentAvailableQuantity / (need.requestedQuantity || 1)) * 100));
                 const priorityMeta = PRIORITY_LABELS[need.priority] || { label: need.priority, color: 'slate' };
 
                 return (
-                  <tr key={need.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                    {/* Item Name */}
+                  <tr 
+                    key={need.id} 
+                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                    onClick={() => setViewingNeed(need)}
+                  >
+                    {/* Item Name & Category */}
                     <td className="py-4 px-5">
                       <div className="space-y-0.5">
-                        <span className="font-bold text-slate-900 dark:text-white block text-base leading-snug">
+                        <span className="font-bold text-slate-900 dark:text-white block text-base leading-snug group-hover:text-primary transition-colors">
                           {arName}
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -381,76 +383,53 @@ export default function AdminNeedsPage() {
 
                     {/* Depot Name */}
                     <td className="py-4 px-5 text-xs">
-                      <Link 
-                        href={`/depots/${need.depotId}`}
-                        className="font-bold text-slate-800 dark:text-slate-200 hover:text-primary transition-colors flex items-center gap-1"
-                      >
+                      <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                         <Warehouse className="w-3.5 h-3.5 text-primary shrink-0" />
                         <span>{need.depotName || `مستودع #${need.depotId}`}</span>
-                      </Link>
-                    </td>
-
-                    {/* Stock vs Target Need */}
-                    <td className="py-4 px-5">
-                      <div className="space-y-1 w-32">
-                        <div className="flex justify-between text-xs font-mono font-bold">
-                          <span>{need.currentAvailableQuantity}</span>
-                          <span className="text-slate-400">/ {need.requestedQuantity} {arUnit}</span>
-                        </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${isDeficit ? 'bg-rose-500' : 'bg-primary'}`}
-                            style={{ width: `${fulfillmentPct}%` }}
-                          ></div>
-                        </div>
                       </div>
                     </td>
 
-                    {/* Deficit Badge */}
+                    {/* Deficit & Priority */}
                     <td className="py-4 px-5">
-                      {isDeficit ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse"></span>
-                          <span>عجز {need.shortage} {arUnit}</span>
-                        </span>
-                      ) : (
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>مكتفي</span>
-                        </span>
-                      )}
-                    </td>
+                      <div className="flex items-center gap-2">
+                        {isDeficit ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse"></span>
+                            <span>عجز {need.shortage} {arUnit}</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>مكتفي</span>
+                          </span>
+                        )}
 
-                    {/* Priority */}
-                    <td className="py-4 px-5">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                        need.priority === 'CRITICAL' 
-                          ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
-                          : need.priority === 'HIGH'
-                          ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
-                          : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
-                      }`}>
-                        {priorityMeta.label}
-                      </span>
-                    </td>
-
-                    {/* Notes */}
-                    <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400 max-w-xs">
-                      {need.notes ? (
-                        <span className="block truncate" title={need.notes}>
-                          {need.notes}
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                          need.priority === 'CRITICAL' 
+                            ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                            : need.priority === 'HIGH'
+                            ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                            : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
+                        }`}>
+                          {priorityMeta.label}
                         </span>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
+                      </div>
                     </td>
 
                     {/* Actions */}
-                    <td className="py-4 px-5">
-                      <div className="flex items-center justify-center gap-1.5">
+                    <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          onClick={() => setViewingNeed(need)}
+                          className="p-2 rounded-xl text-slate-500 hover:text-primary hover:bg-primary/10 transition-colors"
+                          title="عرض التفاصيل الكاملة"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+
                         <button
                           onClick={() => handleOpenEdit(need)}
-                          className="p-2 rounded-xl text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors cursor-pointer"
+                          className="p-2 rounded-xl text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors"
                           title="تعديل الاحتياج"
                         >
                           <Edit3 className="w-4 h-4" />
@@ -461,7 +440,7 @@ export default function AdminNeedsPage() {
                             setDeletingNeed(need);
                             setIsDeleting(true);
                           }}
-                          className="p-2 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                          className="p-2 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors"
                           title="حذف الاحتياج"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -473,7 +452,7 @@ export default function AdminNeedsPage() {
               })
             ) : (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-400">
+                <td colSpan={4} className="py-12 text-center text-slate-400">
                   لا توجد طلبات احتياج مطابقة للفلاتر المحددة
                 </td>
               </tr>
@@ -481,6 +460,177 @@ export default function AdminNeedsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* ================= VIEW DETAILS MODAL ================= */}
+      {viewingNeed && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 space-y-5 shadow-2xl">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <ClipboardList className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-lg text-slate-900 dark:text-white leading-snug">
+                    {getItemNameAr(viewingNeed.itemName)}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary">
+                      {viewingNeed.category}
+                    </span>
+                    <span className="text-xs font-mono text-slate-400">{viewingNeed.itemName}</span>
+                    <span className="text-xs font-mono text-slate-400">ID: #{viewingNeed.id}</span>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setViewingNeed(null)}
+                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Depot & Priority Banner */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">المستودع المحتاج:</span>
+                <Link 
+                  href={`/depots/${viewingNeed.depotId}`}
+                  className="font-bold text-sm text-primary hover:underline flex items-center gap-1"
+                >
+                  <Warehouse className="w-4 h-4" />
+                  <span>{viewingNeed.depotName || `مستودع #${viewingNeed.depotId}`}</span>
+                </Link>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">درجة الأولوية:</span>
+                <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                  viewingNeed.priority === 'CRITICAL' 
+                    ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                    : viewingNeed.priority === 'HIGH'
+                    ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                    : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
+                }`}>
+                  {PRIORITY_LABELS[viewingNeed.priority]?.label || viewingNeed.priority}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">حالة التغطية:</span>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {viewingNeed.status === 'FULFILLED' ? 'مكتمل التغطية' : viewingNeed.status === 'PARTIALLY_FULFILLED' ? 'مغطى جزئياً' : 'مفتوح للتبرع والدعم'}
+                </span>
+              </div>
+            </div>
+
+            {/* Quantities & Fulfillment Breakdown */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">ميزانية المخزون والاحتياج</h4>
+              
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-800">
+                  <span className="text-[11px] text-slate-400 block mb-0.5">المطلوب</span>
+                  <span className="text-base font-mono font-black text-slate-900 dark:text-white">
+                    {viewingNeed.requestedQuantity}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">{getUnitNameAr(viewingNeed.unit)}</span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30">
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block mb-0.5">المتوفر</span>
+                  <span className="text-base font-mono font-black text-emerald-700 dark:text-emerald-300">
+                    {viewingNeed.currentAvailableQuantity || 0}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">{getUnitNameAr(viewingNeed.unit)}</span>
+                </div>
+
+                <div className={`p-3 rounded-2xl border ${
+                  viewingNeed.shortage > 0 
+                    ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30' 
+                    : 'bg-slate-50 dark:bg-slate-800/80 border-slate-100 dark:border-slate-800'
+                }`}>
+                  <span className={`text-[11px] block mb-0.5 ${viewingNeed.shortage > 0 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-400'}`}>
+                    العجز الفعلي
+                  </span>
+                  <span className={`text-base font-mono font-black ${viewingNeed.shortage > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>
+                    {viewingNeed.shortage}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">{getUnitNameAr(viewingNeed.unit)}</span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="space-y-1 pt-1">
+                <div className="flex justify-between text-xs font-mono text-slate-500">
+                  <span>نسبة استيفاء الاحتياج</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {Math.min(100, Math.round(((viewingNeed.currentAvailableQuantity || 0) / (viewingNeed.requestedQuantity || 1)) * 100))}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full ${viewingNeed.shortage > 0 ? 'bg-rose-500' : 'bg-primary'}`}
+                    style={{ width: `${Math.min(100, Math.round(((viewingNeed.currentAvailableQuantity || 0) / (viewingNeed.requestedQuantity || 1)) * 100))}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">ملاحظات الميدان والمسوّغات:</span>
+              <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 leading-relaxed">
+                {viewingNeed.notes || 'لا توجد ملاحظات ميدانية مسجلة لهذا الاحتياج.'}
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setViewingNeed(null)}
+              >
+                إغلاق
+              </Button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const toDelete = viewingNeed;
+                    setViewingNeed(null);
+                    setDeletingNeed(toDelete);
+                    setIsDeleting(true);
+                  }}
+                  className="px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>حذف الاحتياج</span>
+                </button>
+
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    const toEdit = viewingNeed;
+                    setViewingNeed(null);
+                    handleOpenEdit(toEdit);
+                  }}
+                  className="font-bold flex items-center gap-1.5"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>تعديل الاحتياج</span>
+                </Button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* ================= CREATE / EDIT NEED MODAL ================= */}
       {isModalOpen && (

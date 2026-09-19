@@ -21,7 +21,9 @@ import {
   X,
   Navigation,
   ShieldCheck,
-  ChevronLeft
+  ChevronLeft,
+  Eye,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
@@ -41,6 +43,10 @@ export default function AdminDepotsPage() {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [deletingDepot, setDeletingDepot] = useState<DepotSummaryResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // View Details Modal state
+  const [viewingDepot, setViewingDepot] = useState<DepotResponse | DepotSummaryResponse | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false);
 
   // Form fields
   const [name, setName] = useState<string>('');
@@ -74,6 +80,19 @@ export default function AdminDepotsPage() {
     fetchDepots();
   }, []);
 
+  const handleOpenViewDetails = async (depot: DepotSummaryResponse) => {
+    setViewingDepot(depot);
+    setIsLoadingDetails(true);
+    try {
+      const full = await api.depots.getById(depot.id);
+      if (full) setViewingDepot(full);
+    } catch {
+      // Keep summary
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
+
   const resetForm = () => {
     setName('');
     setDescription('');
@@ -96,13 +115,13 @@ export default function AdminDepotsPage() {
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = async (depot: DepotSummaryResponse) => {
+  const handleOpenEdit = async (depot: DepotSummaryResponse | DepotResponse) => {
     resetForm();
     setIsEditing(true);
     setEditingDepotId(depot.id);
     setIsModalOpen(true);
+    if (viewingDepot) setViewingDepot(null);
 
-    // Fetch detailed depot info if available
     try {
       const detailed = await api.depots.getById(depot.id);
       setName(detailed.name || depot.name);
@@ -177,6 +196,7 @@ export default function AdminDepotsPage() {
       toast.success(`تم حذف المستودع (${deletingDepot.name}) بنجاح`);
       setIsDeleting(false);
       setDeletingDepot(null);
+      if (viewingDepot?.id === deletingDepot.id) setViewingDepot(null);
       fetchDepots();
     } catch (err: any) {
       console.warn('[Admin Depots] Delete error:', err);
@@ -193,8 +213,7 @@ export default function AdminDepotsPage() {
     const matchesSearch = 
       d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (d.location?.wilaya || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (d.location?.commune || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (d.location?.address || '').toLowerCase().includes(searchQuery.toLowerCase());
+      (d.location?.commune || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesWilaya && matchesStatus && matchesSearch;
   });
 
@@ -208,7 +227,7 @@ export default function AdminDepotsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
-              إدارة المنظومة اللوجستية (Depots CRUD)
+              إدارة المستودعات (Depots CRUD)
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -219,7 +238,7 @@ export default function AdminDepotsPage() {
             دليل وإدارة مستودعات الإغاثة
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            إضافة وتعديل وحذف مراكز ومستودعات الإغاثة المعتمدة في كافة ولايات الوطن
+            عرض مبسّط للمستودعات مع إمكانية استعراض كامل التفاصيل والتعديل والحذف المباشر
           </p>
         </div>
 
@@ -247,48 +266,13 @@ export default function AdminDepotsPage() {
         </div>
       </div>
 
-      {/* KPI Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-1">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">إجمالي المستودعات</span>
-          <p className="text-2xl font-mono font-black text-slate-900 dark:text-white">{depots.length}</p>
-          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">موثقة بالكامل في قاعدة البيانات</span>
-        </div>
-
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-1">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">المستودعات النشطة</span>
-          <p className="text-2xl font-mono font-black text-emerald-600 dark:text-emerald-400">
-            {depots.filter(d => d.status === 'ACTIVE').length}
-          </p>
-          <span className="text-[11px] text-slate-400">جاهزة لاستقبال وتفريغ القوافل</span>
-        </div>
-
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-1">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">متوسط نسبة الإشغال</span>
-          <p className="text-2xl font-mono font-black text-amber-600 dark:text-amber-400">
-            {depots.length > 0 
-              ? Math.round(depots.reduce((acc, d) => acc + (d.occupancyPercentage || 0), 0) / depots.length)
-              : 0}%
-          </p>
-          <span className="text-[11px] text-slate-400">من السعة الاستيعابية الإجمالية</span>
-        </div>
-
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-1">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">النواقص الحرجة المسجلة</span>
-          <p className="text-2xl font-mono font-black text-rose-600 dark:text-rose-400">
-            {depots.reduce((acc, d) => acc + (d.activeShortagesCount || 0), 0)}
-          </p>
-          <span className="text-[11px] text-rose-500 font-medium">مواد تعاني من عجز فوري</span>
-        </div>
-      </div>
-
       {/* Filters Bar */}
       <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
         <div className="relative w-full sm:max-w-xs">
           <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="بحث بالاسم، الولاية، أو البلدية..."
+            placeholder="بحث بالمستودع، الولاية، أو البلدية..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full pr-10 pl-4 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-primary transition-colors"
@@ -322,15 +306,13 @@ export default function AdminDepotsPage() {
         </div>
       </div>
 
-      {/* Depots CRUD Table */}
+      {/* Streamlined Depots Table: Clean & Minimal */}
       <div className="overflow-x-auto rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
         <table className="w-full text-right text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
-              <th className="py-4 px-5">المستودع</th>
-              <th className="py-4 px-5">الموقع والبلدية</th>
+              <th className="py-4 px-5">المستودع والموقع</th>
               <th className="py-4 px-5">نسبة الإشغال</th>
-              <th className="py-4 px-5">النواقص</th>
               <th className="py-4 px-5">الحالة</th>
               <th className="py-4 px-5 text-center">الإجراءات</th>
             </tr>
@@ -338,7 +320,7 @@ export default function AdminDepotsPage() {
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-slate-400">
+                <td colSpan={4} className="py-12 text-center text-slate-400">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
                   <span>جاري تحميل المستودعات من خادم Render...</span>
                 </td>
@@ -349,37 +331,40 @@ export default function AdminDepotsPage() {
                 const statusMeta = DEPOT_STATUS_LABELS[depot.status] || { label: depot.status, color: 'slate' };
 
                 return (
-                  <tr key={depot.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                    {/* Depot Name */}
+                  <tr 
+                    key={depot.id} 
+                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                    onClick={() => handleOpenViewDetails(depot)}
+                  >
+                    {/* Depot Name & Wilaya badge */}
                     <td className="py-4 px-5">
-                      <div className="space-y-0.5">
-                        <Link 
-                          href={`/depots/${depot.id}`}
-                          className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors block text-base"
-                        >
-                          {depot.name}
-                        </Link>
-                        <span className="text-xs font-mono text-slate-400">ID: #{depot.id}</span>
-                      </div>
-                    </td>
-
-                    {/* Location */}
-                    <td className="py-4 px-5 text-xs">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1 font-bold text-slate-800 dark:text-slate-200">
-                          <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                          <span>ولاية {depot.location?.wilaya} — {depot.location?.commune}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Warehouse className="w-5 h-5" />
                         </div>
-                        <p className="text-slate-400 truncate max-w-xs">{depot.location?.address}</p>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 dark:text-white text-base group-hover:text-primary transition-colors">
+                              {depot.name}
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono">
+                              #{depot.id}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-primary shrink-0" />
+                            <span>ولاية {depot.location?.wilaya} — بلدية {depot.location?.commune}</span>
+                          </p>
+                        </div>
                       </div>
                     </td>
 
                     {/* Occupancy */}
                     <td className="py-4 px-5">
-                      <div className="space-y-1 w-32">
-                        <div className="flex justify-between text-xs font-mono font-bold">
-                          <span>{occupancy}%</span>
-                        </div>
+                      <div className="space-y-1 w-28">
+                        <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">
+                          {occupancy}% ممتلئ
+                        </span>
                         <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${
@@ -389,21 +374,6 @@ export default function AdminDepotsPage() {
                           ></div>
                         </div>
                       </div>
-                    </td>
-
-                    {/* Active Shortages */}
-                    <td className="py-4 px-5">
-                      {(depot.activeShortagesCount || 0) > 0 ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse"></span>
-                          <span>{depot.activeShortagesCount} نواقص</span>
-                        </span>
-                      ) : (
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>مكتفي</span>
-                        </span>
-                      )}
                     </td>
 
                     {/* Status */}
@@ -419,21 +389,21 @@ export default function AdminDepotsPage() {
                       </span>
                     </td>
 
-                    {/* Actions */}
-                    <td className="py-4 px-5">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <Link 
-                          href={`/depots/${depot.id}`}
+                    {/* Actions in row: View Details, Edit, Delete */}
+                    <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          onClick={() => handleOpenViewDetails(depot)}
                           className="p-2 rounded-xl text-slate-500 hover:text-primary hover:bg-primary/10 transition-colors"
-                          title="عرض التفاصيل والجرد"
+                          title="عرض كافة التفاصيل"
                         >
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
+                          <Eye className="w-4 h-4" />
+                        </button>
 
                         <button
                           onClick={() => handleOpenEdit(depot)}
-                          className="p-2 rounded-xl text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors cursor-pointer"
-                          title="تعديل بيانات المستودع"
+                          className="p-2 rounded-xl text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors"
+                          title="تعديل المستودع"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
@@ -443,7 +413,7 @@ export default function AdminDepotsPage() {
                             setDeletingDepot(depot);
                             setIsDeleting(true);
                           }}
-                          className="p-2 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                          className="p-2 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors"
                           title="حذف المستودع"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -455,7 +425,7 @@ export default function AdminDepotsPage() {
               })
             ) : (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-slate-400">
+                <td colSpan={4} className="py-12 text-center text-slate-400">
                   لا توجد مستودعات مطابقة لمعايير البحث
                 </td>
               </tr>
@@ -463,6 +433,149 @@ export default function AdminDepotsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* ================= VIEW DETAILS MODAL ================= */}
+      {viewingDepot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 space-y-5 shadow-2xl">
+            
+            <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Warehouse className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-lg text-slate-900 dark:text-white leading-snug">
+                    {viewingDepot.name}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary">
+                      ولاية {viewingDepot.location?.wilaya}
+                    </span>
+                    <span className="text-xs font-mono text-slate-400">ID: #{viewingDepot.id}</span>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setViewingDepot(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content info */}
+            <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300">
+              
+              {/* Location & Address */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 space-y-2">
+                <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-primary" />
+                  الموقع ونقطة التفريغ
+                </span>
+                <p className="font-bold text-slate-900 dark:text-white text-sm">
+                  {viewingDepot.location?.address || 'غير محدد بدقة'}
+                </p>
+                <p className="text-slate-500">
+                  البلدية: {viewingDepot.location?.commune} • ولاية {viewingDepot.location?.wilaya}
+                </p>
+                {viewingDepot.location?.googleMapsUrl && (
+                  <a
+                    href={viewingDepot.location.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 hover:underline pt-1"
+                  >
+                    <Navigation className="w-3 h-3" />
+                    <span>فتح الموقع في Google Maps</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                )}
+              </div>
+
+              {/* Capacity & Usage */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800">
+                  <span className="text-slate-400 block text-[11px]">نسبة الإشغال:</span>
+                  <span className="font-mono font-bold text-base text-slate-900 dark:text-white">
+                    {Math.round(viewingDepot.occupancyPercentage || 0)}%
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800">
+                  <span className="text-slate-400 block text-[11px]">الحالة الميدانية:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {DEPOT_STATUS_LABELS[viewingDepot.status]?.label || viewingDepot.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              {('contactInfo' in viewingDepot) && viewingDepot.contactInfo && (
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                    المسؤول الميداني والتواصل
+                  </span>
+                  {viewingDepot.contactInfo.managerName && (
+                    <p className="font-bold text-slate-900 dark:text-white">{viewingDepot.contactInfo.managerName}</p>
+                  )}
+                  {viewingDepot.contactInfo.phone && (
+                    <p className="font-mono text-slate-600 dark:text-slate-300" dir="ltr">{viewingDepot.contactInfo.phone}</p>
+                  )}
+                  {viewingDepot.contactInfo.email && (
+                    <p className="font-mono text-slate-500" dir="ltr">{viewingDepot.contactInfo.email}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Description */}
+              {('description' in viewingDepot) && viewingDepot.description && (
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 space-y-1">
+                  <span className="text-[11px] font-bold text-slate-500">الوصف والتجهيز:</span>
+                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">{viewingDepot.description}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+              <Link href={`/depots/${viewingDepot.id}`}>
+                <Button variant="outline" size="sm" className="text-xs">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>عرض صفحة المستودع</span>
+                </Button>
+              </Link>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleOpenEdit(viewingDepot)}
+                  className="text-xs font-bold"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>تعديل المستودع</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDeletingDepot(viewingDepot as DepotSummaryResponse);
+                    setIsDeleting(true);
+                  }}
+                  className="text-xs text-rose-600 border-rose-200 dark:border-rose-900 hover:bg-rose-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>حذف</span>
+                </Button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* ================= CREATE / EDIT MODAL ================= */}
       {isModalOpen && (
