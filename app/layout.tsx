@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Alexandria, Cairo } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import LiveCrisisTicker from "@/components/LiveCrisisTicker";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -43,17 +44,7 @@ export default function RootLayout({
           <main className="flex-1 pb-16">
             {children}
           </main>
-          <footer className="border-t border-border bg-slate-50 dark:bg-slate-900/60 py-8 text-center text-xs text-muted-foreground transition-colors">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="font-semibold text-slate-700 dark:text-slate-300">منظومة إغاثة الوطنية — هاكاثون ميلة</span>
-              </div>
-              <p className="text-slate-500 dark:text-slate-400">
-                منصة لتوفير المعلومة الدقيقة لترشيد وتوجيه العطاء ومنع هدر المساعدات.
-              </p>
-            </div>
-          </footer>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
