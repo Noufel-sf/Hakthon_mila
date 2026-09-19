@@ -148,11 +148,11 @@ export default function ExpiryManagementPage() {
             <table className="w-full text-right text-sm">
               <thead className="bg-slate-50 dark:bg-slate-800/80 text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                 <tr>
-                  <th className="py-3 px-4">رقم الدفعة / الصنف</th>
-                  <th className="py-3 px-4">الكمية المسجلة</th>
-                  <th className="py-3 px-4">تاريخ الانتهاء</th>
-                  <th className="py-3 px-4">الوقت المتبقي</th>
-                  <th className="py-3 px-4 text-center">أولوية الصرف</th>
+                  <th className="py-3 px-4 whitespace-nowrap">رقم الدفعة / الصنف</th>
+                  <th className="py-3 px-4 whitespace-nowrap">الكمية المسجلة</th>
+                  <th className="py-3 px-4 whitespace-nowrap">تاريخ الانتهاء</th>
+                  <th className="py-3 px-4 whitespace-nowrap">الوقت المتبقي</th>
+                  <th className="py-3 px-4 whitespace-nowrap text-center">أولوية الصرف</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
@@ -168,7 +168,7 @@ export default function ExpiryManagementPage() {
                       }`}
                     >
                       {/* Name */}
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white whitespace-nowrap">
                         <span className="block">{batch.itemName}</span>
                         <span className="text-[11px] font-mono text-slate-400 font-normal">
                           {batch.id} • استلمت: {batch.receivedDate}
@@ -176,34 +176,34 @@ export default function ExpiryManagementPage() {
                       </td>
 
                       {/* Quantity */}
-                      <td className="py-3.5 px-4 font-header font-bold text-base text-slate-900 dark:text-white">
+                      <td className="py-3.5 px-4 font-header font-bold text-base text-slate-900 dark:text-white whitespace-nowrap">
                         {batch.quantity} <span className="text-xs text-slate-400 font-normal">{batch.unit}</span>
                       </td>
 
                       {/* Expiry Date */}
-                      <td className="py-3.5 px-4 font-mono font-semibold text-xs">
+                      <td className="py-3.5 px-4 font-mono font-semibold text-xs whitespace-nowrap">
                         {batch.expiryDate}
                       </td>
 
                       {/* Status / Countdown */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         {isUrgent ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse whitespace-nowrap shrink-0">
                             ⚠️ {relative}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 whitespace-nowrap shrink-0">
                             ✅ {relative}
                           </span>
                         )}
                       </td>
 
                       {/* Action */}
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         <button 
                           type="button"
                           onClick={() => toast.success(`تم إدراج دفعة (${batch.itemName}) في خطة الصرف العاجل (FIFO)!`)}
-                          className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-primary transition-all cursor-pointer"
+                          className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-primary transition-all cursor-pointer whitespace-nowrap"
                         >
                           جدولة صرف عاجل
                         </button>

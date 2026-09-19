@@ -284,16 +284,16 @@ export default function AdminDistributionsPage() {
         <table className="w-full text-right text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
-              <th className="py-4 px-5">العائلة المستفيدة</th>
-              <th className="py-4 px-5">المادة الموزعة</th>
-              <th className="py-4 px-5">الكمية والمستودع</th>
-              <th className="py-4 px-5 text-center">الإجراءات</th>
+              <th className="py-4 px-5 whitespace-nowrap">العائلة المستفيدة</th>
+              <th className="py-4 px-5 whitespace-nowrap">المادة الموزعة</th>
+              <th className="py-4 px-5 whitespace-nowrap">الكمية والمستودع</th>
+              <th className="py-4 px-5 whitespace-nowrap text-center">الإجراءات</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="py-12 text-center text-slate-400">
+                <td colSpan={4} className="py-12 text-center text-slate-400 whitespace-nowrap">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
                   <span>جاري تحميل سجل التوزيع من خادم Render...</span>
                 </td>
@@ -310,7 +310,7 @@ export default function AdminDistributionsPage() {
                     onClick={() => setViewingDistribution(dist)}
                   >
                     {/* Family */}
-                    <td className="py-4 px-5">
+                    <td className="py-4 px-5 whitespace-nowrap">
                       <div className="space-y-0.5">
                         <span className="font-bold text-slate-900 dark:text-white block text-base group-hover:text-primary transition-colors">
                           {dist.headOfFamilyName || `عائلة #${dist.familyId}`}
@@ -322,14 +322,14 @@ export default function AdminDistributionsPage() {
                     </td>
 
                     {/* Item */}
-                    <td className="py-4 px-5">
+                    <td className="py-4 px-5 whitespace-nowrap">
                       <div className="space-y-0.5">
                         <span className="font-bold text-slate-900 dark:text-white block">
                           {arName}
                         </span>
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs font-mono text-slate-400">{dist.item}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary/10 text-primary">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary/10 text-primary shrink-0">
                             {dist.category}
                           </span>
                         </div>
@@ -337,7 +337,7 @@ export default function AdminDistributionsPage() {
                     </td>
 
                     {/* Quantity & Depot */}
-                    <td className="py-4 px-5">
+                    <td className="py-4 px-5 whitespace-nowrap">
                       <div className="space-y-0.5">
                         <div className="font-mono font-bold text-base text-slate-900 dark:text-white">
                           {dist.quantity} <span className="text-xs text-slate-400 font-normal">{arUnit}</span>
@@ -350,7 +350,7 @@ export default function AdminDistributionsPage() {
                     </td>
 
                     {/* Actions */}
-                    <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-4 px-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => setViewingDistribution(dist)}

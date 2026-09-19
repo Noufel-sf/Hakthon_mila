@@ -311,16 +311,16 @@ export default function AdminDepotsPage() {
         <table className="w-full text-right text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
-              <th className="py-4 px-5">المستودع والموقع</th>
-              <th className="py-4 px-5">نسبة الإشغال</th>
-              <th className="py-4 px-5">الحالة</th>
-              <th className="py-4 px-5 text-center">الإجراءات</th>
+              <th className="py-4 px-5 whitespace-nowrap">المستودع والموقع</th>
+              <th className="py-4 px-5 whitespace-nowrap">نسبة الإشغال</th>
+              <th className="py-4 px-5 whitespace-nowrap">الحالة</th>
+              <th className="py-4 px-5 whitespace-nowrap text-center">الإجراءات</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="py-12 text-center text-slate-400">
+                <td colSpan={4} className="py-12 text-center text-slate-400 whitespace-nowrap">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
                   <span>جاري تحميل المستودعات من خادم Render...</span>
                 </td>
@@ -337,7 +337,7 @@ export default function AdminDepotsPage() {
                     onClick={() => handleOpenViewDetails(depot)}
                   >
                     {/* Depot Name & Wilaya badge */}
-                    <td className="py-4 px-5">
+                    <td className="py-4 px-5 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                           <Warehouse className="w-5 h-5" />
@@ -360,7 +360,7 @@ export default function AdminDepotsPage() {
                     </td>
 
                     {/* Occupancy */}
-                    <td className="py-4 px-5">
+                    <td className="py-4 px-5 whitespace-nowrap">
                       <div className="space-y-1 w-28">
                         <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">
                           {occupancy}% ممتلئ
@@ -377,8 +377,8 @@ export default function AdminDepotsPage() {
                     </td>
 
                     {/* Status */}
-                    <td className="py-4 px-5">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                    <td className="py-4 px-5 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${
                         depot.status === 'ACTIVE'
                           ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900'
                           : depot.status === 'AT_CAPACITY'
@@ -390,7 +390,7 @@ export default function AdminDepotsPage() {
                     </td>
 
                     {/* Actions in row: View Details, Edit, Delete */}
-                    <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-4 px-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => handleOpenViewDetails(depot)}

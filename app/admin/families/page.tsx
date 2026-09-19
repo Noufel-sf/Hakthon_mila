@@ -315,16 +315,16 @@ export default function AdminFamiliesPage() {
         <table className="w-full text-right text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
-              <th className="py-4 px-5">رب الأسرة والكود</th>
-              <th className="py-4 px-5">الموقع والولاية</th>
-              <th className="py-4 px-5">الحالة الإنسانية</th>
-              <th className="py-4 px-5 text-center">الإجراءات</th>
+              <th className="py-4 px-5 whitespace-nowrap">رب الأسرة والكود</th>
+              <th className="py-4 px-5 whitespace-nowrap">الموقع والولاية</th>
+              <th className="py-4 px-5 whitespace-nowrap">الحالة الإنسانية</th>
+              <th className="py-4 px-5 whitespace-nowrap text-center">الإجراءات</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="py-12 text-center text-slate-400">
+                <td colSpan={4} className="py-12 text-center text-slate-400 whitespace-nowrap">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
                   <span>جاري تحميل سجل العائلات من خادم Render...</span>
                 </td>
@@ -340,7 +340,7 @@ export default function AdminFamiliesPage() {
                     onClick={() => setViewingFamily(fam)}
                   >
                     {/* Head of Family */}
-                    <td className="py-4 px-5">
+                    <td className="py-4 px-5 whitespace-nowrap">
                       <div className="space-y-0.5">
                         <span className="font-bold text-slate-900 dark:text-white block text-base group-hover:text-primary transition-colors">
                           {fam.headOfFamilyName}
@@ -349,7 +349,7 @@ export default function AdminFamiliesPage() {
                           <span className="text-xs font-mono font-bold text-primary">
                             {fam.aidId || `AID-DZ-2026-00${fam.id}`}
                           </span>
-                          <span className="text-[11px] px-2 py-0.2 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                          <span className="text-[11px] px-2 py-0.2 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0">
                             {fam.numberOfMembers} أفراد
                           </span>
                         </div>
@@ -357,7 +357,7 @@ export default function AdminFamiliesPage() {
                     </td>
 
                     {/* Shelter / Location */}
-                    <td className="py-4 px-5 text-xs">
+                    <td className="py-4 px-5 text-xs whitespace-nowrap">
                       <div className="space-y-0.5">
                         <p className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -368,14 +368,14 @@ export default function AdminFamiliesPage() {
                     </td>
 
                     {/* Status */}
-                    <td className="py-4 px-5">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${statusMeta.color}`}>
+                    <td className="py-4 px-5 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap shrink-0 ${statusMeta.color}`}>
                         {statusMeta.label}
                       </span>
                     </td>
 
                     {/* Actions */}
-                    <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-4 px-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => setViewingFamily(fam)}

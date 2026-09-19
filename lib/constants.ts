@@ -119,9 +119,9 @@ export const PRIORITY_LABELS: Record<Priority, { label: string; color: string }>
 };
 
 export const DEPOT_STATUS_LABELS: Record<DepotStatus, { label: string; color: string }> = {
-  ACTIVE: { label: 'نشط ومتاح للتفريغ', color: 'emerald' },
+  ACTIVE: { label: 'نشط ومتاح', color: 'emerald' },
   INACTIVE: { label: 'غير نشط', color: 'slate' },
-  AT_CAPACITY: { label: 'مكتمل الطاقة الاستيعابية', color: 'rose' },
+  AT_CAPACITY: { label: 'مكتمل السعة', color: 'rose' },
   TEMPORARILY_CLOSED: { label: 'مغلق مؤقتاً', color: 'amber' },
 };
 
