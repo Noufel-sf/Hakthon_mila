@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useReliefStore } from '@/lib/store';
-import { AidCategory } from '@/lib/types';
+import { AidCategory, NeedResponse, DepotSummaryResponse } from '@/lib/types';
+import { api } from '@/lib/api';
 import { AID_CATEGORIES } from '@/lib/constants';
 import { 
   ClipboardList, 
@@ -24,15 +24,36 @@ import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
 
 export default function NeedsPage() {
-  const depots = useReliefStore((state) => state.depots);
-  const isLoadingApi = useReliefStore((state) => state.isLoadingApi);
-  const isLiveApiConnected = useReliefStore((state) => state.isLiveApiConnected);
-  const fetchLiveData = useReliefStore((state) => state.fetchLiveData);
+  const [needs, setNeeds] = useState<NeedResponse[]>([]);
+  const [depots, setDepots] = useState<DepotSummaryResponse[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  const fetchNeedsData = async () => {
+    try {
+      setIsRefreshing(true);
+      const [needsList, depotList] = await Promise.all([
+        api.needs.list().catch(() => []),
+        api.depots.list().catch(() => []),
+      ]);
+      setNeeds(needsList || []);
+      setDepots(depotList || []);
+    } catch (err) {
+      console.warn('[Needs Page] Error loading needs:', err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNeedsData();
+  }, []);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Collect and aggregate items across all depots
+  // Collect and aggregate items across all real needs
   interface AggregatedItem {
     name: string;
     nameFr?: string;
@@ -47,37 +68,63 @@ export default function NeedsPage() {
 
   const itemsMap = new Map<string, AggregatedItem>();
 
-  depots.forEach((depot) => {
-    depot.items.forEach((item) => {
-      const key = item.name.trim().toLowerCase();
-      const deficit = Math.max(0, item.targetNeed - item.currentStock);
-      const surplus = Math.max(0, item.currentStock - item.targetNeed);
+  needs.forEach((need) => {
+    const key = need.itemName.trim().toLowerCase();
+    const deficit = need.shortage > 0 
+      ? need.shortage 
+      : Math.max(0, need.requestedQuantity - need.currentAvailableQuantity);
+    const surplus = Math.max(0, need.currentAvailableQuantity - need.requestedQuantity);
 
-      if (!itemsMap.has(key)) {
-        itemsMap.set(key, {
-          name: item.name,
-          nameFr: item.nameFr || item.name,
-          category: item.category,
-          totalStock: item.currentStock,
-          totalNeed: item.targetNeed,
-          totalDeficit: deficit,
-          unit: item.unit,
-          depotsNeeding: deficit > 0 ? [{ depotId: depot.id, depotName: depot.name, wilaya: depot.wilaya, deficit, mapsUrl: depot.googleMapsUrl }] : [],
-          depotsSurplus: surplus > 0 ? [{ depotId: depot.id, depotName: depot.name, wilaya: depot.wilaya, surplus }] : [],
+    const depotInfo = depots.find(d => String(d.id) === String(need.depotId));
+    const wilaya = depotInfo?.location?.wilaya || 'ميداني';
+    const mapsUrl = depotInfo?.location?.googleMapsUrl || `https://www.google.com/maps?q=${depotInfo?.location?.latitude || 36.8},${depotInfo?.location?.longitude || 5.7}`;
+
+    if (!itemsMap.has(key)) {
+      itemsMap.set(key, {
+        name: need.itemName,
+        nameFr: need.itemName,
+        category: need.category,
+        totalStock: need.currentAvailableQuantity,
+        totalNeed: need.requestedQuantity,
+        totalDeficit: deficit,
+        unit: need.unit,
+        depotsNeeding: deficit > 0 ? [{ 
+          depotId: String(need.depotId), 
+          depotName: need.depotName || depotInfo?.name || 'مستودع إغاثة', 
+          wilaya, 
+          deficit, 
+          mapsUrl 
+        }] : [],
+        depotsSurplus: surplus > 0 ? [{ 
+          depotId: String(need.depotId), 
+          depotName: need.depotName || depotInfo?.name || 'مستودع إغاثة', 
+          wilaya, 
+          surplus 
+        }] : [],
+      });
+    } else {
+      const existing = itemsMap.get(key)!;
+      existing.totalStock += need.currentAvailableQuantity;
+      existing.totalNeed += need.requestedQuantity;
+      existing.totalDeficit += deficit;
+      if (deficit > 0) {
+        existing.depotsNeeding.push({ 
+          depotId: String(need.depotId), 
+          depotName: need.depotName || depotInfo?.name || 'مستودع إغاثة', 
+          wilaya, 
+          deficit, 
+          mapsUrl 
         });
-      } else {
-        const existing = itemsMap.get(key)!;
-        existing.totalStock += item.currentStock;
-        existing.totalNeed += item.targetNeed;
-        existing.totalDeficit += deficit;
-        if (deficit > 0) {
-          existing.depotsNeeding.push({ depotId: depot.id, depotName: depot.name, wilaya: depot.wilaya, deficit, mapsUrl: depot.googleMapsUrl });
-        }
-        if (surplus > 0) {
-          existing.depotsSurplus.push({ depotId: depot.id, depotName: depot.name, wilaya: depot.wilaya, surplus });
-        }
       }
-    });
+      if (surplus > 0) {
+        existing.depotsSurplus.push({ 
+          depotId: String(need.depotId), 
+          depotName: need.depotName || depotInfo?.name || 'مستودع إغاثة', 
+          wilaya, 
+          surplus 
+        });
+      }
+    }
   });
 
   const allItems = Array.from(itemsMap.values());
@@ -106,14 +153,14 @@ export default function NeedsPage() {
           </div>
 
           <button
-            onClick={() => fetchLiveData()}
-            disabled={isLoadingApi}
+            onClick={() => fetchNeedsData()}
+            disabled={isRefreshing}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"
             title="تحديث الاحتياجات مباشرة من خادم Render"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>خادم حي (Render)</span>
-            <RefreshCw className={`w-3 h-3 ${isLoadingApi ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
         
@@ -176,7 +223,13 @@ export default function NeedsPage() {
 
       {/* Main Needs Cards List: Only One Need Card per Row */}
       <div className="space-y-5">
-        {sortedItems.length > 0 ? (
+        {isLoading && sortedItems.length === 0 ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-44 rounded-[2rem] bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-800" />
+            ))}
+          </div>
+        ) : sortedItems.length > 0 ? (
           sortedItems.map((item) => {
             const fulfillmentPct = Math.min(100, Math.round((item.totalStock / (item.totalNeed || 1)) * 100));
             const hasCriticalDeficit = item.totalDeficit > 0;

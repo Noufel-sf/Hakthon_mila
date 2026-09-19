@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useReliefStore } from '@/lib/store';
+import { useReliefStore, mapSummaryToDepot } from '@/lib/store';
+import { api } from '@/lib/api';
 import DepotCard from '@/components/DepotCard';
 import { 
   Search, 
@@ -24,10 +25,33 @@ import { AID_CATEGORIES } from '@/lib/constants';
 
 export default function HomePage() {
   const depots = useReliefStore((state) => state.depots);
-  const isLiveApiConnected = useReliefStore((state) => state.isLiveApiConnected);
-  const fetchLiveData = useReliefStore((state) => state.fetchLiveData);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(depots.length === 0);
+
+  // Fetch only this page's required requests: depots list & needs list
+  useEffect(() => {
+    let isMounted = true;
+    async function loadPageData() {
+      try {
+        const [depotList, needsList] = await Promise.all([
+          api.depots.list().catch(() => []),
+          api.needs.list().catch(() => []),
+        ]);
+        if (isMounted) {
+          if (depotList && depotList.length > 0) {
+            const mapped = depotList.map(d => mapSummaryToDepot(d, needsList, []));
+            useReliefStore.getState().setDepots(mapped);
+          }
+          setIsLoading(false);
+        }
+      } catch (err) {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadPageData();
+    return () => { isMounted = false; };
+  }, []);
 
   // Calculate global summary stats
   const totalDepots = depots.length;
@@ -83,17 +107,15 @@ export default function HomePage() {
           
           {/* Top Pill Tag (Like 'لتسيير تجارتك' in screenshot) */}
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs sm:text-sm font-header font-bold bg-primary text-white border border-[#C6EFF2] dark:border-[#1E525B] shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs sm:text-sm font-header font-bold bg-primary text-white border border-primary shadow-2xs">
               <span>لتنسيق إغاثة الكوارث</span>
             </div>
-
-       
           </div>
 
           {/* Main Headline with Highlight box (Font: Zain) */}
           <h1 className="font-header text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.2]">
             وجّه ونسّق المساعدات الميدانية <br />
-            <span className="relative inline-block mt-2 px-5 py-1 bg-primary text-white  rounded-2xl shadow-xs">
+            <span className="relative inline-block mt-2 px-5 py-1 bg-primary text-white rounded-2xl shadow-xs">
               من منصة واحدة
             </span>
           </h1>
@@ -107,7 +129,7 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
             <Link
               href="/needs"
-              className="px-8 py-3 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-header font-bold text-sm sm:text-base shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5"
+              className="px-8 py-3 rounded-full bg-[#03120D] hover:bg-[#07261C] text-white font-header font-bold text-sm sm:text-base shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5"
             >
               استكشف النواقص
             </Link>
@@ -139,7 +161,7 @@ export default function HomePage() {
                   onClick={() => setSelectedCategory(pill.id)}
                   className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-header font-bold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#E0533C] text-white shadow-sm shadow-[#E0533C]/25'
+                      ? 'bg-[#03120D] text-white shadow-sm shadow-[#03120D]/25'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -157,14 +179,14 @@ export default function HomePage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="أكتب هنا للبحث عن صنف، بلدية أو مستودع..."
-                className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-2xl pl-4 pr-10 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-[#E0533C] transition-colors"
+                className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-2xl pl-4 pr-10 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-[#03120D] transition-colors"
               />
               <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
 
             <button
               onClick={() => {}}
-              className="px-6 py-2.5 rounded-2xl bg-[#E0533C] hover:bg-[#C9442E] text-white font-header font-bold text-xs sm:text-sm transition-all shadow-sm shadow-[#E0533C]/20 shrink-0 cursor-pointer"
+              className="px-6 py-2.5 rounded-2xl bg-[#03120D] hover:bg-[#07261C] text-white font-header font-bold text-xs sm:text-sm transition-all shadow-sm shadow-[#03120D]/20 shrink-0 cursor-pointer"
             >
               إبحــث الآن
             </button>
@@ -177,7 +199,7 @@ export default function HomePage() {
       <div className="space-y-6 pt-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-xs font-bold text-[#E0533C] uppercase tracking-wider block mb-1">
+            <span className="text-xs font-bold text-[#03120D] dark:text-white uppercase tracking-wider block mb-1">
               المستودعات الميدانية
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -193,7 +215,7 @@ export default function HomePage() {
 
             <Link
               href="/depots"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#E0533C] hover:underline"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#03120D] dark:text-white hover:underline"
             >
               <span>عرض دليل المستودعات بالكامل</span>
               <ArrowLeft className="w-4 h-4" />
@@ -201,7 +223,13 @@ export default function HomePage() {
           </div>
         </div>
 
-        {filteredDepots.length > 0 ? (
+        {isLoading && depots.length === 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-80 rounded-3xl bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-800" />
+            ))}
+          </div>
+        ) : filteredDepots.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDepots.map(depot => (
               <DepotCard key={depot.id} depot={depot} />

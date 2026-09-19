@@ -34,6 +34,8 @@ export interface LocationDTO {
   commune: string;
   address?: string;
   googleMapsUrl?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface ContactInfoDTO {

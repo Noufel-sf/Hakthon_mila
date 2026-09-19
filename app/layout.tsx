@@ -37,7 +37,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
-      <body className="min-h-screen flex flex-col bg-background text-foreground font-sans antialiased selection:bg-[#E0533C] selection:text-white">
+      <body className="min-h-screen flex flex-col bg-background text-foreground font-sans antialiased selection:bg-[#006233] selection:text-white">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <ApiSyncProvider>
             <Toaster richColors position="top-center" dir="rtl" />

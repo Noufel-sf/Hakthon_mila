@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useReliefStore } from '@/lib/store';
+import { useReliefStore, mapSummaryToDepot } from '@/lib/store';
+import { api } from '@/lib/api';
 import { 
   Warehouse, 
   Search, 
@@ -26,14 +27,36 @@ import { Progress } from '@/components/ui/progress';
 
 export default function DepotsDirectoryPage() {
   const depots = useReliefStore((state) => state.depots);
-  const isLoadingApi = useReliefStore((state) => state.isLoadingApi);
-  const isLiveApiConnected = useReliefStore((state) => state.isLiveApiConnected);
-  const fetchLiveData = useReliefStore((state) => state.fetchLiveData);
+  const [isLoading, setIsLoading] = useState<boolean>(depots.length === 0);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  const fetchDepotsData = async () => {
+    try {
+      setIsRefreshing(true);
+      const [depotList, needsList] = await Promise.all([
+        api.depots.list().catch(() => []),
+        api.needs.list().catch(() => []),
+      ]);
+      if (depotList && depotList.length > 0) {
+        const mapped = depotList.map(d => mapSummaryToDepot(d, needsList, []));
+        useReliefStore.getState().setDepots(mapped);
+      }
+    } catch (err) {
+      console.warn('[Depots Page] Failed to fetch depots:', err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepotsData();
+  }, []);
 
   const [selectedWilaya, setSelectedWilaya] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const wilayas = Array.from(new Set(depots.map(d => d.wilaya)));
+  const wilayas = Array.from(new Set(depots.map(d => d.wilaya).filter(Boolean)));
 
   const filteredDepots = depots.filter(depot => {
     const matchesWilaya = selectedWilaya === 'all' || depot.wilaya === selectedWilaya;
@@ -58,14 +81,14 @@ export default function DepotsDirectoryPage() {
           </div>
 
           <button
-            onClick={() => fetchLiveData()}
-            disabled={isLoadingApi}
+            onClick={() => fetchDepotsData()}
+            disabled={isRefreshing}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"
             title="تحديث البيانات مباشرة من خادم Render"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>خادم حي (Render)</span>
-            <RefreshCw className={`w-3 h-3 ${isLoadingApi ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
         
@@ -127,7 +150,13 @@ export default function DepotsDirectoryPage() {
 
       {/* Depots List: Only One Depot per Row (Clean, minimal, focused on essentials) */}
       <div className="space-y-5">
-        {filteredDepots.length > 0 ? (
+        {isLoading && depots.length === 0 ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-48 rounded-[2rem] bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-800" />
+            ))}
+          </div>
+        ) : filteredDepots.length > 0 ? (
           filteredDepots.map((depot) => {
             const criticalItems = depot.items.filter(
               item => item.targetNeed - item.currentStock > 0

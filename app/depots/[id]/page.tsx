@@ -57,7 +57,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         ]);
 
         if (depotRes) {
-          const items = needsRes.length > 0 ? needsRes.map(n => ({
+          const items = needsRes.map(n => ({
             id: `need-${n.id}`,
             name: n.itemName,
             nameFr: n.itemName,
@@ -68,7 +68,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
             assignedZone: getZoneForCategory(n.category),
             priority: n.priority,
             status: n.status,
-          })) : storeDepot?.items || [];
+          }));
 
           const batches = invRes.map(inv => ({
             id: inv.batchNumber || `BATCH-${inv.id}`,
@@ -76,33 +76,33 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
             itemName: inv.itemName,
             quantity: inv.quantity,
             unit: inv.unit,
-            expiryDate: inv.expirationDate || '2027-06-30',
-            receivedDate: inv.receivedDate || '2026-09-19',
+            expiryDate: inv.expirationDate || '',
+            receivedDate: inv.receivedDate || '',
             zone: getZoneForCategory(inv.category),
             status: (inv.isExpiringSoon ? 'expiring_soon' : inv.isExpired ? 'expired' : 'good') as any,
             batchNumber: inv.batchNumber,
           }));
 
-          const occupancy = Math.round(depotRes.occupancyPercentage || 43);
+          const occupancy = Math.round(depotRes.occupancyPercentage || 0);
 
           setDepot({
             id: String(depotRes.id),
             code: `DZ-${(depotRes.location?.wilaya || 'DEP').slice(0, 3).toUpperCase()}-0${depotRes.id}`,
             name: depotRes.name,
             description: depotRes.description || 'مستودع إغاثة ميداني معتمد',
-            wilaya: depotRes.location?.wilaya || 'جيجل',
-            municipality: depotRes.location?.commune || 'جيجل',
-            address: depotRes.location?.address || 'المنطقة الصناعية أولاد صالح، حظيرة B',
-            googleMapsUrl: depotRes.location?.googleMapsUrl || 'https://www.google.com/maps?q=36.8205,5.7667',
-            phone: depotRes.contactInfo?.phone || '+213 555 12 34 56',
-            manager: depotRes.contactInfo?.managerName || 'أحمد بن علي',
+            wilaya: depotRes.location?.wilaya || '',
+            municipality: depotRes.location?.commune || '',
+            address: depotRes.location?.address || '',
+            googleMapsUrl: depotRes.location?.googleMapsUrl || `https://www.google.com/maps?q=${depotRes.location?.latitude || 36.8},${depotRes.location?.longitude || 5.7}`,
+            phone: depotRes.contactInfo?.phone || '',
+            manager: depotRes.contactInfo?.managerName || '',
             status: (depotRes.status || 'ACTIVE') as any,
             totalCapacityPercent: occupancy,
             occupancyPercentage: occupancy,
             lastUpdated: 'محدث مباشرة عبر خادم Render',
             location: depotRes.location,
             contactInfo: depotRes.contactInfo,
-            zones: storeDepot?.zones || [
+            zones: [
               {
                 id: 'Zone A',
                 title: 'المنطقة أ - المواد الغذائية والمستلزمات الطبية',
@@ -138,7 +138,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
               },
             ],
             items,
-            batches: batches.length > 0 ? batches : (storeDepot?.batches || []),
+            batches,
           });
         }
       }
@@ -189,7 +189,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         <div>
           <Link
             href="/depots"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-[#E0533C] dark:hover:text-[#E0533C] transition-colors mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-[#006233] dark:hover:text-emerald-400 transition-colors mb-2"
           >
             <ArrowRight className="w-4 h-4" />
             <span>العودة لدليل المستودعات</span>
@@ -198,7 +198,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
               {depot.name}
             </h1>
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#FFF2F0] dark:bg-[#341611] text-[#E0533C] border border-[#FCD3CD] dark:border-[#52231A]">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#EBF4F0] dark:bg-[#07261C] text-[#006233] dark:text-emerald-300 border border-[#C5DFD6] dark:border-[#0E4734]">
               ولاية {depot.wilaya}
             </span>
             <span className="px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
@@ -231,7 +231,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
               rel="noopener noreferrer"
               className="w-full sm:w-auto"
             >
-              <Button variant="primary" className="w-full shadow-md shadow-[#E0533C]/20">
+              <Button variant="primary" className="w-full shadow-md shadow-[#03120D]/20">
                 <Navigation className="w-4 h-4" />
                 <span>الاتجاه للمستودع (Google Maps)</span>
               </Button>
@@ -251,7 +251,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 flex flex-col justify-between shadow-sm">
           <div>
             <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-semibold mb-1">
-              <MapPin className="w-4 h-4 text-[#E0533C]" />
+              <MapPin className="w-4 h-4 text-[#006233]" />
               الموقع ونقطة التفريغ الميدانية
             </span>
             <p className="text-base font-bold text-slate-900 dark:text-white">{depot.address}</p>
@@ -312,15 +312,15 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
       </div>
 
       {/* Guidance Notice Banner */}
-      <div className="rounded-3xl border border-[#FCD3CD] dark:border-[#52231A] bg-[#FFF8F7] dark:bg-[#2A1512] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+      <div className="rounded-3xl border border-[#FDD0D6] dark:border-[#3D1016] bg-[#FFF5F6] dark:bg-[#1E080C] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-[#E0533C] shrink-0 mt-0.5" />
+          <AlertTriangle className="w-5 h-5 text-[#D21034] shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-[#FED7D2]">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-[#FFA3B0]">
               توجيه عاجل لأصحاب المبادرات والشاحنات المتجهة نحو {depot.name}:
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-              هذا المستودع يعاني من عجز في <strong className="text-[#E0533C] dark:text-white font-bold">{urgentDeficits.map(i => i.name).join('، ')}</strong>. 
+              هذا المستودع يعاني من عجز في <strong className="text-[#D21034] dark:text-[#FF6B81] font-bold">{urgentDeficits.map(i => i.name).join('، ')}</strong>. 
               إذا كانت شاحنتك تحمل مواداً أخرى مغطاة، يرجى توجيهها لمستودع آخر يعاني من نقص حتى لا تتكدس وتتعرض للتلف.
             </p>
           </div>

@@ -93,7 +93,7 @@ export default function DepotCard({ depot }: DepotCardProps) {
                 href={depot.googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary hover:bg-[#c9442e] text-white text-xs font-bold font-header shadow-md transition-all hover:scale-105"
+                className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary hover:bg-[#07261C] text-white text-xs font-bold font-header shadow-md transition-all hover:scale-105"
                 title="فتح موقع المستودع على Google Maps"
               >
                 <span>Google Maps</span>
@@ -197,7 +197,7 @@ export default function DepotCard({ depot }: DepotCardProps) {
         </span>
         <Link
           href={`/depots/${depot.id}`}
-          className="inline-flex items-center gap-1.5 text-xs font-bold font-header text-primary hover:text-[#c9442e] transition-all group-hover:-translate-x-1"
+          className="inline-flex items-center gap-1.5 text-xs font-bold font-header text-primary hover:text-[#006233] transition-all group-hover:-translate-x-1"
         >
           <span>عرض الجرد الكامل</span>
           <ChevronLeft className="w-4 h-4" />

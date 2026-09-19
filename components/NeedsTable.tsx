@@ -56,12 +56,12 @@ export default function NeedsTable({ items, showZone = true }: NeedsTableProps) 
                 {/* Status / Deficit Badge */}
                 <td className="py-4 px-5">
                   {deficit > 0 ? (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FFF2F0] dark:bg-[#341611] text-[#9A2D1F] dark:text-[#FCA597] border border-[#FCD3CD] dark:border-[#52231A]">
-                      <span className="h-2 w-2 rounded-full bg-[#E0533C] animate-pulse"></span>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FFF0F2] dark:bg-[#2D0B12] text-[#D21034] dark:text-[#FFA3B0] border border-[#F8B8C2] dark:border-[#52131F]">
+                      <span className="h-2 w-2 rounded-full bg-[#D21034] animate-pulse"></span>
                       <span>عجز: {deficit} {item.unit}</span>
                     </div>
                   ) : isSurplus ? (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EBF4F0] dark:bg-[#07261C] text-[#006233] dark:text-emerald-300 border border-[#C5DFD6] dark:border-[#0E4734]">
                       <TrendingUp className="w-3.5 h-3.5" />
                       <span>فائض مستقر</span>
                     </div>
@@ -77,7 +77,7 @@ export default function NeedsTable({ items, showZone = true }: NeedsTableProps) 
                     <Progress 
                       value={fulfillmentPct} 
                       className="h-1.5 bg-slate-100 dark:bg-slate-800"
-                      indicatorClassName={isSufficient ? "bg-emerald-500" : "bg-[#E0533C]"}
+                      indicatorClassName={isSufficient ? "bg-[#006233]" : "bg-[#D21034]"}
                     />
                   </div>
                 </td>

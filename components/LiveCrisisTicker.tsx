@@ -20,10 +20,10 @@ export default function LiveCrisisTicker() {
   });
 
   return (
-    <div className="bg-[#FFF5F3] dark:bg-[#201311] border-b border-[#FDDCD6] dark:border-[#3D1E19] text-[#9A2D1F] dark:text-[#FCA597] text-xs py-2 px-4 transition-colors">
+    <div className="bg-[#FFF0F2] dark:bg-[#1E080C] border-b border-[#FDD0D6] dark:border-[#3D1016] text-[#A30B26] dark:text-[#FFA3B0] text-xs py-2 px-4 transition-colors">
       <div className="max-w-7xl mx-auto flex items-center gap-3 overflow-hidden">
-        <div className="flex items-center gap-1.5 font-bold text-[#E0533C] shrink-0 bg-[#FCE9E5] dark:bg-[#341611] px-2.5 py-0.5 rounded-full border border-[#F8CEC6] dark:border-[#4E221B]">
-          <Radio className="w-3.5 h-3.5 animate-pulse text-[#E0533C]" />
+        <div className="flex items-center gap-1.5 font-bold text-[#D21034] shrink-0 bg-[#FCE8EB] dark:bg-[#2D0B12] px-2.5 py-0.5 rounded-full border border-[#F8B8C2] dark:border-[#52131F]">
+          <Radio className="w-3.5 h-3.5 animate-pulse text-[#D21034]" />
           <span>تحديث ميداني مباشر</span>
         </div>
 
@@ -31,10 +31,10 @@ export default function LiveCrisisTicker() {
           {urgentNeeds.length > 0 ? (
             urgentNeeds.slice(0, 4).map((need, idx) => (
               <span key={idx} className="inline-flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#E0533C]"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-[#D21034]"></span>
                 <span className="font-semibold text-slate-900 dark:text-white">{need.wilaya}:</span>
                 <span>{need.depotName} بحاجة عاجلة إلى</span>
-                <strong className="text-[#E0533C] dark:text-[#F87171] font-bold">
+                <strong className="text-[#D21034] dark:text-[#FF6B81] font-bold">
                   {need.deficit} {need.unit} {need.itemName}
                 </strong>
               </span>
@@ -43,8 +43,8 @@ export default function LiveCrisisTicker() {
             <span>كل المستودعات في حالة توازن نسبي حالياً.</span>
           )}
 
-          <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+          <span className="inline-flex items-center gap-1.5 text-[#006233] dark:text-emerald-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#006233]"></span>
             <span>✅ المواد الغذائية مستقرة، الأولوية للتبرع بالأفرشة والأجهزة المنزلية.</span>
           </span>
         </div>

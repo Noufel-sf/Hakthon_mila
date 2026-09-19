@@ -42,9 +42,9 @@ export default function ZoneMapVisualizer({
         };
       case 'Zone D':
         return {
-          badge: 'bg-[#FFF2F0] dark:bg-[#341611] text-[#9A2D1F] dark:text-[#FCA597] border-[#FCD3CD] dark:border-[#52231A]',
-          bar: 'bg-[#E0533C]',
-          border: 'border-[#FCD3CD] dark:border-[#52231A] hover:border-[#E0533C]',
+          badge: 'bg-[#EBF4F0] dark:bg-[#07261C] text-[#006233] dark:text-emerald-300 border-[#C5DFD6] dark:border-[#0E4734]',
+          bar: 'bg-[#006233]',
+          border: 'border-[#C5DFD6] dark:border-[#0E4734] hover:border-[#006233]',
           icon: '🛋️',
         };
       default:
@@ -62,7 +62,7 @@ export default function ZoneMapVisualizer({
       <div className="flex items-center justify-between">
         <div>
           <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Layers className="w-4 h-4 text-[#E0533C]" />
+            <Layers className="w-4 h-4 text-[#006233]" />
             المخطط الهيكلي لمناطق المستودع الذكي (Smart Warehouse Zones)
           </h4>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -85,7 +85,7 @@ export default function ZoneMapVisualizer({
               key={zone.id}
               onClick={() => onSelectZone && onSelectZone(zone.id)}
               className={`p-5 rounded-3xl border transition-all cursor-pointer bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between ${theme.border} ${
-                isSelected ? 'ring-2 ring-[#E0533C] scale-[1.02] shadow-xl' : 'hover:shadow-md'
+                isSelected ? 'ring-2 ring-[#006233] scale-[1.02] shadow-xl' : 'hover:shadow-md'
               }`}
             >
               <div>

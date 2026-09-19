@@ -17,11 +17,11 @@ export function Button({
   const baseStyles = 'inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
   const variantStyles = {
-    primary: 'bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white shadow-lg shadow-rose-950/40 focus:ring-rose-500',
-    secondary: 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 focus:ring-slate-500',
-    outline: 'border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800/60 focus:ring-slate-500',
-    danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-950 focus:ring-rose-500',
-    success: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-950 focus:ring-emerald-500',
+    primary: 'bg-[#03120D] hover:bg-[#07261C] text-white shadow-md shadow-[#03120D]/20 focus:ring-[#03120D]',
+    secondary: 'bg-slate-100 hover:bg-slate-200 dark:bg-[#08281e] dark:hover:bg-[#0b3628] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-[#0e3b2d] focus:ring-[#03120D]',
+    outline: 'border border-slate-300 dark:border-[#0e3b2d] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#08281e] focus:ring-[#03120D]',
+    danger: 'bg-[#D21034] hover:bg-[#b50d2c] text-white shadow-md shadow-[#D21034]/20 focus:ring-[#D21034]',
+    success: 'bg-[#03120D] hover:bg-[#07261C] text-white shadow-md shadow-[#03120D]/20 focus:ring-[#03120D]',
   };
 
   const sizeStyles = {

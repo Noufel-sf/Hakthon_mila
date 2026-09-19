@@ -1,19 +1,16 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useReliefStore } from '@/lib/store';
+import React from 'react';
 
+/**
+ * ApiSyncProvider is a lightweight wrapper.
+ * Global blanket fetching has been removed so each individual page
+ * fetches only its own required endpoints.
+ */
 export default function ApiSyncProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const fetchLiveData = useReliefStore((state) => state.fetchLiveData);
-
-  useEffect(() => {
-    // Fetch live data from deployed Render API on initial mount
-    fetchLiveData();
-  }, [fetchLiveData]);
-
   return <>{children}</>;
 }

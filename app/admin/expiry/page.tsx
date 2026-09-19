@@ -20,29 +20,30 @@ import { getRelativeTime } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function ExpiryManagementPage() {
-  const { depots, selectedDepotId, getDepot, fetchLiveData } = useRelief();
-  const currentDepot = getDepot(selectedDepotId) || depots[0];
+  const { depots, selectedDepotId, getDepot } = useRelief();
+  const currentDepot = (selectedDepotId ? getDepot(selectedDepotId) : null) || depots[0];
 
   const [liveBatches, setLiveBatches] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const fetchLiveExpiringInventory = async () => {
     setIsLoading(true);
     try {
       const expiringRes = await api.inventory.getExpiring(90).catch(() => []);
-      if (expiringRes && expiringRes.length > 0) {
+      if (expiringRes) {
         const mapped = expiringRes.map(item => ({
           id: item.batchNumber || `BATCH-${item.id}`,
           depotId: String(item.depotId),
-          depotName: item.depotName || currentDepot.name,
+          depotName: item.depotName || currentDepot?.name || 'مستودع إغاثة',
           itemName: item.itemName,
           quantity: item.quantity,
           unit: item.unit,
           expiryDate: item.expirationDate || '2026-10-01',
           receivedDate: item.receivedDate || '2026-09-14',
           zone: getZoneForCategory(item.category),
-          status: (item.isExpiringSoon || (item.daysUntilExpiration && item.daysUntilExpiration <= 15)) ? 'expiring_soon' : 'good',
+          status: (item.isExpiringSoon || (item.daysUntilExpiration !== null && item.daysUntilExpiration !== undefined && item.daysUntilExpiration <= 15)) ? 'expiring_soon' : 'good',
           batchNumber: item.batchNumber,
+          daysUntilExpiration: item.daysUntilExpiration,
           isLiveRemote: true,
         }));
         setLiveBatches(mapped);
@@ -56,17 +57,10 @@ export default function ExpiryManagementPage() {
 
   useEffect(() => {
     fetchLiveExpiringInventory();
-  }, [currentDepot.id]);
+  }, []);
 
-  const allBatches = [...liveBatches];
-  currentDepot.batches.forEach(b => {
-    if (!allBatches.some(x => x.id === b.id || x.itemName === b.itemName)) {
-      allBatches.push(b);
-    }
-  });
-
-  // Sort batches by earliest expiry date
-  const sortedBatches = [...allBatches].sort((a, b) => {
+  // Sort strictly real batches by earliest expiry date
+  const sortedBatches = [...liveBatches].sort((a, b) => {
     return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime();
   });
 
@@ -88,14 +82,13 @@ export default function ExpiryManagementPage() {
               تتبع الصلاحية وتدوير المخزون (FIFO Tracking)
             </h1>
             <Badge variant="rose" size="md">
-              {currentDepot.name}
+              {currentDepot?.name || 'مستودع إغاثة'}
             </Badge>
           </div>
 
           <button
             onClick={() => {
               fetchLiveExpiringInventory();
-              fetchLiveData().catch(() => {});
             }}
             disabled={isLoading}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"

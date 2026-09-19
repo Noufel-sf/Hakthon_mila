@@ -32,8 +32,17 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { depots, selectedDepotId, setSelectedDepotId, getDepot, fetchLiveData, isLoadingApi } = useRelief();
-  const currentDepot = getDepot(selectedDepotId) || depots[0];
+  const { depots, selectedDepotId, setSelectedDepotId, getDepot, fetchDepotsOnly } = useRelief();
+  const [isLoadingDepots, setIsLoadingDepots] = useState(depots.length === 0);
+
+  // Fetch only depots list on mount if empty
+  React.useEffect(() => {
+    if (depots.length === 0) {
+      fetchDepotsOnly().finally(() => setIsLoadingDepots(false));
+    }
+  }, [depots.length, fetchDepotsOnly]);
+
+  const currentDepot = (selectedDepotId ? getDepot(selectedDepotId) : null) || depots[0];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDateRange, setActiveDateRange] = useState('آخر 30 يوماً');
@@ -41,7 +50,7 @@ export default function AdminLayout({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   // Find expiring items count in current depot for red badge
-  const expiringCount = currentDepot.batches.filter(b => b.status === 'expiring_soon').length;
+  const expiringCount = currentDepot?.batches?.filter(b => b.status === 'expiring_soon')?.length || 0;
 
   const navItems = [
     {
@@ -60,7 +69,7 @@ export default function AdminLayout({
       href: '/admin/expiry',
       label: 'تتبع الصلاحية (FIFO)',
       icon: Clock,
-      badge: expiringCount > 0 ? `${expiringCount}` : '3',
+      badge: expiringCount > 0 ? `${expiringCount}` : undefined,
       badgeColor: 'bg-rose-500 text-white',
     },
     {
@@ -145,11 +154,11 @@ export default function AdminLayout({
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                {currentDepot.name}
+                {currentDepot?.name || 'جاري تحميل المستودع...'}
               </span>
             </div>
             <p className="text-[11px] text-slate-400 line-clamp-1">
-              {currentDepot.address}
+              {currentDepot?.address || 'مستودع إغاثة ميداني معتمد'}
             </p>
             <div className="text-[10px] text-primary font-semibold flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -209,7 +218,7 @@ export default function AdminLayout({
                 <Warehouse className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="text-slate-500 dark:text-slate-400">المستودع:</span>
                 <select
-                  value={currentDepot.id}
+                  value={currentDepot?.id || ''}
                   onChange={(e) => setSelectedDepotId(e.target.value)}
                   aria-label="اختيار المستودع"
                   className="bg-transparent text-slate-800 dark:text-white font-bold focus:outline-none cursor-pointer pr-1"
@@ -225,7 +234,7 @@ export default function AdminLayout({
               {/* Mobile Depot select */}
               <div className="sm:hidden">
                 <select
-                  value={currentDepot.id}
+                  value={currentDepot?.id || ''}
                   onChange={(e) => setSelectedDepotId(e.target.value)}
                   aria-label="اختيار المستودع"
                   className="text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
@@ -245,14 +254,14 @@ export default function AdminLayout({
             
             {/* Live Render API Sync Pill */}
             <button
-              onClick={() => fetchLiveData()}
-              disabled={isLoadingApi}
+              onClick={() => fetchDepotsOnly()}
+              disabled={isLoadingDepots}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-all cursor-pointer"
-              title="مزامنة وتحديث البيانات من خادم Render"
+              title="تحديث قائمة المستودعات من خادم Render"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="hidden lg:inline">خادم حي (Render)</span>
-              <RefreshCw className={`w-3 h-3 ${isLoadingApi ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3 h-3 ${isLoadingDepots ? 'animate-spin' : ''}`} />
             </button>
 
             {/* Date Range Selector Pill (matches reference design "آخر 30 يوماً") */}

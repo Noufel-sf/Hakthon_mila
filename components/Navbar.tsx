@@ -8,17 +8,14 @@ import {
   MapPin, 
   ClipboardList, 
   SlidersHorizontal,
-  RotateCcw,
   HeartHandshake,
   ArrowLeft,
   Compass
 } from 'lucide-react';
-import { useReliefStore } from '@/lib/store';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const resetAllData = useReliefStore((state) => state.resetAllData);
 
   const navLinks = [
     {
@@ -39,13 +36,6 @@ export default function Navbar() {
     },
   ];
 
-  const handleReset = () => {
-    if (confirm('هل تريد إعادة تعيين البيانات التجريبية للوضع الافتراضي؟')) {
-      resetAllData();
-      alert('تمت إعادة ضبط البيانات بنجاح!');
-    }
-  };
-
   if (pathname.startsWith('/admin')) {
     return null;
   }
@@ -56,14 +46,14 @@ export default function Navbar() {
         
         {/* Right: Brand Logo (RTL layout) */}
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-          <div className="h-9 w-9 rounded-full bg-[#FFF2F0] dark:bg-[#341611] border border-[#FAD8D2] dark:border-[#52231A] flex items-center justify-center text-[#E0533C] shadow-2xs group-hover:scale-105 transition-transform">
-            <Compass className="w-5 h-5 text-primary" />
+          <div className="h-9 w-9 rounded-full bg-[#03120D] border border-[#03120D] flex items-center justify-center text-white shadow-2xs group-hover:scale-105 transition-transform">
+            <Compass className="w-5 h-5 text-white" />
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="font-header text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">
-              البوصلة <span className="text-primary">+</span>
+              البوصلة <span className="text-[#03120D] dark:text-emerald-400">+</span>
             </span>
-            <span className="text-[10px] font-bold font-mono tracking-wider text-[#E0533C] hidden sm:inline">
+            <span className="text-[10px] font-bold font-mono tracking-wider text-[#03120D] dark:text-white hidden sm:inline px-1.5 py-0.5 bg-[#03120D]/10 dark:bg-white/10 rounded border border-[#03120D]/20 dark:border-white/20">
               DZ
             </span>
           </div>
@@ -80,34 +70,25 @@ export default function Navbar() {
                 href={link.href}
                 className={`font-header text-sm sm:text-base font-bold transition-colors py-1 relative ${
                   isActive
-                    ? 'text-[#E0533C]'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-[#E0533C] dark:hover:text-[#E0533C]'
+                    ? 'text-[#03120D] dark:text-white'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-[#03120D] dark:hover:text-white'
                 }`}
               >
                 <span>{link.label}</span>
                 {isActive && (
-                  <span className="absolute -bottom-1.5 right-0 left-0 h-0.5 bg-[#E0533C] rounded-full"></span>
+                  <span className="absolute -bottom-1.5 right-0 left-0 h-0.5 bg-[#03120D] dark:bg-white rounded-full"></span>
                 )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Left: Actions (Theme toggle, Reset Demo, and Pill Buttons) */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Left: Actions (Theme toggle and Action Buttons) */}
+        <div className="flex items-center gap-2.5 shrink-0">
           {/* Theme Toggle (Dark / Light) */}
           <ThemeToggle />
 
-          {/* Reset Demo Data button */}
-          <button
-            onClick={handleReset}
-            title="إعادة تعيين البيانات للهاكاثون"
-            className="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-xs"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-
-          {/* Admin link pill (Like 'تسجيل الدخول' in screenshot) */}
+          {/* Admin link pill */}
           <Link
             href="/admin"
             className="hidden sm:inline-flex items-center px-4 py-2 rounded-full text-xs font-header font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"

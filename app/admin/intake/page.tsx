@@ -24,8 +24,8 @@ import { Badge } from '@/components/ui/Badge';
 import { toast } from 'sonner';
 
 export default function SmartIntakePage() {
-  const { depots, selectedDepotId, receiveCargo, getDepot, fetchLiveData } = useRelief();
-  const currentDepot = getDepot(selectedDepotId) || depots[0];
+  const { depots, selectedDepotId, receiveCargo, getDepot } = useRelief();
+  const currentDepot = (selectedDepotId ? getDepot(selectedDepotId) : null) || depots[0];
 
   const [category, setCategory] = useState<AidCategory>('FOOD');
   const [itemName, setItemName] = useState<string>('حليب معقم 1 لتر');
@@ -54,9 +54,11 @@ export default function SmartIntakePage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // 1. Immediate local reactive update
+    const depotNum = Number(currentDepot?.id) || Number(selectedDepotId) || 1;
+
+    // 1. Immediate local reactive update if currentDepot exists
     const res = receiveCargo(
-      currentDepot.id,
+      depotNum,
       category,
       itemName,
       quantity,
@@ -66,7 +68,6 @@ export default function SmartIntakePage() {
 
     // 2. Direct remote API call to Render backend
     try {
-      const depotNum = Number(currentDepot.id) || 1;
       const apiRes = await api.inventory.add({
         depotId: depotNum,
         category,
@@ -85,8 +86,6 @@ export default function SmartIntakePage() {
       toast.success('تم تسجيل وحفظ الشحنة في قاعدة بيانات Render بنجاح!', {
         description: `كود الدفعة: ${confirmedBatch} | تم توجيه السائق إلى ${res.zone}`,
       });
-      // Refresh live data in background
-      fetchLiveData().catch(() => {});
     } catch (err: any) {
       console.warn('API inventory add notice:', err?.message);
       setServerBatchId(res.batchId);
@@ -130,7 +129,7 @@ export default function SmartIntakePage() {
             تفريغ الشحنات والتوجيه الذكي (Smart Zone Staging)
           </h1>
           <Badge variant="primary" size="md">
-            {currentDepot.name}
+            {currentDepot?.name || 'مستودع إغاثة'}
           </Badge>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -277,7 +276,7 @@ export default function SmartIntakePage() {
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full mt-2 py-3 px-4 rounded-xl bg-primary hover:bg-[#c9442e] text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-75"
+              className="w-full mt-2 py-3 px-4 rounded-xl bg-primary hover:bg-[#07261C] dark:hover:bg-[#004d28] text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-75"
             >
               {isSubmitting ? (
                 <>
@@ -367,7 +366,7 @@ export default function SmartIntakePage() {
               حالة إشغال مناطق المستودع حالياً:
             </span>
             <div className="space-y-2">
-              {currentDepot.zones.map(z => (
+              {(currentDepot?.zones || []).map(z => (
                 <div key={z.id} className="flex items-center justify-between text-slate-700 dark:text-slate-300">
                   <span>{z.title.split('-')[0]}</span>
                   <span className="font-header font-bold text-slate-500 dark:text-slate-400">

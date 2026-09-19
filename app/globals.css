@@ -12,63 +12,63 @@
   --popover: #ffffff;
   --popover-foreground: #1e293b;
   
-  /* Warm coral brand color inspired by design system */
-  --primary: #e0533c;
+  /* Primary Color: Algerian Deep Green #03120D */
+  --primary: #016946;
   --primary-foreground: #ffffff;
-  --brand: #e0533c;
-  --brand-hover: #c9442e;
-  --brand-light: #fef2f0;
+  --brand: #03120D;
+  --brand-hover: #07261C;
+  --brand-light: #EBF4F0;
   
   --secondary: #f8fafc;
-  --secondary-foreground: #334155;
+  --secondary-foreground: #03120D;
   
   --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted-foreground: #475569;
   
-  --accent: #f8fafc;
-  --accent-foreground: #1e293b;
+  --accent: #EBF4F0;
+  --accent-foreground: #03120D;
   
-  --destructive: #ef4444;
+  --destructive: #D21034;
   --destructive-foreground: #ffffff;
   
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #e0533c;
+  --ring: #03120D;
   
   --radius: 1rem;
 }
 
 .dark {
-  --background: #090d16;
-  --foreground: #f8fafc;
+  --background: #03120D;
+  --foreground: #ffffff;
   
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
+  --card: #08241b;
+  --card-foreground: #ffffff;
   
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
+  --popover: #08241b;
+  --popover-foreground: #ffffff;
   
-  --primary: #e0533c;
+  --primary: #03120D;
   --primary-foreground: #ffffff;
-  --brand: #e0533c;
-  --brand-hover: #f06a54;
-  --brand-light: rgba(224, 83, 60, 0.15);
+  --brand: #03120D;
+  --brand-hover: #07261C;
+  --brand-light: rgba(3, 18, 13, 0.4);
   
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
+  --secondary: #08281e;
+  --secondary-foreground: #ffffff;
   
-  --muted: #1e293b;
+  --muted: #08281e;
   --muted-foreground: #94a3b8;
   
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
+  --accent: #0b3628;
+  --accent-foreground: #ffffff;
   
-  --destructive: #7f1d1d;
-  --destructive-foreground: #f8fafc;
+  --destructive: #D21034;
+  --destructive-foreground: #ffffff;
   
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #e0533c;
+  --border: #0e3b2d;
+  --input: #0e3b2d;
+  --ring: #03120D;
 }
 
 @theme inline {

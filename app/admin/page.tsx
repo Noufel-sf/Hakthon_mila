@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRelief } from '@/lib/store';
+import { api } from '@/lib/api';
+import { InventoryResponse, NeedResponse } from '@/lib/types';
 import { 
   Warehouse, 
   Layers, 
@@ -30,70 +32,105 @@ import { Button } from '@/components/ui/Button';
 
 export default function AdminDashboardPage() {
   const { depots, selectedDepotId, getDepot } = useRelief();
-  const currentDepot = getDepot(selectedDepotId) || depots[0];
+  const currentDepot = (selectedDepotId ? getDepot(selectedDepotId) : null) || depots[0];
 
-  // Dynamic calculations from current depot
-  const totalStock = currentDepot.items.reduce((acc, item) => acc + item.currentStock, 0);
-  const totalTarget = currentDepot.items.reduce((acc, item) => acc + item.targetNeed, 0);
-  const totalDistributed = Math.max(0, totalTarget - totalStock + 12000);
+  const [inventoryList, setInventoryList] = useState<InventoryResponse[]>([]);
+  const [needsList, setNeedsList] = useState<NeedResponse[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Fetch only this depot's inventory and needs
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDepotDashboard() {
+      setIsLoading(true);
+      try {
+        const depotIdNum = Number(selectedDepotId) || Number(currentDepot?.id) || 1;
+        const [inv, needs] = await Promise.all([
+          api.inventory.list({ depotId: depotIdNum }).catch(() => []),
+          api.needs.list({ depotId: depotIdNum }).catch(() => []),
+        ]);
+        if (isMounted) {
+          setInventoryList(inv || []);
+          setNeedsList(needs || []);
+        }
+      } catch (err) {
+        console.warn('Dashboard fetch error:', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadDepotDashboard();
+    return () => { isMounted = false; };
+  }, [selectedDepotId, currentDepot?.id]);
+
+  // Real calculations from backend data
+  const totalStock = inventoryList.reduce((acc, item) => acc + item.quantity, 0);
+  const totalTarget = needsList.reduce((acc, item) => acc + item.requestedQuantity, 0);
+  const totalDistributed = Math.max(0, totalTarget - totalStock);
   const totalAidInflow = totalStock + totalDistributed;
 
-  // Bar chart data matching screenshot categories
-  const barChartData = [
-    { label: 'إصلاحات', value: 2400, height: '62%' },
-    { label: 'إيجار ومأوى', value: 3519, height: '88%', isPeak: true },
-    { label: 'التراخيص', value: 2700, height: '68%' },
-    { label: 'نقل وإمداد', value: 1200, height: '32%' },
-    { label: 'صافي بيل', value: 1800, height: '46%' },
-    { label: 'حاسوب محمول', value: 2300, height: '58%' },
-    { label: 'تيار متردد', value: 1400, height: '36%' },
-    { label: 'طبق بيل', value: 800, height: '22%' },
-    { label: 'مدرسة', value: 1900, height: '48%' },
-    { label: 'النباتات والأغذية', value: 1100, height: '28%' },
-  ];
+  const highestShortageItem = [...needsList].sort(
+    (a, b) => (b.shortage || (b.requestedQuantity - b.currentAvailableQuantity)) - (a.shortage || (a.requestedQuantity - a.currentAvailableQuantity))
+  )[0];
 
-  // Recent shipments / outflows matching screenshot
-  const recentActivities = [
-    {
-      id: 1,
-      title: 'ثلاجة حفظ أدوية',
-      date: '3 يناير 2026',
-      amount: '550 طرد',
-      status: 'success',
-    },
-    {
-      id: 2,
-      title: 'فاتورة وقود الإسعاف',
-      date: '23 ديسمبر 2025',
-      amount: '17 وحدة',
-      status: 'neutral',
-    },
-    {
-      id: 3,
-      title: 'النباتات والأغذية الطازجة',
-      date: '21 ديسمبر 2025',
-      amount: '96 طرد',
-      status: 'neutral',
-    },
-    {
-      id: 4,
-      title: 'نقل وإمداد شاحنات إغاثة',
-      date: '13 ديسمبر 2025',
-      amount: '11 شاحنة',
-      status: 'neutral',
-    },
-  ];
+  const shortageQty = highestShortageItem 
+    ? (highestShortageItem.shortage || Math.max(0, highestShortageItem.requestedQuantity - highestShortageItem.currentAvailableQuantity))
+    : 0;
+
+  // Real inventory grouping by category for bar chart
+  const categoryMap: Record<string, number> = {};
+  inventoryList.forEach(item => {
+    const cat = item.category || 'OTHER';
+    categoryMap[cat] = (categoryMap[cat] || 0) + item.quantity;
+  });
+
+  const maxCategoryVal = Math.max(1, ...Object.values(categoryMap));
+  const categoryLabels: Record<string, string> = {
+    FOOD: 'أغذية',
+    WATER: 'مياه',
+    MEDICAL: 'أدوية',
+    MATTRESSES: 'أفرشة',
+    BLANKETS: 'بطانيات',
+    HYGIENE: 'نظافة',
+    APPLIANCES: 'أجهزة',
+    FURNITURE: 'أثاث',
+    OTHER: 'أخرى',
+  };
+
+  const barChartData = Object.entries(categoryMap).length > 0 
+    ? Object.entries(categoryMap).map(([cat, val]) => ({
+        label: categoryLabels[cat] || cat,
+        value: val,
+        height: `${Math.min(100, Math.round((val / maxCategoryVal) * 100))}%`,
+        isPeak: val === maxCategoryVal,
+      }))
+    : [
+        { label: 'مستودع فارغ', value: 0, height: '10%', isPeak: false }
+      ];
+
+  // Real recent activities from real inventory batches
+  const recentActivities = inventoryList.length > 0 
+    ? inventoryList.slice(0, 4).map(inv => ({
+        id: inv.id,
+        title: inv.itemName,
+        date: inv.receivedDate ? `تاريخ الاستلام: ${inv.receivedDate}` : 'دفعة نشطة',
+        amount: `${inv.quantity} ${inv.unit}`,
+        status: inv.isExpiringSoon ? 'warning' : 'success',
+      }))
+    : [
+        {
+          id: 0,
+          title: 'لا توجد دفعات مخزون مسجلة',
+          date: 'المستودع في انتظار شحنات',
+          amount: '0',
+          status: 'neutral',
+        }
+      ];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       
       {/* ================= TOP SECTION: 4 KPI METRIC CARDS ================= */}
-      {/* In Arabic RTL, reading is from Right to Left:
-          Card 1: White - إجمالي الوارد الإغاثي (45,000)
-          Card 2: SOLID BRAND PRIMARY - المساعدات الموزعة (27,450)
-          Card 3: White with "عرض التفاصيل" - إجمالي المخزون (17,550)
-          Card 4: White - معظم العجز (إيجار المنزل / خيام إيواء - 1,150)
-      */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* CARD 1 (Rightmost in RTL): White Card - إجمالي الوارد الإغاثي */}
@@ -112,13 +149,13 @@ export default function AdminDashboardPage() {
               إجمالي الوارد الإغاثي
             </p>
             <h3 className="text-2xl sm:text-3xl font-black font-header tracking-tight text-slate-900 dark:text-white">
-              45,000 <span className="text-sm font-semibold text-slate-500">طرد</span>
+              {totalAidInflow.toLocaleString('ar-DZ')} <span className="text-sm font-semibold text-slate-500">وحدة</span>
             </h3>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
             <ArrowUpRight className="w-4 h-4" />
-            <span>6% مقابل آخر 30 يوماً</span>
+            <span>بيانات حية مباشرة من خادم Render</span>
           </div>
         </div>
 
@@ -141,13 +178,13 @@ export default function AdminDashboardPage() {
               المساعدات الموزعة فعلياً
             </p>
             <h3 className="text-2xl sm:text-3xl font-black font-header tracking-tight text-white">
-              27,450 <span className="text-sm font-medium text-white/80">طرد</span>
+              {totalDistributed.toLocaleString('ar-DZ')} <span className="text-sm font-medium text-white/80">وحدة</span>
             </h3>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs font-semibold text-white/90 relative z-10">
             <ArrowDownLeft className="w-4 h-4 text-white/90" />
-            <span>2% مقابل آخر 30 يوماً</span>
+            <span>تحديث ميداني تلقائي</span>
           </div>
         </div>
 
@@ -170,13 +207,13 @@ export default function AdminDashboardPage() {
               إجمالي المخزون المتاح
             </p>
             <h3 className="text-2xl sm:text-3xl font-black font-header tracking-tight text-slate-900 dark:text-white">
-              17,550 <span className="text-sm font-semibold text-slate-500">طرد</span>
+              {totalStock.toLocaleString('ar-DZ')} <span className="text-sm font-semibold text-slate-500">وحدة</span>
             </h3>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs font-bold text-rose-500">
-            <ArrowDownLeft className="w-4 h-4" />
-            <span>6% مقابل آخر 30 يوماً</span>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
+            <Warehouse className="w-4 h-4" />
+            <span>{inventoryList.length} دفعات مسجلة</span>
           </div>
         </div>
 
@@ -195,13 +232,13 @@ export default function AdminDashboardPage() {
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               معظم العجز والاحتياج
             </p>
-            <h3 className="text-xl sm:text-2xl font-black font-header tracking-tight text-slate-900 dark:text-white">
-              خيام وأفرشة إيواء
+            <h3 className="text-lg sm:text-xl font-black font-header tracking-tight text-slate-900 dark:text-white truncate">
+              {highestShortageItem?.itemName || 'لا يوجد عجز مسجل'}
             </h3>
           </div>
 
           <div className="text-xs font-semibold text-slate-400">
-            عجز بمقدار <span className="font-bold text-rose-500 font-header">1,150 وحدة</span>
+            عجز بمقدار <span className="font-bold text-rose-500 font-header">{shortageQty.toLocaleString('ar-DZ')} {highestShortageItem?.unit || 'وحدة'}</span>
           </div>
         </div>
 
@@ -380,8 +417,8 @@ export default function AdminDashboardPage() {
                 <svg viewBox="0 0 500 240" className="w-full h-full overflow-visible">
                   <defs>
                     <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#e0533c" stopOpacity="0.18" />
-                      <stop offset="100%" stopColor="#e0533c" stopOpacity="0.0" />
+                      <stop offset="0%" stopColor="#006233" stopOpacity="0.18" />
+                      <stop offset="100%" stopColor="#006233" stopOpacity="0.0" />
                     </linearGradient>
                   </defs>
 
@@ -411,7 +448,7 @@ export default function AdminDashboardPage() {
                   <path
                     d="M 20 180 Q 60 190, 100 140 T 180 80 T 260 160 T 340 110 T 420 130 T 480 170"
                     fill="none"
-                    stroke="#e0533c"
+                    stroke="#006233"
                     strokeWidth="3"
                     strokeLinecap="round"
                   />
@@ -433,7 +470,7 @@ export default function AdminDashboardPage() {
                         cy={pt.cy}
                         r={pt.isPeak ? 6 : 4}
                         fill="#ffffff"
-                        stroke="#e0533c"
+                        stroke="#006233"
                         strokeWidth="2.5"
                       />
                       {pt.isPeak && (
@@ -442,7 +479,7 @@ export default function AdminDashboardPage() {
                           cy={pt.cy}
                           r={9}
                           fill="none"
-                          stroke="#e0533c"
+                          stroke="#006233"
                           strokeOpacity="0.4"
                           strokeWidth="1.5"
                           className="animate-ping"
@@ -540,35 +577,35 @@ export default function AdminDashboardPage() {
               {/* Donut Chart Ring with Embedded Percentages (Matching Screenshot) */}
               <div className="relative w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center shrink-0">
                 <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                  {/* Segment 1: 65% (Primary Coral) */}
+                  {/* Segment 1: 65% (Algerian Green) */}
                   <circle
                     cx="50"
                     cy="50"
                     r="38"
                     fill="transparent"
-                    stroke="#e0533c"
+                    stroke="#006233"
                     strokeWidth="18"
                     strokeDasharray="155.2 238.8"
                     strokeDashoffset="0"
                   />
-                  {/* Segment 2: 25% (Emerald Green) */}
+                  {/* Segment 2: 25% (Algerian Red) */}
                   <circle
                     cx="50"
                     cy="50"
                     r="38"
                     fill="transparent"
-                    stroke="#10b981"
+                    stroke="#D21034"
                     strokeWidth="18"
                     strokeDasharray="59.7 238.8"
                     strokeDashoffset="-155.2"
                   />
-                  {/* Segment 3: 10% (Slate) */}
+                  {/* Segment 3: 10% (Deep Green #03120D) */}
                   <circle
                     cx="50"
                     cy="50"
                     r="38"
                     fill="transparent"
-                    stroke="#1e293b"
+                    stroke="#03120D"
                     strokeWidth="18"
                     strokeDasharray="23.9 238.8"
                     strokeDashoffset="-214.9"
