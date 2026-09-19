@@ -64,58 +64,64 @@ export default function HomePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-12">
       
-      {/* 🌟 HERO SECTION (Directly inspired by the screenshot banner with warm tones) */}
-      <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-[#441B16] via-[#6D271E] to-[#B33E2E] text-white p-8 sm:p-14 lg:p-18 min-h-[380px] sm:min-h-[440px] flex flex-col justify-center items-center text-center shadow-2xl">
+      {/* 🌟 HERO SECTION (Inspired directly by the screenshot: Simple, clean, less text, Zain & Amiri Quran fonts) */}
+      <div className="relative pt-12 pb-10 sm:pt-16 sm:pb-14 flex flex-col items-center text-center overflow-hidden">
         
-        {/* Subtle decorative background glow */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-[#E0533C]/20 rounded-full blur-3xl pointer-events-none"></div>
-        
-        <div className="relative z-10 max-w-3xl mx-auto space-y-4">
-          <span className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-bold bg-white/15 backdrop-blur-md border border-white/20 text-[#FFE5E0]">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>المنصة المفتوحة لتنظيم الإغاثة الميدانية</span>
-          </span>
+        {/* Subtle delicate background sparkles and soft ambient glow */}
+        <div className="absolute top-1/4 right-1/6 text-slate-300 dark:text-slate-700 text-sm select-none pointer-events-none animate-pulse">✦</div>
+        <div className="absolute top-1/3 left-1/5 text-slate-300 dark:text-slate-700 text-xs select-none pointer-events-none">✦</div>
+        <div className="absolute bottom-1/4 right-1/4 text-slate-200 dark:text-slate-800 text-base select-none pointer-events-none">✦</div>
+        <div className="absolute top-1/6 left-1/3 w-1.5 h-1.5 rounded-full bg-cyan-300/40 pointer-events-none"></div>
+        <div className="absolute top-1/2 right-1/3 w-1 h-1 rounded-full bg-rose-300/40 pointer-events-none"></div>
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[600px] h-[260px] bg-gradient-to-t from-cyan-100/40 dark:from-cyan-950/20 via-transparent to-transparent rounded-full blur-3xl pointer-events-none"></div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.2]">
-            توجيه ذكي لمساعدات الكوارث <br className="hidden sm:inline" />
-            <span className="text-[#FCD3CD]">بطريقتك الخاصة والواعية</span>
+        <div className="relative z-10 max-w-4xl mx-auto space-y-5 px-4">
+          
+          {/* Top Pill Tag (Like 'لتسيير تجارتك' in screenshot) */}
+          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs sm:text-sm font-header font-bold bg-[#E6F8F9] dark:bg-[#11353B] text-[#126972] dark:text-[#5EEAD4] border border-[#C6EFF2] dark:border-[#1E525B] shadow-2xs">
+            <span>لتنسيق إغاثة الكوارث</span>
+          </div>
+
+          {/* Main Headline with Highlight box (Font: Zain) */}
+          <h1 className="font-header text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.2]">
+            وجّه ونسّق المساعدات الميدانية <br />
+            <span className="relative inline-block mt-2 px-5 py-1 bg-[#D3F4F6] dark:bg-[#14444D] text-[#0A565E] dark:text-[#67E8F9] rounded-2xl shadow-xs">
+              من منصة واحدة
+            </span>
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-100/90 max-w-2xl mx-auto leading-relaxed font-normal">
-            نحن جاهزون لتوجيه عطائك بناءً على الاحتياجات الفعلية لكل مستودع، 
-            من أفرشة وأرائك وأجهزة منزلية، وتفادي تكدس السلع وتلفها.
+          {/* Subtitle (Font: Amiri Quran with much less text) */}
+          <p className="font-sub text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed pt-1">
+            منصة جزائرية مفتوحة تساعد المتطوعين والمتبرعين على كشف النواقص الحقيقية لكل مستودع، وتوجيه الإغاثة لحظياً لتفادي تكدسها وتلفها.
           </p>
-        </div>
 
-        {/* Floating live counters strip inside hero bottom */}
-        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl w-full mt-8 pt-6 border-t border-white/15 text-right">
-          <div className="bg-white/10 backdrop-blur-sm p-3 rounded-2xl border border-white/15">
-            <span className="text-[11px] text-white/70 block">المستودعات الفعالة</span>
-            <span className="text-xl sm:text-2xl font-bold text-white">{totalDepots} مستودعات</span>
+          {/* Action Pill Buttons (Primary solid dark + Secondary white pill) */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+            <Link
+              href="/needs"
+              className="px-8 py-3 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-header font-bold text-sm sm:text-base shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5"
+            >
+              استكشف النواقص
+            </Link>
+
+            <Link
+              href="/depots"
+              className="px-8 py-3 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-header font-bold text-sm sm:text-base shadow-2xs transition-all hover:-translate-y-0.5"
+            >
+              دليل المستودعات
+            </Link>
           </div>
-          <div className="bg-white/10 backdrop-blur-sm p-3 rounded-2xl border border-white/15">
-            <span className="text-[11px] text-white/70 block">أصناف بها عجز حاد</span>
-            <span className="text-xl sm:text-2xl font-bold text-[#FED7D2]">{totalDeficitItems} أصناف 🔴</span>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm p-3 rounded-2xl border border-white/15">
-            <span className="text-[11px] text-white/70 block">أصناف مكتفية ومستقرة</span>
-            <span className="text-xl sm:text-2xl font-bold text-emerald-300">{totalSatisfiedItems} أصناف ✅</span>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm p-3 rounded-2xl border border-white/15">
-            <span className="text-[11px] text-white/70 block">تفريغ المستودعات</span>
-            <span className="text-xl sm:text-2xl font-bold text-amber-300">Zone A / B / C / D</span>
-          </div>
+
         </div>
 
       </div>
 
-      {/* 🔍 FLOATING SEARCH & FILTER CARD (Overlapping the hero like the screenshot) */}
-      <div className="relative -mt-16 sm:-mt-20 z-20 max-w-2xl mx-auto px-4 w-full">
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-4 sm:p-5 floating-card-shadow transition-colors">
+      {/* 🔍 SEARCH & CATEGORY FILTER BAR */}
+      <div className="max-w-3xl mx-auto px-4 w-full">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-sm transition-colors space-y-3">
           
           {/* Top: Pill Filter Buttons */}
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2">
             {pillFilters.map(pill => {
               const isActive = selectedCategory === pill.id;
 
@@ -123,9 +129,9 @@ export default function HomePage() {
                 <button
                   key={pill.id}
                   onClick={() => setSelectedCategory(pill.id)}
-                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                  className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-header font-bold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#E0533C] text-white shadow-md shadow-[#E0533C]/25'
+                      ? 'bg-[#E0533C] text-white shadow-sm shadow-[#E0533C]/25'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -135,7 +141,7 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Bottom: Search Input + Action Button (Exactly like 'أكتب هنا' and 'إبحث الآن') */}
+          {/* Bottom: Search Input + Action Button */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <input
@@ -143,14 +149,14 @@ export default function HomePage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="أكتب هنا للبحث عن صنف، بلدية أو مستودع..."
-                className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl pl-4 pr-10 py-3 text-xs sm:text-sm focus:outline-none focus:border-[#E0533C] transition-colors"
+                className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-2xl pl-4 pr-10 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-[#E0533C] transition-colors"
               />
               <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
 
             <button
               onClick={() => {}}
-              className="px-5 sm:px-6 py-3 rounded-xl bg-[#E0533C] hover:bg-[#C9442E] text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-[#E0533C]/20 shrink-0 cursor-pointer"
+              className="px-6 py-2.5 rounded-2xl bg-[#E0533C] hover:bg-[#C9442E] text-white font-header font-bold text-xs sm:text-sm transition-all shadow-sm shadow-[#E0533C]/20 shrink-0 cursor-pointer"
             >
               إبحــث الآن
             </button>

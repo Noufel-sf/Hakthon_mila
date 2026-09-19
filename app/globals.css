@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Zain:wght@300;400;700;800;900&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -12,7 +13,7 @@
   --popover: #ffffff;
   --popover-foreground: #1e293b;
   
-  /* Warm coral brand color inspired by screenshot */
+  /* Warm coral brand color inspired by design system */
   --primary: #e0533c;
   --primary-foreground: #ffffff;
   --brand: #e0533c;
@@ -87,14 +88,29 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
-  --font-sans: var(--font-alexandria), var(--font-cairo), system-ui, -apple-system, sans-serif;
+  --font-header: 'Zain', sans-serif;
+  --font-sub: 'Amiri Quran', serif;
+  --font-sans: 'Zain', system-ui, -apple-system, sans-serif;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-alexandria), var(--font-cairo), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-header);
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.font-header {
+  font-family: 'Zain', sans-serif;
+}
+
+.font-sub {
+  font-family: 'Amiri Quran', serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Zain', sans-serif;
+  letter-spacing: -0.02em;
 }
 
 /* Custom soft scrollbars */

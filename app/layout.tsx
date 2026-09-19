@@ -30,6 +30,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning className={`${alexandria.variable} ${cairo.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Zain:wght@300;400;700;800;900&display=swap" rel="stylesheet" />
+      </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground font-sans antialiased selection:bg-[#E0533C] selection:text-white">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <Toaster richColors position="top-center" dir="rtl" />
