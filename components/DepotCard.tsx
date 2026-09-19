@@ -2,8 +2,20 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Depot } from '@/lib/types';
-import { MapPin, Phone, ArrowLeft, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
+import { 
+  MapPin, 
+  Phone, 
+  ArrowLeft, 
+  AlertCircle, 
+  CheckCircle2, 
+  ExternalLink,
+  Warehouse,
+  ShieldCheck,
+  ChevronLeft,
+  Navigation
+} from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -12,6 +24,19 @@ interface DepotCardProps {
 }
 
 export default function DepotCard({ depot }: DepotCardProps) {
+  // Determine image based on depot id or wilaya
+  const getDepotImage = (id: string, wilaya: string) => {
+    if (id.includes('mila') || wilaya.includes('ميلة')) {
+      return '/relief-depot-mila.jpg';
+    }
+    if (id.includes('skikda') || wilaya.includes('سكيكدة')) {
+      return '/relief-depot-skikda.jpg';
+    }
+    return '/relief-depot-jijel.jpg';
+  };
+
+  const depotImage = getDepotImage(depot.id, depot.wilaya);
+
   const criticalItems = depot.items.filter(
     item => item.targetNeed - item.currentStock > 0
   );
@@ -20,117 +45,165 @@ export default function DepotCard({ depot }: DepotCardProps) {
     item => item.currentStock >= item.targetNeed
   );
 
+  const occupancy = depot.occupancyPercentage || depot.totalCapacityPercent || 65;
+
   return (
-    <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-all hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/40 hover:-translate-y-0.5 flex flex-col justify-between group">
+    <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 dark:hover:shadow-black/60 hover:-translate-y-1 flex flex-col justify-between group">
+      
       <div>
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                {depot.code}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-[#FFF2F0] dark:bg-[#341611] text-[#E0533C]">
-                ولاية {depot.wilaya}
-              </span>
+        {/* ================= TOP: DEPOT IMAGE WITH PRIMARY COLOR ACCENTS ================= */}
+        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+          <Image
+            src={depotImage}
+            alt={depot.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+
+          {/* Elegant Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
+
+          {/* Top Glassmorphic Badges on Image */}
+          <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none">
+            
+            {/* Wilaya & Code Pill */}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/20 text-white text-xs font-bold font-header shadow-md">
+              <span className="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+              <span>ولاية {depot.wilaya}</span>
+              <span className="text-white/60 font-mono text-[10px] mr-1">({depot.code})</span>
             </div>
-            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white group-hover:text-[#E0533C] transition-colors">
-              {depot.name}
-            </h3>
+
+            {/* Status Chip */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/70 backdrop-blur-md border border-emerald-400/30 text-emerald-300 text-[11px] font-bold shadow-md">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>جاهز للتفريغ</span>
+            </div>
           </div>
 
-          <div className="text-left shrink-0">
-            <span className="text-[11px] text-slate-400 block">الإشغال</span>
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">
-              {depot.totalCapacityPercent}%
-            </span>
-          </div>
-        </div>
-
-        {/* Address & Google Maps link */}
-        <div className="space-y-2 text-xs text-slate-500 dark:text-slate-400 mb-5">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 truncate">
-              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="truncate">{depot.address}</span>
+          {/* Bottom Floating Stats Bar inside Image */}
+          <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-white pointer-events-none">
+            <div className="px-3 py-1 rounded-xl bg-slate-950/70 backdrop-blur-md border border-white/10 flex items-center gap-2 text-xs font-semibold">
+              <span className="text-slate-300">نسبة الإشغال:</span>
+              <span className="font-header font-black text-white">{occupancy}%</span>
             </div>
+
             {depot.googleMapsUrl && (
               <a
                 href={depot.googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] font-bold bg-primary text-white px-2 py-0.5 rounded-md transition-colors shrink-0"
+                className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary hover:bg-[#c9442e] text-white text-xs font-bold font-header shadow-md transition-all hover:scale-105"
+                title="فتح موقع المستودع على Google Maps"
               >
                 <span>Google Maps</span>
-                <ExternalLink className="w-2.5 h-2.5" />
+                <ExternalLink className="w-3 h-3" />
               </a>
             )}
           </div>
-
-          <div className="flex items-center gap-2 text-[11px]">
-            <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span dir="ltr" className="font-mono text-slate-600 dark:text-slate-300">{depot.phone}</span>
-            <span>• {depot.manager}</span>
-          </div>
         </div>
 
-        {/* Critical Needs Snapshot Box */}
-        <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 mb-5">
-          <div className="flex items-center justify-between text-xs font-bold mb-2">
-            <span className="text-[#E0533C] flex items-center gap-1">
-              <AlertCircle className="w-3.5 h-3.5" />
-              أكبر نواقص هذا المستودع:
-            </span>
-            <span className="text-[11px] text-slate-400 font-normal">
-              {criticalItems.length} مواد
-            </span>
+        {/* ================= CARD BODY: SMALL ESSENTIAL DETAILS ================= */}
+        <div className="p-5 sm:p-6 space-y-4">
+          
+          {/* Depot Name */}
+          <div>
+            <h3 className="text-lg sm:text-xl font-black font-header text-slate-900 dark:text-white group-hover:text-primary transition-colors leading-tight">
+              {depot.name}
+            </h3>
+            {depot.description && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                {depot.description}
+              </p>
+            )}
           </div>
 
-          {criticalItems.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {criticalItems.slice(0, 3).map(item => {
-                const deficit = item.targetNeed - item.currentStock;
-                return (
-                  <span
-                    key={item.id}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-[#FFF2F0] dark:bg-[#341611] text-[#9A2D1F] dark:text-[#FCA597] border border-[#FCD3CD] dark:border-[#52231A]"
-                  >
-                    <span>{item.name}:</span>
-                    <span className="underline font-mono">نقص {deficit} {item.unit}</span>
-                  </span>
-                );
-              })}
+          {/* Address & Manager details */}
+          <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary shrink-0" />
+              <span className="truncate">{depot.address || depot.location?.address}</span>
             </div>
-          ) : (
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              جميع الاحتياجات الأساسية مغطاة حالياً
-            </p>
-          )}
 
-          {/* Quick Notice on Sufficient Items */}
-          {sufficientItems.length > 0 && (
-            <div className="mt-2.5 pt-2 border-t border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">✅ متوفر بكثرة:</span>
-              <span className="truncate">{sufficientItems.map(i => i.name).slice(0, 2).join('، ')}</span>
+            <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-slate-400" />
+                <span dir="ltr" className="font-mono text-slate-700 dark:text-slate-300">
+                  {depot.phone || depot.contactInfo?.phone}
+                </span>
+              </div>
+              <span className="truncate">• مسؤول: {depot.manager || depot.contactInfo?.managerName}</span>
             </div>
-          )}
+          </div>
+
+          {/* Occupancy Progress Bar */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              <span>سعة التخزين الحالية</span>
+              <span className="font-header font-bold text-slate-800 dark:text-slate-200">{occupancy}% ممتلئ</span>
+            </div>
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-500 ${
+                  occupancy > 80 ? 'bg-rose-500' : occupancy > 50 ? 'bg-primary' : 'bg-emerald-500'
+                }`}
+                style={{ width: `${occupancy}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Critical Shortages Box (Small details below image) */}
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 border border-slate-200/60 dark:border-slate-800 space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold font-header">
+              <span className="text-primary flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5" />
+                أكبر نواقص هذا المستودع:
+              </span>
+              <span className="text-[10px] text-slate-400 font-normal">
+                {criticalItems.length} مواد مطلوبة
+              </span>
+            </div>
+
+            {criticalItems.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {criticalItems.slice(0, 3).map(item => {
+                  const deficit = item.targetNeed - item.currentStock;
+                  return (
+                    <span
+                      key={item.id}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20"
+                    >
+                      <span>{item.name}:</span>
+                      <strong className="underline font-header font-bold">عجز {deficit} {item.unit}</strong>
+                    </span>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                جميع الاحتياجات الأساسية متوفرة حالياً
+              </p>
+            )}
+          </div>
+
         </div>
       </div>
 
-      {/* Footer Action */}
-      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      {/* ================= FOOTER ACTION ================= */}
+      <div className="px-5 sm:px-6 py-3.5 bg-slate-50/60 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
         <span className="text-[11px] text-slate-400">
           تحديث: {depot.lastUpdated}
         </span>
         <Link
           href={`/depots/${depot.id}`}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E0533C] hover:text-[#C9442E] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold font-header text-primary hover:text-[#c9442e] transition-all group-hover:-translate-x-1"
         >
           <span>عرض الجرد الكامل</span>
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ChevronLeft className="w-4 h-4" />
         </Link>
       </div>
+
     </div>
   );
 }
