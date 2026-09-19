@@ -86,7 +86,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
       <div className="max-w-4xl mx-auto px-4 py-24 text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-sm animate-pulse">
           <RefreshCw className="w-4 h-4 animate-spin" />
-          <span>جاري جلب تفاصيل المستودع مباشرة من خادم Render...</span>
+          <span>جاري جلب تفاصيل المستودع مباشرة من الخادم...</span>
         </div>
       </div>
     );
@@ -165,7 +165,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>خادم حي (Render API)</span>
+              <span>خادم حي</span>
             </span>
           </div>
           {depotDesc && (

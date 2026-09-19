@@ -147,7 +147,7 @@ export default function CargoIntakePage() {
           </div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 self-start sm:self-auto">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>خادم حي (Render API)</span>
+            <span>خادم حي</span>
           </span>
         </div>
       </div>

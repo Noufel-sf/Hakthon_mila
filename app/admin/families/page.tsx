@@ -204,7 +204,7 @@ export default function AdminFamiliesPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
-              إدارة العائلات المتضررة (Families CRUD)
+              إدارة العائلات المتضررة
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -310,7 +310,7 @@ export default function AdminFamiliesPage() {
         </div>
       </div>
 
-      {/* Families CRUD Table */}
+      {/* Families Table */}
       <div className="overflow-x-auto rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
         <table className="w-full text-right text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
@@ -326,7 +326,7 @@ export default function AdminFamiliesPage() {
               <tr>
                 <td colSpan={4} className="py-12 text-center text-slate-400 whitespace-nowrap">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
-                  <span>جاري تحميل سجل العائلات من خادم Render...</span>
+                  <span>جاري تحميل سجل العائلات من الخادم...</span>
                 </td>
               </tr>
             ) : filteredFamilies.length > 0 ? (
@@ -574,7 +574,7 @@ export default function AdminFamiliesPage() {
                     {isEditing ? `تعديل بيانات العائلة (#${editingFamilyId})` : 'تسجيل عائلة متضررة جديدة'}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    توثيق مباشر في قاعدة بيانات الإغاثة الرسمية (Render API)
+                    توثيق مباشر في قاعدة بيانات الإغاثة الرسمية
                   </p>
                 </div>
               </div>

@@ -262,15 +262,15 @@ export default function AdminLayout({
           {/* Left Header Section: Date Range Selector, Search, Bell, Profile Avatar, ThemeToggle */}
           <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* Live Render API Sync Pill */}
+            {/* Live API Sync Pill */}
             <button
               onClick={() => fetchDepotsOnly()}
               disabled={isLoadingDepots}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-all cursor-pointer"
-              title="تحديث قائمة المستودعات من خادم Render"
+              title="تحديث قائمة المستودعات من الخادم"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="hidden lg:inline">خادم حي (Render)</span>
+              <span className="hidden lg:inline">خادم حي</span>
               <RefreshCw className={`w-3 h-3 ${isLoadingDepots ? 'animate-spin' : ''}`} />
             </button>
 

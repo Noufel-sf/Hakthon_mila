@@ -171,7 +171,7 @@ export default function AdminDistributionsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
-              سجل التوزيع الميداني (Distributions CRUD)
+              سجل التوزيع الميداني
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -279,7 +279,7 @@ export default function AdminDistributionsPage() {
         </div>
       </div>
 
-      {/* Distributions CRUD Table */}
+      {/* Distributions Table */}
       <div className="overflow-x-auto rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
         <table className="w-full text-right text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
@@ -295,7 +295,7 @@ export default function AdminDistributionsPage() {
               <tr>
                 <td colSpan={4} className="py-12 text-center text-slate-400 whitespace-nowrap">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
-                  <span>جاري تحميل سجل التوزيع من خادم Render...</span>
+                  <span>جاري تحميل سجل التوزيع من الخادم...</span>
                 </td>
               </tr>
             ) : filteredDistributions.length > 0 ? (
@@ -510,7 +510,7 @@ export default function AdminDistributionsPage() {
                     تسجيل عملية تسليم وتوزيع ميداني
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    خصم وإثبات استلام الحصة في قاعدة بيانات Render
+                    خصم وإثبات استلام الحصة في قاعدة البيانات الميدانية
                   </p>
                 </div>
               </div>

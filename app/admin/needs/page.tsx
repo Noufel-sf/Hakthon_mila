@@ -201,7 +201,7 @@ export default function AdminNeedsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
-              إدارة الاحتياجات والنواقص (Needs CRUD)
+              إدارة الاحتياجات والنواقص
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -334,7 +334,7 @@ export default function AdminNeedsPage() {
         </div>
       </div>
 
-      {/* Needs CRUD Table */}
+      {/* Needs Table */}
       <div className="overflow-x-auto rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
         <table className="w-full text-right text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
@@ -350,7 +350,7 @@ export default function AdminNeedsPage() {
               <tr>
                 <td colSpan={4} className="py-12 text-center text-slate-400 whitespace-nowrap">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
-                  <span>جاري تحميل سجل الاحتياجات من خادم Render...</span>
+                  <span>جاري تحميل سجل الاحتياجات من الخادم...</span>
                 </td>
               </tr>
             ) : filteredNeeds.length > 0 ? (
@@ -647,7 +647,7 @@ export default function AdminNeedsPage() {
                     {isEditing ? `تعديل طلب الاحتياج (#${editingNeedId})` : 'تسجيل طلب احتياج جديد'}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    تحديث مباشر في قاعدة بيانات الميدان (Render API)
+                    تحديث مباشر في قاعدة بيانات الميدان
                   </p>
                 </div>
               </div>
