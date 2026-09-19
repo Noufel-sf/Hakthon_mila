@@ -3,6 +3,7 @@
 import React from 'react';
 import { DepotItem } from '@/lib/types';
 import { CheckCircle2, AlertTriangle, ArrowUpRight, TrendingUp, HelpCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 interface NeedsTableProps {
   items: DepotItem[];
@@ -72,13 +73,12 @@ export default function NeedsTable({ items, showZone = true }: NeedsTableProps) 
                   )}
 
                   {/* Progress Bar */}
-                  <div className="w-32 bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${
-                        isSufficient ? 'bg-emerald-500' : 'bg-rose-500'
-                      }`}
-                      style={{ width: `${fulfillmentPct}%` }}
-                    ></div>
+                  <div className="w-32 mt-2">
+                    <Progress 
+                      value={fulfillmentPct} 
+                      className="h-1.5 bg-slate-800"
+                      indicatorClassName={isSufficient ? "bg-emerald-500" : "bg-rose-500"}
+                    />
                   </div>
                 </td>
 

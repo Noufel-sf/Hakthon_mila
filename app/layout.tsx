@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   description: "منصة رقمية لتنظيم وتوجيه قوافل المساعدات الإنسانية والتسيير الذكي للمستودعات وتوزيع الإعانات العادل أثناء الكوارث",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,6 +27,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
       <body className="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-sans selection:bg-rose-500 selection:text-white">
         <ReliefProvider>
+          <Toaster richColors position="top-center" dir="rtl" theme="dark" />
           <LiveCrisisTicker />
           <Navbar />
           <main className="flex-1 pb-16">
