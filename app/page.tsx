@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRelief } from '@/lib/store';
 import DepotCard from '@/components/DepotCard';
 import { 
-  Truck, 
   Search, 
   MapPin, 
   ShieldAlert, 
@@ -15,7 +14,8 @@ import {
   AlertTriangle,
   Info,
   Clock,
-  Sparkles
+  Sparkles,
+  ClipboardList
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -81,20 +81,20 @@ export default function HomePage() {
           {/* Quick CTA Actions */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Link
-              href="/convoy"
+              href="/needs"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white shadow-lg shadow-rose-950/50 transition-all hover:scale-[1.02]"
             >
-              <Truck className="w-5 h-5" />
-              <span>وجّه شاحنتك وقافلتك الآن (موجّه القوافل)</span>
+              <ClipboardList className="w-5 h-5" />
+              <span>استعراض الاحتياجات والنواقص الحالية</span>
               <ArrowLeft className="w-4 h-4" />
             </Link>
 
             <Link
-              href="/admin"
+              href="/depots"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all"
             >
-              <Layers className="w-4 h-4 text-amber-400" />
-              <span>دخول مسؤولي المستودع (Smart Staging)</span>
+              <MapPin className="w-4 h-4 text-rose-400" />
+              <span>دليل المستودعات ونقاط التفريغ</span>
             </Link>
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function HomePage() {
           <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
             <span className="text-xs text-slate-400 block">أصناف تعاني من عجز 🔴</span>
             <span className="text-2xl font-mono font-extrabold text-rose-400">{totalDeficitItems}</span>
-            <span className="text-[10px] text-rose-400 block mt-0.5">أولوية قصوى للقوافل</span>
+            <span className="text-[10px] text-rose-400 block mt-0.5">أولوية قصوى للتبرع</span>
           </div>
 
           <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
@@ -127,26 +127,26 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Convoy Feature Callout Card */}
+      {/* Needs Callout Banner */}
       <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
-            <Truck className="w-6 h-6 text-amber-400" />
+            <ClipboardList className="w-6 h-6 text-amber-400" />
           </div>
           <div>
             <h3 className="font-bold text-white text-base">
-              عندك شاحنة تبرعات وتريد أن تعرف أين تفرغ حمولتك بالضبط؟
+              تريد معرفة المواد الأكثر طلباً وتجنب التبرع بالمواد الفائضة؟
             </h3>
             <p className="text-xs text-slate-300 mt-0.5">
-              أدخل ما تحمله (مثلاً: 80 أريكة أو 300 بطانية) ليقترح عليك النظام فوراً المستودع الأكثر حاجة دون تفريغ عشوائي.
+              تصفح صفحة الاحتياجات الميدانية لمعرفة حجم العجز في كل صنف (أرائك، أفرشة، ثلاجات، مواد غذائية) لتوجيه تبرعك بذكاء.
             </p>
           </div>
         </div>
         <Link
-          href="/convoy"
+          href="/needs"
           className="shrink-0 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all shadow-md"
         >
-          تجربة موجّه القوافل الذكي
+          عرض جدول الاحتياجات
         </Link>
       </div>
 

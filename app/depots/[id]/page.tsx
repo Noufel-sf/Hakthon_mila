@@ -70,14 +70,21 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Action Button for Drivers */}
+        {/* Action Buttons */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Link href={`/convoy?depotId=${depot.id}`} className="w-full sm:w-auto">
-            <Button variant="primary" className="w-full">
-              <Truck className="w-4 h-4" />
-              <span>توجيه قافلة لهذا المستودع</span>
-            </Button>
-          </Link>
+          {depot.googleMapsUrl && (
+            <a
+              href={depot.googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto"
+            >
+              <Button variant="primary" className="w-full">
+                <Navigation className="w-4 h-4" />
+                <span>الاتجاه إلى المستودع (Google Maps)</span>
+              </Button>
+            </a>
+          )}
           <Link href="/admin">
             <Button variant="secondary">
               <span>إدارة المستودع</span>

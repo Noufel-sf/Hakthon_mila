@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   ShieldAlert, 
-  Truck, 
   Warehouse, 
-  Users, 
   RotateCcw,
   Sparkles,
   Layers,
-  HeartHandshake
+  HeartHandshake,
+  MapPin,
+  ClipboardList,
+  SlidersHorizontal
 } from 'lucide-react';
 import { useRelief } from '@/lib/store';
 
@@ -22,19 +23,23 @@ export default function Navbar() {
   const navLinks = [
     {
       href: '/',
-      label: 'الرئيسية والمستودعات',
+      label: 'الرئيسية',
       icon: Warehouse,
     },
     {
-      href: '/convoy',
-      label: 'وجّه قافلتك 🚚',
-      highlight: true,
-      icon: Truck,
+      href: '/needs',
+      label: 'الاحتياجات والنواقص',
+      icon: ClipboardList,
+    },
+    {
+      href: '/depots',
+      label: 'المستودعات ونقاط التفريغ',
+      icon: MapPin,
     },
     {
       href: '/admin',
       label: 'إدارة المستودع (Depot Ops)',
-      icon: Layers,
+      icon: SlidersHorizontal,
     },
   ];
 
@@ -76,35 +81,18 @@ export default function Navbar() {
               const Icon = link.icon;
               const isActive = pathname === link.href;
 
-              if (link.highlight) {
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`relative flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md ${
-                      isActive 
-                        ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-400' 
-                        : 'bg-gradient-to-r from-amber-500 to-rose-500 text-white hover:from-amber-600 hover:to-rose-600'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{link.label}</span>
-                  </Link>
-                );
-              }
-
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                     isActive
-                      ? 'bg-slate-800 text-rose-400 font-bold border border-slate-700'
+                      ? 'bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
                 >
                   <Icon className="w-4 h-4 text-slate-400" />
-                  <span className="hidden md:inline">{link.label}</span>
+                  <span>{link.label}</span>
                 </Link>
               );
             })}
