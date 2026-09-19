@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { AidCategory, NeedResponse, DepotSummaryResponse } from '@/lib/types';
+import { AidCategory, NeedResponse, DepotSummaryResponse, Priority } from '@/lib/types';
 import { api } from '@/lib/api';
-import { AID_CATEGORIES } from '@/lib/constants';
+import { AID_CATEGORIES, getItemNameAr, getUnitNameAr, PRIORITY_LABELS } from '@/lib/constants';
 import { 
   ClipboardList, 
   Search, 
@@ -18,10 +18,37 @@ import {
   ChevronLeft,
   Info,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
+
+interface DepotNeedDetail {
+  needId: number | string;
+  depotId: string;
+  depotName: string;
+  wilaya: string;
+  deficit: number;
+  requestedQuantity: number;
+  availableQuantity: number;
+  priority: Priority;
+  status: string;
+  notes?: string;
+  mapsUrl: string;
+}
+
+interface AggregatedItem {
+  name: string;
+  nameFr?: string;
+  category: AidCategory;
+  totalStock: number;
+  totalNeed: number;
+  totalDeficit: number;
+  unit: string;
+  depotsNeeding: DepotNeedDetail[];
+  depotsSurplus: { depotId: string; depotName: string; wilaya: string; surplus: number }[];
+}
 
 export default function NeedsPage() {
   const [needs, setNeeds] = useState<NeedResponse[]>([]);
@@ -53,19 +80,6 @@ export default function NeedsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Collect and aggregate items across all real needs
-  interface AggregatedItem {
-    name: string;
-    nameFr?: string;
-    category: AidCategory;
-    totalStock: number;
-    totalNeed: number;
-    totalDeficit: number;
-    unit: string;
-    depotsNeeding: { depotId: string; depotName: string; wilaya: string; deficit: number; mapsUrl: string }[];
-    depotsSurplus: { depotId: string; depotName: string; wilaya: string; surplus: number }[];
-  }
-
   const itemsMap = new Map<string, AggregatedItem>();
 
   needs.forEach((need) => {
@@ -76,28 +90,39 @@ export default function NeedsPage() {
     const surplus = Math.max(0, need.currentAvailableQuantity - need.requestedQuantity);
 
     const depotInfo = depots.find(d => String(d.id) === String(need.depotId));
-    const wilaya = depotInfo?.location?.wilaya || 'ميداني';
-    const mapsUrl = depotInfo?.location?.googleMapsUrl || `https://www.google.com/maps?q=${depotInfo?.location?.latitude || 36.8},${depotInfo?.location?.longitude || 5.7}`;
+    const wilaya = depotInfo?.location?.wilaya || '';
+    const mapsUrl = depotInfo?.location?.googleMapsUrl || '';
+
+    const arName = getItemNameAr(need.itemName);
+    const arUnit = getUnitNameAr(need.unit);
+
+    const needDetail: DepotNeedDetail = {
+      needId: need.id,
+      depotId: String(need.depotId),
+      depotName: need.depotName || depotInfo?.name || `مستودع #${need.depotId}`,
+      wilaya,
+      deficit,
+      requestedQuantity: need.requestedQuantity,
+      availableQuantity: need.currentAvailableQuantity,
+      priority: need.priority,
+      status: need.status || 'OPEN',
+      notes: need.notes,
+      mapsUrl,
+    };
 
     if (!itemsMap.has(key)) {
       itemsMap.set(key, {
-        name: need.itemName,
+        name: arName,
         nameFr: need.itemName,
         category: need.category,
         totalStock: need.currentAvailableQuantity,
         totalNeed: need.requestedQuantity,
         totalDeficit: deficit,
-        unit: need.unit,
-        depotsNeeding: deficit > 0 ? [{ 
-          depotId: String(need.depotId), 
-          depotName: need.depotName || depotInfo?.name || 'مستودع إغاثة', 
-          wilaya, 
-          deficit, 
-          mapsUrl 
-        }] : [],
+        unit: arUnit,
+        depotsNeeding: deficit > 0 ? [needDetail] : [],
         depotsSurplus: surplus > 0 ? [{ 
           depotId: String(need.depotId), 
-          depotName: need.depotName || depotInfo?.name || 'مستودع إغاثة', 
+          depotName: need.depotName || depotInfo?.name || `مستودع #${need.depotId}`, 
           wilaya, 
           surplus 
         }] : [],
@@ -108,21 +133,26 @@ export default function NeedsPage() {
       existing.totalNeed += need.requestedQuantity;
       existing.totalDeficit += deficit;
       if (deficit > 0) {
-        existing.depotsNeeding.push({ 
-          depotId: String(need.depotId), 
-          depotName: need.depotName || depotInfo?.name || 'مستودع إغاثة', 
-          wilaya, 
-          deficit, 
-          mapsUrl 
-        });
+        const existD = existing.depotsNeeding.find(d => d.depotId === String(need.depotId));
+        if (existD) {
+          existD.deficit += deficit;
+          if (need.notes && !existD.notes) existD.notes = need.notes;
+        } else {
+          existing.depotsNeeding.push(needDetail);
+        }
       }
       if (surplus > 0) {
-        existing.depotsSurplus.push({ 
-          depotId: String(need.depotId), 
-          depotName: need.depotName || depotInfo?.name || 'مستودع إغاثة', 
-          wilaya, 
-          surplus 
-        });
+        const existS = existing.depotsSurplus.find(d => d.depotId === String(need.depotId));
+        if (existS) {
+          existS.surplus += surplus;
+        } else {
+          existing.depotsSurplus.push({ 
+            depotId: String(need.depotId), 
+            depotName: need.depotName || depotInfo?.name || `مستودع #${need.depotId}`, 
+            wilaya, 
+            surplus 
+          });
+        }
       }
     }
   });
@@ -142,7 +172,7 @@ export default function NeedsPage() {
   const sortedItems = [...filteredItems].sort((a, b) => b.totalDeficit - a.totalDeficit);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 space-y-10">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-16 space-y-10">
       
       {/* Centered Page Header */}
       <div className="flex flex-col items-center mt-5 text-center space-y-3">
@@ -169,7 +199,7 @@ export default function NeedsPage() {
         </h1>
         
         <p className="font-sub text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
-          جدول تفصيلي يوضح حجم العجز الفعلي في كل مادة عبر جميع المستودعات لتوجيه قوافل التبرعات للمكان الأشد احتياجاً.
+          جدول تفصيلي ومباشر يوضح حجم العجز الفعلي في كل مادة عبر جميع المستودعات، مع الملاحظات الميدانية لتوجيه القوافل بدقة.
         </p>
       </div>
 
@@ -221,7 +251,7 @@ export default function NeedsPage() {
         </div>
       </div>
 
-      {/* Main Needs Cards List: Only One Need Card per Row */}
+      {/* Main Needs Cards List */}
       <div className="space-y-5">
         {isLoading && sortedItems.length === 0 ? (
           <div className="space-y-4">
@@ -230,14 +260,14 @@ export default function NeedsPage() {
             ))}
           </div>
         ) : sortedItems.length > 0 ? (
-          sortedItems.map((item) => {
+          sortedItems.map((item, itemIdx) => {
             const fulfillmentPct = Math.min(100, Math.round((item.totalStock / (item.totalNeed || 1)) * 100));
             const hasCriticalDeficit = item.totalDeficit > 0;
             const isSurplus = item.totalStock >= item.totalNeed * 1.3;
 
             return (
               <div
-                key={item.name}
+                key={`${item.name}-${itemIdx}`}
                 className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all space-y-5"
               >
                 {/* Need Card Header: Name, Category & Status Badge */}
@@ -247,9 +277,11 @@ export default function NeedsPage() {
                       <span className="px-3 py-0.5 rounded-full text-xs font-header font-bold bg-primary/10 text-primary border border-primary/20">
                         {item.category}
                       </span>
-                      <span className="text-xs text-slate-400 font-mono">
-                        {item.nameFr}
-                      </span>
+                      {item.nameFr && (
+                        <span className="text-xs text-slate-400 font-mono">
+                          {item.nameFr}
+                        </span>
+                      )}
                     </div>
 
                     <h2 className="font-header text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
@@ -260,9 +292,9 @@ export default function NeedsPage() {
                   {/* Status Badges */}
                   <div className="self-start sm:self-auto">
                     {hasCriticalDeficit ? (
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-header font-bold bg-primary/10 text-primary border border-primary/20">
-                        <span className="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-                        <span>عجز إجمالي: {item.totalDeficit} {item.unit}</span>
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-header font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                        <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse"></span>
+                        <span>عجز إجمالي: {item.totalDeficit.toLocaleString('ar-DZ')} {item.unit}</span>
                       </span>
                     ) : isSurplus ? (
                       <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-header font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
@@ -280,10 +312,10 @@ export default function NeedsPage() {
                 <div className="bg-slate-50 dark:bg-slate-950/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2.5">
                   <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-slate-600 dark:text-slate-300">
-                      المتوفر حالياً: <strong className="font-mono text-slate-900 dark:text-white font-bold">{item.totalStock} {item.unit}</strong>
+                      المتوفر حالياً: <strong className="font-mono text-slate-900 dark:text-white font-bold">{item.totalStock.toLocaleString('ar-DZ')} {item.unit}</strong>
                     </span>
                     <span className="text-slate-400">
-                      الاحتياج المقدر: <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{item.totalNeed} {item.unit}</span>
+                      الاحتياج المقدر: <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{item.totalNeed.toLocaleString('ar-DZ')} {item.unit}</span>
                     </span>
                     <span className="font-mono font-bold text-primary text-xs">
                       {fulfillmentPct}% تغطية
@@ -292,54 +324,87 @@ export default function NeedsPage() {
 
                   <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${hasCriticalDeficit ? 'bg-primary' : 'bg-emerald-500'}`}
+                      className={`h-full rounded-full transition-all duration-500 ${hasCriticalDeficit ? 'bg-rose-600' : 'bg-primary'}`}
                       style={{ width: `${fulfillmentPct}%` }}
                     ></div>
                   </div>
                 </div>
 
-                {/* Depots Needing This Item (Directly Actionable) */}
+                {/* Depots Needing This Item (Detailed Real Data) */}
                 {item.depotsNeeding.length > 0 && (
-                  <div className="space-y-2.5 pt-1">
-                    <span className="text-xs font-header font-bold text-primary flex items-center gap-1.5">
+                  <div className="space-y-3 pt-1">
+                    <span className="text-xs font-header font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
                       <AlertCircle className="w-3.5 h-3.5" />
                       المستودعات التي تعاني من نقص مباشر (وجّه شاحنتك إليها):
                     </span>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {item.depotsNeeding.map((depot) => (
-                        <div
-                          key={depot.depotId}
-                          className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
-                        >
-                          <div>
-                            <Link 
-                              href={`/depots/${depot.depotId}`} 
-                              className="font-header font-bold text-slate-900 dark:text-white hover:text-primary transition-colors block text-sm"
-                            >
-                              {depot.depotName}
-                            </Link>
-                            <span className="text-slate-400 font-mono text-[11px]">ولاية {depot.wilaya}</span>
-                          </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      {item.depotsNeeding.map((depot, dIdx) => {
+                        const priorityMeta = PRIORITY_LABELS[depot.priority] || { label: depot.priority, color: 'slate' };
 
-                          <div className="text-left shrink-0 space-y-1">
-                            <span className="font-header font-bold text-primary font-mono block">
-                              نقص {depot.deficit} {item.unit}
-                            </span>
-                            {depot.mapsUrl && (
-                              <a
-                                href={depot.mapsUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] font-header font-bold text-white bg-primary px-2.5 py-0.5 rounded-md transition-colors"
-                              >
-                                <span>Google Maps</span>
-                                <ExternalLink className="w-2.5 h-2.5" />
-                              </a>
+                        return (
+                          <div
+                            key={`${depot.depotId}-${dIdx}`}
+                            className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200/80 dark:border-slate-800 space-y-2 text-xs"
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <Link 
+                                  href={`/depots/${depot.depotId}`} 
+                                  className="font-header font-bold text-slate-900 dark:text-white hover:text-primary transition-colors text-sm"
+                                >
+                                  {depot.depotName}
+                                </Link>
+                                {depot.wilaya && (
+                                  <span className="text-slate-500 font-mono text-xs">
+                                    • ولاية {depot.wilaya}
+                                  </span>
+                                )}
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  depot.priority === 'CRITICAL' 
+                                    ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300' 
+                                    : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                                }`}>
+                                  {priorityMeta.label}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2 self-start sm:self-auto">
+                                <span className="font-header font-bold text-rose-600 dark:text-rose-400 font-mono text-xs">
+                                  نقص {depot.deficit.toLocaleString('ar-DZ')} {item.unit}
+                                </span>
+
+                                {depot.mapsUrl && (
+                                  <a
+                                    href={depot.mapsUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-[11px] font-header font-bold text-white bg-primary hover:bg-primary/90 px-2.5 py-1 rounded-lg transition-colors"
+                                  >
+                                    <span>Google Maps</span>
+                                    <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                )}
+
+                                <Link href={`/depots/${depot.depotId}`}>
+                                  <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:text-primary bg-slate-200/80 dark:bg-slate-800 px-2.5 py-1 rounded-lg transition-colors">
+                                    تفاصيل المستودع
+                                    <ChevronLeft className="w-3 h-3" />
+                                  </span>
+                                </Link>
+                              </div>
+                            </div>
+
+                            {/* Real Field Note from the Ground */}
+                            {depot.notes && (
+                              <div className="flex items-start gap-1.5 p-2 rounded-xl bg-amber-500/10 text-amber-900 dark:text-amber-200 border border-amber-500/20 text-[11px] leading-relaxed">
+                                <FileText className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                                <span><strong>ملاحظة ميدانية:</strong> {depot.notes}</span>
+                              </div>
                             )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -348,7 +413,7 @@ export default function NeedsPage() {
                 {item.depotsSurplus.length > 0 && (
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
                     <span className="text-emerald-600 dark:text-emerald-400 font-header font-bold">✅ مستودعات بها وفرة (لا داعي للإرسال إليها):</span>
-                    <span className="truncate">{item.depotsSurplus.map(d => `${d.depotName} (فائض ${d.surplus})`).join('، ')}</span>
+                    <span className="truncate">{item.depotsSurplus.map(d => `${d.depotName} (فائض ${d.surplus.toLocaleString('ar-DZ')})`).join('، ')}</span>
                   </div>
                 )}
               </div>
@@ -379,4 +444,3 @@ export default function NeedsPage() {
     </div>
   );
 }
-

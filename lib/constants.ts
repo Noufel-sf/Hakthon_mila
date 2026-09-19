@@ -192,3 +192,56 @@ export function getZoneForCategory(category: AidCategory | string): ZoneType {
   return 'Zone D';
 }
 
+export const ITEM_NAME_AR: Record<string, string> = {
+  'Bottled Mineral Water 1.5L Packs': 'حزم مياه معدنية 1.5 لتر',
+  'Bottled Mineral Water 1.5L (Packs of 6)': 'حزم مياه معدنية 1.5 لتر (حزمة 6 قارورات)',
+  'Emergency Family Tent 6-person': 'خيام إيواء عائلية طارئة (6 أفراد)',
+  'Emergency Family Dome Tent (6-person)': 'خيام إيواء عائلية قبية (6 أفراد)',
+  'Winter Thermal Blanket': 'بطانيات صوفية حرارية شتوية',
+  'Thermal Heavyweight Blanket': 'بطانيات صوفية حرارية ثقيلة',
+  'Thermal Winter Wool Blanket': 'بطانيات شتوية حرارية من الصوف',
+  'Single Bed Foam Mattress': 'أفرشة نوم إسفنجية مفردة',
+  'Single Bed High Density Foam Mattress': 'أفرشة نوم إسفنجية عالية الكثافة',
+  'Pasteurized Whole Milk 1L': 'حليب معقم كامل الدسم 1 لتر',
+  'UHT Long-life Whole Milk 1L': 'حليب معقم كامل الدسم طويل الأجل 1 لتر',
+  'Infant Milk Formula 400g (Stage 1)': 'حليب أطفال رضع 400 غ (المرحلة 1)',
+  'Baby Food Fruit & Vegetable Puree 120g': 'هريس خضار وفواكه للرضع 120 غ',
+  'Family Hygiene Kit (Soap, Toothpaste, Sanitizer)': 'حقائب نظافة وطوارئ عائلية',
+  'Family Emergency Hygiene Kit': 'حقائب نظافة وطوارئ عائلية',
+  'Canned Tuna 160g': 'معلبات تونة 160 غرام',
+  'Canned Tuna 160g in Vegetable Oil': 'معلبات تونة 160 غ في الزيت النباتي',
+  'Heavy Duty Portable Water Storage Bladder 5000L': 'خزانات مياه مرنة متنقلة 5000 لتر',
+  'Pediatric Oral Rehydration Salts & Electrolytes': 'أملاح معالجة الجفاف للأطفال',
+  'Emergency Burn & Wound Dressing Packs': 'ضمادات ومستلزمات علاج الحروق والجروح',
+  'Dry Food Family Ration Box': 'طرود غذائية جافة عائلية',
+  'Infant Baby Clothes & Swaddle Blankets': 'ألبسة وقماطات للرضع وحديثي الولادة',
+};
+
+export function getItemNameAr(name: string): string {
+  if (!name) return '';
+  return ITEM_NAME_AR[name] || name;
+}
+
+export const UNIT_NAME_AR: Record<string, string> = {
+  PACKS: 'حزمة',
+  PIECES: 'قطعة',
+  TENTS: 'خيمة',
+  CARTONS: 'كرتون',
+  CANS: 'علبة',
+  KITS: 'حقيبة',
+  UNITS: 'وحدة',
+  BOXES: 'طرد',
+  BOTTLES: 'قارورة',
+  JARS: 'مرطبان',
+  TINS: 'علبة',
+  SACHETS: 'كيس',
+  SETS: 'طقم',
+};
+
+export function getUnitNameAr(unit: string): string {
+  if (!unit) return '';
+  const u = String(unit).toUpperCase();
+  return UNIT_NAME_AR[u] || unit;
+}
+
+

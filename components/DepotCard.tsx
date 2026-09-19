@@ -45,7 +45,7 @@ export default function DepotCard({ depot }: DepotCardProps) {
     item => item.currentStock >= item.targetNeed
   );
 
-  const occupancy = depot.occupancyPercentage || depot.totalCapacityPercent || 65;
+  const occupancy = depot.occupancyPercentage ?? depot.totalCapacityPercent ?? 0;
 
   return (
     <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 dark:hover:shadow-black/60 hover:-translate-y-1 flex flex-col justify-between group">

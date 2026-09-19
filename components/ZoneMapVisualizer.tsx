@@ -115,8 +115,8 @@ export default function ZoneMapVisualizer({
                   <div className="my-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 text-[11px] space-y-1.5">
                     <span className="text-slate-500 dark:text-slate-400 font-semibold block">المواد المتواجدة هنا:</span>
                     <div className="flex flex-wrap gap-1">
-                      {zoneItems.map(i => (
-                        <span key={i.id} className="text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 font-medium">
+                      {zoneItems.map((i, idx) => (
+                        <span key={`${i.id}-${idx}`} className="text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 font-medium">
                           {i.name} ({i.currentStock})
                         </span>
                       ))}

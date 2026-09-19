@@ -24,7 +24,7 @@ export default function NeedsTable({ items, showZone = true }: NeedsTableProps) 
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
-          {items.map((item) => {
+          {items.map((item, idx) => {
             const deficit = item.targetNeed - item.currentStock;
             const isSufficient = item.currentStock >= item.targetNeed;
             const isSurplus = item.currentStock >= item.targetNeed * 1.3;
@@ -32,7 +32,7 @@ export default function NeedsTable({ items, showZone = true }: NeedsTableProps) 
 
             return (
               <tr 
-                key={item.id} 
+                key={`${item.id}-${idx}`} 
                 className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
               >
                 {/* Item Name */}
