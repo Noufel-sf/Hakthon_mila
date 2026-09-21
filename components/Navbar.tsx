@@ -45,7 +45,7 @@ export default function Navbar() {
       <div className="rounded-full border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-sm px-5 sm:px-7 py-2.5 flex items-center justify-between gap-4 transition-all">
         
         {/* Right: Brand Logo (RTL layout) */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+        <Link href="/" aria-label="الرئيسية - منصة البوصلة + لإغاثة الكوارث" className="flex items-center gap-2.5 group shrink-0">
           <div className="h-9 w-9 rounded-full bg-[#03120D] border border-[#03120D] flex items-center justify-center text-white shadow-2xs group-hover:scale-105 transition-transform">
             <Compass className="w-5 h-5 text-white" />
           </div>
@@ -60,7 +60,7 @@ export default function Navbar() {
         </Link>
 
         {/* Center: Navigation Menu Links */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav aria-label="القائمة الرئيسية" className="hidden md:flex items-center gap-6">
           {navLinks.map(link => {
             const isActive = pathname === link.href;
 

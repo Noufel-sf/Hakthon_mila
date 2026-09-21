@@ -13,7 +13,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="w-full pt-10 pb-12 mt-auto">
+    <footer aria-label="تذييل الصفحة ومعلومات التواصل" className="w-full pt-10 pb-12 mt-auto">
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
           
