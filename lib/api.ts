@@ -44,14 +44,58 @@ export const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Response interceptor for unified logging and error handling
+// Response interceptor with offline resilience caching
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Automatically cache successful GET requests for offline field use
+    if (
+      typeof window !== 'undefined' &&
+      response.config.method?.toLowerCase() === 'get' &&
+      response.config.url &&
+      response.status === 200
+    ) {
+      try {
+        const cacheKey = `bawsala_api_cache_${response.config.url}`;
+        localStorage.setItem(cacheKey, JSON.stringify(response.data));
+      } catch (e) {
+        // LocalStorage quota safety
+      }
+    }
+    return response;
+  },
   (error) => {
+    const config = error.config;
+
+    // Offline Resilience: If network error and it is a GET request, serve cached data
+    if (
+      typeof window !== 'undefined' &&
+      config &&
+      config.method?.toLowerCase() === 'get' &&
+      config.url
+    ) {
+      try {
+        const cacheKey = `bawsala_api_cache_${config.url}`;
+        const cachedStr = localStorage.getItem(cacheKey);
+        if (cachedStr) {
+          const cachedData = JSON.parse(cachedStr);
+          console.log(`[Relief API] Serving offline cached data for: ${config.url}`);
+          return Promise.resolve({
+            data: cachedData,
+            status: 200,
+            statusText: 'OK (Offline Local Storage)',
+            headers: {},
+            config,
+          } as AxiosResponse);
+        }
+      } catch (e) {
+        console.warn('[Relief API] Failed to parse offline cached data:', e);
+      }
+    }
+
     if (error.response) {
-      console.warn(`[Relief API ${error.response.status}] ${error.config?.url}:`, error.response.data);
+      console.warn(`[Relief API ${error.response.status}] ${config?.url}:`, error.response.data);
     } else if (error.request) {
-      console.warn(`[Relief API Network Error] Backend not reachable at ${API_BASE_URL}`);
+      console.warn(`[Relief API Network Error] Offline or backend unreachable at ${API_BASE_URL}`);
     } else {
       console.warn('[Relief API Error]', error.message);
     }

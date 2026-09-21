@@ -169,7 +169,7 @@ self.addEventListener('fetch', (event) => {
           if (cached) return cached;
 
           return new Response(
-            JSON.stringify({ error: 'offline', message: 'Offline mode active', data: [] }),
+            JSON.stringify([]),
             { headers: { 'Content-Type': 'application/json' } }
           );
         })
