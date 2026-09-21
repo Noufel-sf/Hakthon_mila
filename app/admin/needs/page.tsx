@@ -25,11 +25,22 @@ import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 
+import { 
+  useNeedsQuery, 
+  useDepotsQuery, 
+  useCreateNeedMutation, 
+  useUpdateNeedMutation, 
+  useDeleteNeedMutation 
+} from '@/hooks/queries';
+
 export default function AdminNeedsPage() {
-  const [needs, setNeeds] = useState<NeedResponse[]>([]);
-  const [depots, setDepots] = useState<DepotSummaryResponse[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const { data: needs = [], isLoading: isLoadingNeeds, refetch: refetchNeeds, isFetching: isRefreshing } = useNeedsQuery();
+  const { data: depots = [], isLoading: isLoadingDepots } = useDepotsQuery();
+  const isLoading = isLoadingNeeds || isLoadingDepots;
+
+  const createNeedMutation = useCreateNeedMutation();
+  const updateNeedMutation = useUpdateNeedMutation();
+  const deleteNeedMutation = useDeleteNeedMutation();
 
   // Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -69,31 +80,6 @@ export default function AdminNeedsPage() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setIsRefreshing(true);
-      const [needsList, depotList] = await Promise.all([
-        api.needs.list().catch(() => []),
-        api.depots.list().catch(() => []),
-      ]);
-      setNeeds(needsList || []);
-      setDepots(depotList || []);
-      if (depotList && depotList.length > 0 && !depotId) {
-        setDepotId(String(depotList[0].id));
-      }
-    } catch (err: any) {
-      console.warn('[Admin Needs] Fetch error:', err);
-      toast.error('تعذر جلب سجل الاحتياجات من الخادم');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, []);
 
   const resetForm = () => {
@@ -137,17 +123,19 @@ export default function AdminNeedsPage() {
 
     try {
       if (isEditing && editingNeedId) {
-        await api.needs.update(editingNeedId, {
-          requestedQuantity: Number(requestedQuantity),
-          currentAvailableQuantity: Number(currentAvailableQuantity),
-          unit,
-          priority,
-          status,
-          notes: notes || undefined,
+        await updateNeedMutation.mutateAsync({
+          id: editingNeedId,
+          data: {
+            requestedQuantity: Number(requestedQuantity),
+            currentAvailableQuantity: Number(currentAvailableQuantity),
+            unit,
+            priority,
+            status,
+            notes: notes || undefined,
+          },
         });
-        toast.success(`تم تحديث الاحتياج (${getItemNameAr(itemName)}) بنجاح!`);
       } else {
-        await api.needs.create({
+        await createNeedMutation.mutateAsync({
           depotId: Number(depotId) || Number(depots[0]?.id) || 4,
           category,
           itemName,
@@ -157,15 +145,12 @@ export default function AdminNeedsPage() {
           priority,
           notes: notes || undefined,
         });
-        toast.success(`تم إنشاء طلب الاحتياج الجديد (${getItemNameAr(itemName)}) بنجاح!`);
       }
 
       setIsModalOpen(false);
       resetForm();
-      fetchData();
-    } catch (err: any) {
-      console.warn('[Admin Needs] Submit error:', err);
-      toast.error('حدث خطأ أثناء حفظ طلب الاحتياج في الخادم');
+    } catch {
+      // Toast notification is handled in mutation hook
     } finally {
       setIsSubmitting(false);
     }
@@ -175,14 +160,11 @@ export default function AdminNeedsPage() {
     if (!deletingNeed) return;
     setIsSubmitting(true);
     try {
-      await api.needs.delete(deletingNeed.id);
-      toast.success(`تم حذف الاحتياج (${getItemNameAr(deletingNeed.itemName)}) بنجاح`);
+      await deleteNeedMutation.mutateAsync(deletingNeed.id);
       setIsDeleting(false);
       setDeletingNeed(null);
-      fetchData();
-    } catch (err: any) {
-      console.warn('[Admin Needs] Delete error:', err);
-      toast.error('تعذر حذف الاحتياج من الخادم');
+    } catch {
+      // Toast notification is handled in mutation hook
     } finally {
       setIsSubmitting(false);
     }
@@ -229,7 +211,7 @@ export default function AdminNeedsPage() {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={fetchData} 
+            onClick={() => refetchNeeds()} 
             disabled={isRefreshing}
             className="border-slate-200 dark:border-slate-700"
           >

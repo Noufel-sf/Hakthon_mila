@@ -4,7 +4,7 @@ import "./globals.css";
 import PublicBackgroundWrapper from "@/components/PublicBackgroundWrapper";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import ApiSyncProvider from "@/components/ApiSyncProvider";
+import QueryProvider from "@/components/QueryProvider";
 import JsonLd from "@/components/JsonLd";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bawsalaplus.vercel.app";
@@ -176,12 +176,12 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground font-sans antialiased selection:bg-[#006233] selection:text-white">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <ApiSyncProvider>
+          <QueryProvider>
             <Toaster richColors position="top-center" dir="rtl" />
             <PublicBackgroundWrapper>
               {children}
             </PublicBackgroundWrapper>
-          </ApiSyncProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -22,9 +22,13 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { toast } from 'sonner';
 
+import { useDepotsQuery, useCreateInventoryMutation } from '@/hooks/queries';
+
 export default function CargoIntakePage() {
-  const { depots, selectedDepotId, receiveCargo, getDepot } = useRelief();
-  const currentDepot = (selectedDepotId ? getDepot(selectedDepotId) : null) || depots[0];
+  const { selectedDepotId } = useRelief();
+  const { data: depots = [] } = useDepotsQuery();
+  const currentDepot = (selectedDepotId ? depots.find(d => String(d.id) === String(selectedDepotId)) : null) || depots[0];
+  const createInventoryMutation = useCreateInventoryMutation();
 
   const [depotId, setDepotId] = useState<string>(selectedDepotId || (depots[0]?.id ? String(depots[0].id) : '4'));
   const [category, setCategory] = useState<AidCategory>('FOOD');
@@ -60,8 +64,7 @@ export default function CargoIntakePage() {
     const generatedBatchNumber = `BATCH-${category.slice(0, 4)}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
-      // 1. Send directly to live API
-      const apiRes = await api.inventory.add({
+      const apiRes = await createInventoryMutation.mutateAsync({
         depotId: numericDepotId,
         category,
         itemName,
@@ -74,7 +77,7 @@ export default function CargoIntakePage() {
         notes: notes || undefined,
       });
 
-      const confirmedBatch = apiRes.batchNumber || generatedBatchNumber;
+      const confirmedBatch = apiRes?.batchNumber || generatedBatchNumber;
       const targetDepot = depots.find(d => String(d.id) === String(numericDepotId));
 
       setIntakeResult({
@@ -84,31 +87,8 @@ export default function CargoIntakePage() {
         quantity,
         unit: getUnitNameAr(unit),
       });
-
-      toast.success('تم تسجيل وحفظ الشحنة في قاعدة البيانات الحية بنجاح!', {
-        description: `رقم الدفعة: ${confirmedBatch} | الكمية: ${quantity} ${getUnitNameAr(unit)}`,
-      });
-    } catch (err: any) {
-      console.warn('API inventory add notice:', err?.message);
-      // Fallback local update
-      receiveCargo(
-        numericDepotId,
-        category,
-        itemName,
-        quantity,
-        unit,
-        hasExpiry ? expiryDate : undefined
-      );
-
-      setIntakeResult({
-        batchNumber: generatedBatchNumber,
-        depotName: currentDepot?.name || `مستودع #${numericDepotId}`,
-        itemName: getItemNameAr(itemName),
-        quantity,
-        unit: getUnitNameAr(unit),
-      });
-
-      toast.success('تم تسجيل الشحنة بنجاح في المستودع!');
+    } catch {
+      // Toast notification is handled in mutation hook
     } finally {
       setIsSubmitting(false);
     }
@@ -185,7 +165,7 @@ export default function CargoIntakePage() {
               >
                 {depots.map(d => (
                   <option key={d.id} value={d.id}>
-                    {d.name} ({d.wilaya ? `ولاية ${d.wilaya}` : `#${d.id}`})
+                    {d.name} ({d.location?.wilaya ? `ولاية ${d.location.wilaya}` : `#${d.id}`})
                   </option>
                 ))}
               </select>

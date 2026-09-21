@@ -193,6 +193,10 @@ export const api = {
       const response: AxiosResponse<InventoryResponse> = await apiClient.post('/api/v1/inventory', data);
       return response.data;
     },
+    create: async (data: CreateInventoryRequest): Promise<InventoryResponse> => {
+      const response: AxiosResponse<InventoryResponse> = await apiClient.post('/api/v1/inventory', data);
+      return response.data;
+    },
 
     /**
      * Update inventory record

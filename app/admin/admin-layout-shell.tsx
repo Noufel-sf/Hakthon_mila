@@ -29,6 +29,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/Badge';
 import { useClickOutside } from '@/hooks/useClickOutside';
 
+import { useDepotsQuery, useExpiringInventoryQuery } from '@/hooks/queries';
+
 export default function AdminLayoutShell({
   children,
 }: {
@@ -41,17 +43,11 @@ export default function AdminLayoutShell({
     return <>{children}</>;
   }
 
-  const { depots, selectedDepotId, setSelectedDepotId, getDepot, fetchDepotsOnly } = useRelief();
-  const [isLoadingDepots, setIsLoadingDepots] = useState(depots.length === 0);
+  const { selectedDepotId, setSelectedDepotId } = useRelief();
+  const { data: depots = [] } = useDepotsQuery();
+  const { data: expiringItems = [] } = useExpiringInventoryQuery(30);
 
-  // Fetch only depots list on mount if empty
-  React.useEffect(() => {
-    if (depots.length === 0) {
-      fetchDepotsOnly().finally(() => setIsLoadingDepots(false));
-    }
-  }, [depots.length, fetchDepotsOnly]);
-
-  const currentDepot = (selectedDepotId ? getDepot(selectedDepotId) : null) || depots[0];
+  const currentDepot = (selectedDepotId ? depots.find(d => String(d.id) === String(selectedDepotId)) : null) || depots[0];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDateRange, setActiveDateRange] = useState('آخر 30 يوماً');
@@ -63,8 +59,8 @@ export default function AdminLayoutShell({
   const notificationsRef = useClickOutside<HTMLDivElement>(() => setNotificationsOpen(false), { enabled: notificationsOpen });
   const mobileMenuRef = useClickOutside<HTMLDivElement>(() => setMobileMenuOpen(false), { enabled: mobileMenuOpen });
 
-  // Find expiring items count in current depot for red badge
-  const expiringCount = currentDepot?.batches?.filter(b => b.status === 'expiring_soon')?.length || 0;
+  // Find expiring items count for red badge
+  const expiringCount = expiringItems.length;
 
   const navItems = [
     {
@@ -181,7 +177,7 @@ export default function AdminLayoutShell({
               </span>
             </div>
             <p className="text-[11px] text-slate-400 line-clamp-1">
-              {currentDepot?.address || 'مستودع إغاثة ميداني معتمد'}
+              {(currentDepot as any)?.address || currentDepot?.location?.address || 'مستودع إغاثة ميداني معتمد'}
             </p>
             <div className="text-[10px] text-primary font-semibold flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -262,7 +258,7 @@ export default function AdminLayoutShell({
                 >
                   {depots.map(d => (
                     <option key={d.id} value={d.id} className="dark:bg-slate-900 text-slate-900 dark:text-white">
-                      {d.name} ({d.wilaya})
+                      {d.name} ({d.location?.wilaya || (d as any).wilaya || ''})
                     </option>
                   ))}
                 </select>

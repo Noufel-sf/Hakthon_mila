@@ -30,38 +30,17 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 
+import { useDepotsQuery, useInventoryQuery, useNeedsQuery } from '@/hooks/queries';
+
 export default function AdminDashboardPage() {
-  const { depots, selectedDepotId, getDepot } = useRelief();
-  const currentDepot = (selectedDepotId ? getDepot(selectedDepotId) : null) || depots[0];
+  const { selectedDepotId } = useRelief();
+  const { data: depots = [] } = useDepotsQuery();
+  const currentDepot = (selectedDepotId ? depots.find(d => String(d.id) === String(selectedDepotId)) : null) || depots[0];
 
-  const [inventoryList, setInventoryList] = useState<InventoryResponse[]>([]);
-  const [needsList, setNeedsList] = useState<NeedResponse[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Fetch only this depot's inventory and needs
-  useEffect(() => {
-    let isMounted = true;
-    async function loadDepotDashboard() {
-      setIsLoading(true);
-      try {
-        const depotIdNum = Number(selectedDepotId) || Number(currentDepot?.id) || 1;
-        const [inv, needs] = await Promise.all([
-          api.inventory.list({ depotId: depotIdNum }).catch(() => []),
-          api.needs.list({ depotId: depotIdNum }).catch(() => []),
-        ]);
-        if (isMounted) {
-          setInventoryList(inv || []);
-          setNeedsList(needs || []);
-        }
-      } catch (err) {
-        console.warn('Dashboard fetch error:', err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-    loadDepotDashboard();
-    return () => { isMounted = false; };
-  }, [selectedDepotId, currentDepot?.id]);
+  const depotIdNum = Number(selectedDepotId) || Number(currentDepot?.id) || 1;
+  const { data: inventoryList = [], isLoading: isLoadingInv } = useInventoryQuery({ depotId: depotIdNum });
+  const { data: needsList = [], isLoading: isLoadingNeeds } = useNeedsQuery({ depotId: depotIdNum });
+  const isLoading = isLoadingInv || isLoadingNeeds;
 
   // Real calculations from backend data
   const totalStock = inventoryList.reduce((acc, item) => acc + item.quantity, 0);

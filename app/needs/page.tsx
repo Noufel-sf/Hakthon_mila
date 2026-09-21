@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
+import { useNeedsQuery, useDepotsQuery } from '@/hooks/queries';
+
 interface DepotNeedDetail {
   needId: number | string;
   depotId: string;
@@ -44,28 +46,9 @@ interface AggregatedItem {
 }
 
 export default function NeedsPage() {
-  const [needs, setNeeds] = useState<NeedResponse[]>([]);
-  const [depots, setDepots] = useState<DepotSummaryResponse[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const fetchNeedsData = async () => {
-    try {
-      const [needsRes, depotsRes] = await Promise.all([
-        api.needs.list().catch(() => []),
-        api.depots.list().catch(() => []),
-      ]);
-      setNeeds(needsRes || []);
-      setDepots(depotsRes || []);
-    } catch {
-      // Graceful error handling
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchNeedsData();
-  }, []);
+  const { data: needs = [], isLoading: isLoadingNeeds } = useNeedsQuery();
+  const { data: depots = [], isLoading: isLoadingDepots } = useDepotsQuery();
+  const isLoading = isLoadingNeeds || isLoadingDepots;
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');

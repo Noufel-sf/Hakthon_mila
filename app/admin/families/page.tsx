@@ -26,10 +26,19 @@ import {
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
+import { 
+  useFamiliesQuery, 
+  useCreateFamilyMutation, 
+  useUpdateFamilyMutation, 
+  useDeleteFamilyMutation 
+} from '@/hooks/queries';
+
 export default function AdminFamiliesPage() {
-  const [families, setFamilies] = useState<FamilyResponse[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const { data: families = [], isLoading, refetch: refetchFamilies, isFetching: isRefreshing } = useFamiliesQuery();
+
+  const createFamilyMutation = useCreateFamilyMutation();
+  const updateFamilyMutation = useUpdateFamilyMutation();
+  const deleteFamilyMutation = useDeleteFamilyMutation();
 
   // Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -67,24 +76,6 @@ export default function AdminFamiliesPage() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const fetchFamilies = async () => {
-    try {
-      setIsRefreshing(true);
-      const list = await api.families.list();
-      setFamilies(list || []);
-    } catch (err: any) {
-      console.warn('[Admin Families] Error fetching families:', err);
-      toast.error('تعذر جلب سجل العائلات من الخادم');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFamilies();
   }, []);
 
   const resetForm = () => {
@@ -146,18 +137,14 @@ export default function AdminFamiliesPage() {
 
     try {
       if (isEditing && editingFamilyId) {
-        await api.families.update(editingFamilyId, payload);
-        toast.success(`تم تحديث بيانات العائلة (${headOfFamilyName}) بنجاح!`);
+        await updateFamilyMutation.mutateAsync({ id: editingFamilyId, data: payload });
       } else {
-        await api.families.create(payload);
-        toast.success(`تم تسجيل العائلة المتضررة (${headOfFamilyName}) بنجاح في قاعدة البيانات!`);
+        await createFamilyMutation.mutateAsync(payload);
       }
       setIsModalOpen(false);
       resetForm();
-      fetchFamilies();
-    } catch (err: any) {
-      console.warn('[Admin Families] Submit error:', err);
-      toast.error('حدث خطأ أثناء حفظ بيانات العائلة');
+    } catch {
+      // Toast notification is handled in mutation hook
     } finally {
       setIsSubmitting(false);
     }
@@ -167,14 +154,11 @@ export default function AdminFamiliesPage() {
     if (!deletingFamily) return;
     setIsSubmitting(true);
     try {
-      await api.families.delete(deletingFamily.id);
-      toast.success(`تم حذف سجل العائلة (${deletingFamily.headOfFamilyName}) بنجاح`);
+      await deleteFamilyMutation.mutateAsync(deletingFamily.id);
       setIsDeleting(false);
       setDeletingFamily(null);
-      fetchFamilies();
-    } catch (err: any) {
-      console.warn('[Admin Families] Delete error:', err);
-      toast.error('تعذر حذف سجل العائلة من الخادم');
+    } catch {
+      // Toast notification is handled in mutation hook
     } finally {
       setIsSubmitting(false);
     }
@@ -232,7 +216,7 @@ export default function AdminFamiliesPage() {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={fetchFamilies} 
+            onClick={() => refetchFamilies()} 
             disabled={isRefreshing}
             className="border-slate-200 dark:border-slate-700"
           >

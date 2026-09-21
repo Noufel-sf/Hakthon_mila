@@ -28,10 +28,20 @@ import {
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
+import { 
+  useDepotsQuery, 
+  useCreateDepotMutation, 
+  useUpdateDepotMutation, 
+  useDeleteDepotMutation 
+} from '@/hooks/queries';
+
 export default function AdminDepotsPage() {
-  const [depots, setDepots] = useState<DepotSummaryResponse[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const { data: depots = [], isLoading, refetch: refetchDepots, isFetching: isRefreshing } = useDepotsQuery();
+
+  const createDepotMutation = useCreateDepotMutation();
+  const updateDepotMutation = useUpdateDepotMutation();
+  const deleteDepotMutation = useDeleteDepotMutation();
+
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterWilaya, setFilterWilaya] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -73,24 +83,6 @@ export default function AdminDepotsPage() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const fetchDepots = async () => {
-    try {
-      setIsRefreshing(true);
-      const list = await api.depots.list();
-      setDepots(list || []);
-    } catch (err: any) {
-      console.warn('[Admin Depots] Error fetching depots:', err);
-      toast.error('تعذر جلب المستودعات من الخادم');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDepots();
   }, []);
 
   const handleOpenViewDetails = async (depot: DepotSummaryResponse) => {
@@ -184,18 +176,14 @@ export default function AdminDepotsPage() {
 
     try {
       if (isEditing && editingDepotId) {
-        await api.depots.update(editingDepotId, payload);
-        toast.success(`تم تحديث بيانات المستودع (${name}) بنجاح!`);
+        await updateDepotMutation.mutateAsync({ id: editingDepotId, data: payload });
       } else {
-        await api.depots.create(payload);
-        toast.success(`تم إنشاء المستودع الجديد (${name}) بنجاح في قاعدة البيانات!`);
+        await createDepotMutation.mutateAsync(payload);
       }
       setIsModalOpen(false);
       resetForm();
-      fetchDepots();
-    } catch (err: any) {
-      console.warn('[Admin Depots] Submit error:', err);
-      toast.error('حدث خطأ أثناء حفظ بيانات المستودع');
+    } catch {
+      // Toast notification is handled in mutation hook
     } finally {
       setIsSubmitting(false);
     }
@@ -205,15 +193,12 @@ export default function AdminDepotsPage() {
     if (!deletingDepot) return;
     setIsSubmitting(true);
     try {
-      await api.depots.delete(deletingDepot.id);
-      toast.success(`تم حذف المستودع (${deletingDepot.name}) بنجاح`);
+      await deleteDepotMutation.mutateAsync(deletingDepot.id);
       setIsDeleting(false);
       setDeletingDepot(null);
       if (viewingDepot?.id === deletingDepot.id) setViewingDepot(null);
-      fetchDepots();
-    } catch (err: any) {
-      console.warn('[Admin Depots] Delete error:', err);
-      toast.error('تعذر حذف المستودع من الخادم');
+    } catch {
+      // Toast notification is handled in mutation hook
     } finally {
       setIsSubmitting(false);
     }
@@ -255,7 +240,7 @@ export default function AdminDepotsPage() {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={fetchDepots} 
+            onClick={() => refetchDepots()} 
             disabled={isRefreshing}
             className="border-slate-200 dark:border-slate-700"
           >

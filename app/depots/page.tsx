@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useReliefStore, mapSummaryToDepot } from '@/lib/store';
-import { api } from '@/lib/api';
+import { mapSummaryToDepot } from '@/lib/store';
+import { useDepotsQuery, useNeedsQuery } from '@/hooks/queries';
 import { 
   Warehouse, 
   Search, 
@@ -20,29 +20,14 @@ import {
 import { Button } from '@/components/ui/Button';
 
 export default function DepotsDirectoryPage() {
-  const depots = useReliefStore((state) => state.depots);
-  const [isLoading, setIsLoading] = useState<boolean>(depots.length === 0);
+  const { data: depotList = [], isLoading: isLoadingDepots } = useDepotsQuery();
+  const { data: needsList = [], isLoading: isLoadingNeeds } = useNeedsQuery();
 
-  const fetchDepotsData = async () => {
-    try {
-      const [depotList, needsList] = await Promise.all([
-        api.depots.list().catch(() => []),
-        api.needs.list().catch(() => []),
-      ]);
-      if (depotList && depotList.length > 0) {
-        const mapped = depotList.map(d => mapSummaryToDepot(d, needsList, []));
-        useReliefStore.getState().setDepots(mapped);
-      }
-    } catch {
-      // Graceful error handling
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const depots = useMemo(() => {
+    return depotList.map((d) => mapSummaryToDepot(d, needsList, []));
+  }, [depotList, needsList]);
 
-  useEffect(() => {
-    fetchDepotsData();
-  }, []);
+  const isLoading = isLoadingDepots || isLoadingNeeds;
 
   const [selectedWilaya, setSelectedWilaya] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');

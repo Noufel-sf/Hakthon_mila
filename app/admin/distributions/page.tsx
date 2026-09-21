@@ -29,12 +29,22 @@ import {
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
+import { 
+  useDistributionsQuery, 
+  useCreateDistributionMutation, 
+  useDeleteDistributionMutation, 
+  useFamiliesQuery, 
+  useDepotsQuery 
+} from '@/hooks/queries';
+
 export default function AdminDistributionsPage() {
-  const [distributions, setDistributions] = useState<DistributionResponse[]>([]);
-  const [families, setFamilies] = useState<FamilyResponse[]>([]);
-  const [depots, setDepots] = useState<DepotSummaryResponse[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const { data: distributions = [], isLoading: isLoadingDist, refetch: refetchDistributions, isFetching: isRefreshing } = useDistributionsQuery();
+  const { data: families = [], isLoading: isLoadingFamilies } = useFamiliesQuery();
+  const { data: depots = [], isLoading: isLoadingDepots } = useDepotsQuery();
+  const isLoading = isLoadingDist || isLoadingFamilies || isLoadingDepots;
+
+  const createDistributionMutation = useCreateDistributionMutation();
+  const deleteDistributionMutation = useDeleteDistributionMutation();
 
   // Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -57,6 +67,16 @@ export default function AdminDistributionsPage() {
   const [unit, setUnit] = useState<string>('BOXES');
   const [notes, setNotes] = useState<string>('تسليم حصة إغاثية عاجلة للعائلة');
 
+  // Sync initial select defaults if empty
+  useEffect(() => {
+    if (families.length > 0 && !familyId) {
+      setFamilyId(String(families[0].id));
+    }
+    if (depots.length > 0 && !depotId) {
+      setDepotId(String(depots[0].id));
+    }
+  }, [families, depots, familyId, depotId]);
+
   // Close modals on Escape key press
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -68,37 +88,6 @@ export default function AdminDistributionsPage() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setIsRefreshing(true);
-      const [distList, famList, depotList] = await Promise.all([
-        api.distributions.list().catch(() => []),
-        api.families.list().catch(() => []),
-        api.depots.list().catch(() => []),
-      ]);
-      setDistributions(distList || []);
-      setFamilies(famList || []);
-      setDepots(depotList || []);
-
-      if (famList && famList.length > 0 && !familyId) {
-        setFamilyId(String(famList[0].id));
-      }
-      if (depotList && depotList.length > 0 && !depotId) {
-        setDepotId(String(depotList[0].id));
-      }
-    } catch (err: any) {
-      console.warn('[Admin Distributions] Fetch error:', err);
-      toast.error('تعذر جلب سجل التوزيع من الخادم');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, []);
 
   const resetForm = () => {
@@ -121,7 +110,7 @@ export default function AdminDistributionsPage() {
     setIsSubmitting(true);
 
     try {
-      await api.distributions.create({
+      await createDistributionMutation.mutateAsync({
         familyId: Number(familyId) || (families[0]?.id ? families[0].id : 42),
         depotId: Number(depotId) || (depots[0]?.id ? Number(depots[0].id) : 4),
         category,
@@ -131,13 +120,10 @@ export default function AdminDistributionsPage() {
         notes: notes || undefined,
       });
 
-      toast.success('تم تسجيل عملية التوزيع الميداني بنجاح في الخادم!');
       setIsModalOpen(false);
       resetForm();
-      fetchData();
-    } catch (err: any) {
-      console.warn('[Admin Distributions] Submit error:', err);
-      toast.error('حدث خطأ أثناء تسجيل عملية التوزيع');
+    } catch {
+      // Toast notification is handled in mutation hook
     } finally {
       setIsSubmitting(false);
     }
@@ -147,14 +133,11 @@ export default function AdminDistributionsPage() {
     if (!deletingDistribution) return;
     setIsSubmitting(true);
     try {
-      await api.distributions.delete(deletingDistribution.id);
-      toast.success(`تم حذف قيد التوزيع (#${deletingDistribution.id}) بنجاح`);
+      await deleteDistributionMutation.mutateAsync(deletingDistribution.id);
       setIsDeleting(false);
       setDeletingDistribution(null);
-      fetchData();
-    } catch (err: any) {
-      console.warn('[Admin Distributions] Delete error:', err);
-      toast.error('تعذر حذف قيد التوزيع من الخادم');
+    } catch {
+      // Toast notification is handled in mutation hook
     } finally {
       setIsSubmitting(false);
     }
@@ -199,7 +182,7 @@ export default function AdminDistributionsPage() {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={fetchData} 
+            onClick={() => refetchDistributions()} 
             disabled={isRefreshing}
             className="border-slate-200 dark:border-slate-700"
           >

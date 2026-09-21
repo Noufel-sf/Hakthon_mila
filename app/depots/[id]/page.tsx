@@ -1,8 +1,13 @@
 'use client';
 
-import React, { use, useState, useEffect } from 'react';
+import React, { use } from 'react';
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { 
+  useDepotDetailsQuery, 
+  useAdminDepotQuery,
+  useNeedsQuery, 
+  useInventoryQuery 
+} from '@/hooks/queries';
 import { 
   PublicDepotDetailResponse, 
   DepotResponse, 
@@ -38,48 +43,43 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
   const resolvedParams = use(params);
   const numericId = Number(resolvedParams.id);
 
-  const [publicDepot, setPublicDepot] = useState<PublicDepotDetailResponse | null>(null);
-  const [adminDepot, setAdminDepot] = useState<DepotResponse | null>(null);
-  const [needs, setNeeds] = useState<NeedResponse[]>([]);
-  const [inventory, setInventory] = useState<InventoryResponse[]>([]);
-  const [availableSupplies, setAvailableSupplies] = useState<PublicInventorySummaryDTO[]>([]);
+  // TanStack Query hooks for depot detail, admin details, needs, and inventory
+  const { 
+    data: publicDepot, 
+    isLoading: isLoadingPublic, 
+    isFetching: isRefreshingPublic, 
+    refetch: refetchPublic 
+  } = useDepotDetailsQuery(numericId);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const {
+    data: adminDepot,
+    isLoading: isLoadingAdmin,
+    isFetching: isRefreshingAdmin,
+    refetch: refetchAdmin
+  } = useAdminDepotQuery(numericId);
 
-  const fetchLiveDepotDetails = async () => {
-    if (isNaN(numericId)) {
-      setIsLoading(false);
-      return;
-    }
+  const { 
+    data: needs = [], 
+    isLoading: isLoadingNeeds, 
+    refetch: refetchNeeds 
+  } = useNeedsQuery(numericId);
 
-    setIsRefreshing(true);
-    try {
-      const [publicRes, adminRes, needsRes, invRes] = await Promise.all([
-        api.public.getDepotDetails(numericId).catch(() => null),
-        api.depots.getById(numericId).catch(() => null),
-        api.needs.list({ depotId: numericId }).catch(() => []),
-        api.inventory.list({ depotId: numericId }).catch(() => []),
-      ]);
+  const { 
+    data: inventory = [], 
+    isLoading: isLoadingInventory, 
+    refetch: refetchInventory 
+  } = useInventoryQuery(numericId);
 
-      setPublicDepot(publicRes);
-      setAdminDepot(adminRes);
-      setNeeds(needsRes || []);
-      setInventory(invRes || []);
-      if (publicRes?.availableSupplies) {
-        setAvailableSupplies(publicRes.availableSupplies);
-      }
-    } catch (e: any) {
-      console.warn('[Depot Detail] Could not fetch depot detail:', e);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
+  const availableSupplies = publicDepot?.availableSupplies || [];
+  const isLoading = isLoadingPublic && isLoadingAdmin;
+  const isRefreshing = isRefreshingPublic || isRefreshingAdmin;
+
+  const fetchLiveDepotDetails = () => {
+    refetchPublic();
+    refetchAdmin();
+    refetchNeeds();
+    refetchInventory();
   };
-
-  useEffect(() => {
-    fetchLiveDepotDetails();
-  }, [numericId]);
 
   if (isLoading) {
     return (

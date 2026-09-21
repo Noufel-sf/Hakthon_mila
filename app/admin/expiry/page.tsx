@@ -18,44 +18,29 @@ import { Badge } from '@/components/ui/Badge';
 import { getRelativeTime } from '@/lib/utils';
 import { toast } from 'sonner';
 
+import { useExpiringInventoryQuery, useDepotsQuery } from '@/hooks/queries';
+
 export default function ExpiryManagementPage() {
-  const { depots, selectedDepotId, getDepot } = useRelief();
-  const currentDepot = (selectedDepotId ? getDepot(selectedDepotId) : null) || depots[0];
+  const { selectedDepotId } = useRelief();
+  const { data: depots = [] } = useDepotsQuery();
+  const currentDepot = (selectedDepotId ? depots.find(d => String(d.id) === String(selectedDepotId)) : null) || depots[0];
 
-  const [liveBatches, setLiveBatches] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { data: expiringRes = [], isLoading } = useExpiringInventoryQuery(90);
 
-  const fetchLiveExpiringInventory = async () => {
-    setIsLoading(true);
-    try {
-      const expiringRes = await api.inventory.getExpiring(90).catch(() => []);
-      if (expiringRes) {
-        const mapped = expiringRes.map(item => ({
-          id: item.batchNumber || `BATCH-${item.id}`,
-          depotId: String(item.depotId),
-          depotName: item.depotName || currentDepot?.name || 'مستودع إغاثة',
-          itemName: item.itemName,
-          quantity: item.quantity,
-          unit: item.unit,
-          expiryDate: item.expirationDate || '2026-10-01',
-          receivedDate: item.receivedDate || '2026-09-14',
-          status: (item.isExpiringSoon || (item.daysUntilExpiration !== null && item.daysUntilExpiration !== undefined && item.daysUntilExpiration <= 15)) ? 'expiring_soon' : 'good',
-          batchNumber: item.batchNumber,
-          daysUntilExpiration: item.daysUntilExpiration,
-          isLiveRemote: true,
-        }));
-        setLiveBatches(mapped);
-      }
-    } catch (err: any) {
-      console.warn('Could not load expiring inventory:', err?.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchLiveExpiringInventory();
-  }, []);
+  const liveBatches = expiringRes.map(item => ({
+    id: item.batchNumber || `BATCH-${item.id}`,
+    depotId: String(item.depotId),
+    depotName: item.depotName || currentDepot?.name || 'مستودع إغاثة',
+    itemName: item.itemName,
+    quantity: item.quantity,
+    unit: item.unit,
+    expiryDate: item.expirationDate || '2026-10-01',
+    receivedDate: item.receivedDate || '2026-09-14',
+    status: (item.isExpiringSoon || (item.daysUntilExpiration !== null && item.daysUntilExpiration !== undefined && item.daysUntilExpiration <= 15)) ? 'expiring_soon' : 'good',
+    batchNumber: item.batchNumber,
+    daysUntilExpiration: item.daysUntilExpiration,
+    isLiveRemote: true,
+  }));
 
   // Sort strictly real batches by earliest expiry date
   const sortedBatches = [...liveBatches].sort((a, b) => {
