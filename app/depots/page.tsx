@@ -16,7 +16,9 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Clock, 
-  ChevronLeft 
+  ChevronLeft,
+  Map as MapIcon,
+  LayoutGrid
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -64,6 +66,27 @@ export default function DepotsDirectoryPage() {
         <p className="font-sub text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
           بيان شامل ومباشر لجميع المستودعات الميدانية، نسب إشغالها الحالية، النواقص الحرجة، ونقاط التفريغ المباشرة على Google Maps.
         </p>
+
+        {/* View Switcher: Cards vs Field Map */}
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+            <span className="px-4 py-1.5 text-xs font-header font-bold bg-[#0E4B35] text-white flex items-center gap-1.5 shadow-xs">
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>شبكة البطاقات</span>
+            </span>
+            <Link
+              href="/map"
+              className="px-4 py-1.5 text-xs font-header font-bold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white flex items-center gap-1.5 transition-colors"
+            >
+              <MapIcon className="w-3.5 h-3.5 text-emerald-600" />
+              <span>الخريطة الميدانية (GIS)</span>
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+              </span>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Centered Filter and Search Bar */}
