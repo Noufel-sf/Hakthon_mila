@@ -4,12 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  Warehouse, 
-  MapPin, 
-  ClipboardList, 
-  SlidersHorizontal,
-  HeartHandshake,
-  ArrowLeft,
+
   Compass
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -86,12 +81,11 @@ export default function Navbar() {
         {/* Left: Actions (Theme toggle and Action Buttons) */}
         <div className="flex items-center gap-2.5 shrink-0">
           {/* Theme Toggle (Dark / Light) */}
-          <ThemeToggle />
 
           {/* Admin link pill */}
           <Link
             href="/admin"
-            className="hidden sm:inline-flex items-center px-4 py-2 rounded-full text-xs font-header font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+            className="hidden sm:inline-flex text-bold items-center px-4 py-2 rounded-full text-xs font-header font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
           >
             <span>إدارة المستودع</span>
           </Link>
@@ -99,9 +93,9 @@ export default function Navbar() {
           {/* Primary Action Button (Solid dark pill like 'ابدأ مجاناً' in screenshot) */}
           <Link
             href="/needs"
-            className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full text-xs font-header font-bold bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+            className="inline-flex items-center text-bold gap-1.5 px-4 sm:px-5 py-2 rounded-full text-xs font-header font-bold bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
           >
-            <span>استكشف النواقص</span>
+            <span className="text-xs">استكشف النواقص</span>
           </Link>
         </div>
 

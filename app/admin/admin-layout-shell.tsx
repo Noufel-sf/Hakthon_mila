@@ -22,7 +22,8 @@ import {
   Layers, 
   Sparkles, 
   RefreshCw, 
-  Users 
+  Users,
+  LogOut 
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/Badge';
@@ -33,6 +34,12 @@ export default function AdminLayoutShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
+  // If on login page, render clean standalone page without admin shell
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
   const { depots, selectedDepotId, setSelectedDepotId, getDepot, fetchDepotsOnly } = useRelief();
   const [isLoadingDepots, setIsLoadingDepots] = useState(depots.length === 0);
 
@@ -194,13 +201,27 @@ export default function AdminLayoutShell({
               </div>
             </div>
 
-            <Link 
-              href="/"
-              title="العودة للمنصة العامة"
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </Link>
+            <div className="flex items-center gap-1">
+              <Link 
+                href="/"
+                title="العودة للمنصة العامة"
+                className="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </Link>
+              <Link 
+                href="/admin/login"
+                title="تسجيل الخروج"
+                onClick={() => {
+                  try {
+                    localStorage.removeItem('admin_authenticated');
+                  } catch (e) {}
+                }}
+                className="p-2 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </aside>
@@ -370,13 +391,26 @@ export default function AdminLayoutShell({
               );
             })}
             
-            <div className="pt-2">
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <Link
                 href="/"
                 className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white"
               >
                 <ExternalLink className="w-4 h-4" />
                 <span>العودة إلى المنصة العامة</span>
+              </Link>
+
+              <Link
+                href="/admin/login"
+                onClick={() => {
+                  try {
+                    localStorage.removeItem('admin_authenticated');
+                  } catch (e) {}
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>خروج</span>
               </Link>
             </div>
           </div>

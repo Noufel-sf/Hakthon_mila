@@ -102,13 +102,12 @@ export default function HomePage() {
         <div className="absolute bottom-1/4 right-1/4 text-primary dark:text-primary text-base select-none pointer-events-none">✦</div>
         <div className="absolute top-1/6 left-1/3 w-1.5 h-1.5 rounded-full bg-primary/40 pointer-events-none"></div>
         <div className="absolute top-1/2 right-1/3 w-1 h-1 rounded-full bg-primary/40 pointer-events-none"></div>
-        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[600px] h-[260px] bg-gradient-to-t from-primary/40 dark:from-primary/20 via-transparent to-transparent rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-5 px-4">
           
           {/* Top Pill Tag (Like 'لتسيير تجارتك' in screenshot) */}
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs sm:text-sm font-header font-bold bg-primary text-white border border-primary shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs sm:text-sm font-header font-bold bg-primary text-white border border-primary ">
               <span>لتنسيق إغاثة الكوارث</span>
             </div>
           </div>
@@ -116,7 +115,7 @@ export default function HomePage() {
           {/* Main Headline with Highlight box (Font: Zain) */}
           <h1 className="font-header text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.2]">
             وجّه ونسّق المساعدات الميدانية <br />
-            <span className="relative inline-block mt-2 px-5 py-1 bg-primary text-white rounded-2xl shadow-xs">
+            <span className="relative inline-block mt-2 px-5 py-1 bg-primary text-white rounded-2xl ">
               من منصة واحدة
             </span>
           </h1>
@@ -130,14 +129,14 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
             <Link
               href="/needs"
-              className="px-8 py-3 rounded-full bg-[#03120D] hover:bg-[#07261C] text-white font-header font-bold text-sm sm:text-base shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5"
+              className="px-8 py-3 rounded-full bg-[#03120D] hover:bg-[#07261C] text-white font-header font-bold text-sm sm:text-base transition-all hover:shadow-lg hover:-translate-y-0.5"
             >
               استكشف النواقص
             </Link>
 
             <Link
               href="/depots"
-              className="px-8 py-3 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-header font-bold text-sm sm:text-base shadow-2xs transition-all hover:-translate-y-0.5"
+              className="px-8 py-3 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-header font-bold text-sm sm:text-base  transition-all hover:-translate-y-0.5"
             >
               دليل المستودعات
             </Link>
@@ -149,7 +148,7 @@ export default function HomePage() {
 
       {/* 🔍 SEARCH & CATEGORY FILTER BAR */}
       <div className="max-w-3xl mx-auto px-4 w-full">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-sm transition-colors space-y-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5  transition-colors space-y-3">
           
           {/* Top: Pill Filter Buttons */}
           <div className="flex flex-wrap items-center gap-2">
@@ -162,7 +161,7 @@ export default function HomePage() {
                   onClick={() => setSelectedCategory(pill.id)}
                   className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-header font-bold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#03120D] text-white shadow-sm shadow-[#03120D]/25'
+                      ? 'bg-[#03120D] text-white '
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -187,7 +186,7 @@ export default function HomePage() {
 
             <button
               onClick={() => {}}
-              className="px-6 py-2.5 rounded-2xl bg-[#03120D] hover:bg-[#07261C] text-white font-header font-bold text-xs sm:text-sm transition-all shadow-sm shadow-[#03120D]/20 shrink-0 cursor-pointer"
+              className="px-6 py-2.5 rounded-2xl bg-[#03120D] hover:bg-[#07261C] text-white font-header font-bold text-xs sm:text-sm transition-all shrink-0 cursor-pointer"
             >
               إبحــث الآن
             </button>
@@ -259,7 +258,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
           {/* Value 1 */}
-          <div className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 shadow-xs hover:shadow-md transition-all hover:-translate-y-0.5 space-y-4 flex flex-col justify-between">
+          <div className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 transition-all hover:-translate-y-0.5 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
               <div className="h-11 w-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
                 <HeartHandshake className="w-5 h-5" />
@@ -277,7 +276,7 @@ export default function HomePage() {
           </div>
 
           {/* Value 2 */}
-          <div className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 shadow-xs hover:shadow-md transition-all hover:-translate-y-0.5 space-y-4 flex flex-col justify-between">
+          <div className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7  transition-all hover:-translate-y-0.5 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
               <div className="h-11 w-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
                 <Clock className="w-5 h-5" />
@@ -295,7 +294,7 @@ export default function HomePage() {
           </div>
 
           {/* Value 3 */}
-          <div className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 shadow-xs hover:shadow-md transition-all hover:-translate-y-0.5 space-y-4 flex flex-col justify-between">
+          <div className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7  transition-all hover:-translate-y-0.5 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
               <div className="h-11 w-11 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
                 <Warehouse className="w-5 h-5" />
