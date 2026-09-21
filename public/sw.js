@@ -73,7 +73,8 @@ self.addEventListener('fetch', (event) => {
   const isNextStatic =
     url.pathname.startsWith('/_next/') ||
     url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|webp|ico|woff2|woff|ttf)$/) ||
-    url.hostname.includes('basemaps.cartocdn.com') ||
+    url.hostname.includes('tile.openstreetmap.org') ||
+    url.hostname.includes('openstreetmap.org') ||
     url.hostname.includes('fonts.googleapis.com') ||
     url.hostname.includes('fonts.gstatic.com');
 
