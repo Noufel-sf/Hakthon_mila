@@ -57,6 +57,40 @@ export default function AdminLayoutShell({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
+  // Click-outside and Escape key handling
+  const datePickerRef = React.useRef<HTMLDivElement>(null);
+  const notificationsRef = React.useRef<HTMLDivElement>(null);
+  const mobileMenuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
+        setShowDatePicker(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setShowDatePicker(false);
+        setNotificationsOpen(false);
+        setMobileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   // Find expiring items count in current depot for red badge
   const expiringCount = currentDepot?.batches?.filter(b => b.status === 'expiring_soon')?.length || 0;
 
@@ -283,10 +317,10 @@ export default function AdminLayoutShell({
           {/* Left Header Section: Date Range Selector, Search, Bell, Profile Avatar, ThemeToggle */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Date Range Selector Pill (matches reference design "آخر 30 يوماً") */}
-            <div className="relative">
+            <div ref={datePickerRef} className="relative">
               <button
                 onClick={() => setShowDatePicker(!showDatePicker)}
-                className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs transition-all"
+                className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs transition-all cursor-pointer"
               >
                 <Calendar className="w-3.5 h-3.5 text-primary" />
                 <span>{activeDateRange}</span>
@@ -302,7 +336,7 @@ export default function AdminLayoutShell({
                         setActiveDateRange(range);
                         setShowDatePicker(false);
                       }}
-                      className={`w-full text-right px-3.5 py-2 text-xs transition-colors ${
+                      className={`w-full text-right px-3.5 py-2 text-xs transition-colors cursor-pointer ${
                         activeDateRange === range 
                           ? 'bg-primary/10 text-primary font-bold' 
                           : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -316,10 +350,10 @@ export default function AdminLayoutShell({
             </div>
 
             {/* Notification Bell with indicator */}
-            <div className="relative">
+            <div ref={notificationsRef} className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="relative p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="relative p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 aria-label="الإشعارات"
               >
                 <Bell className="w-4 h-4" />
@@ -327,7 +361,7 @@ export default function AdminLayoutShell({
               </button>
 
               {notificationsOpen && (
-                <div className="absolute left-0 mt-2 w-72 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl p-3 z-50">
+                <div className="absolute left-0 mt-2 w-72 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                     <span className="text-xs font-bold text-slate-900 dark:text-white">تنبيهات النظام</span>
                     <span className="text-[10px] text-primary font-semibold">3 جديدة</span>
@@ -358,7 +392,7 @@ export default function AdminLayoutShell({
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 space-y-1.5 z-20">
+          <div ref={mobileMenuRef} className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 space-y-1.5 z-20 animate-in fade-in slide-in-from-top-2">
             {navItems.map((item) => {
               const isActive = item.exact 
                 ? pathname === item.href 

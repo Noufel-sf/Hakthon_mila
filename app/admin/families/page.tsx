@@ -56,6 +56,19 @@ export default function AdminFamiliesPage() {
   const [status, setStatus] = useState<FamilyStatus>('AFFECTED_DISPLACED');
   const [notes, setNotes] = useState<string>('');
 
+  // Close modals on Escape key press
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setIsModalOpen(false);
+        setViewingFamily(null);
+        setIsDeleting(false);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const fetchFamilies = async () => {
     try {
       setIsRefreshing(true);
@@ -417,8 +430,14 @@ export default function AdminFamiliesPage() {
 
       {/* ================= VIEW DETAILS MODAL ================= */}
       {viewingFamily && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 space-y-5 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs cursor-pointer"
+          onClick={() => setViewingFamily(null)}
+        >
+          <div 
+            className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 space-y-5 shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
             
             {/* Modal Header */}
             <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -557,8 +576,14 @@ export default function AdminFamiliesPage() {
 
       {/* ================= CREATE / EDIT FAMILY MODAL ================= */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs cursor-pointer"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div 
+            className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
             
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
@@ -739,8 +764,14 @@ export default function AdminFamiliesPage() {
 
       {/* ================= DELETE CONFIRMATION MODAL ================= */}
       {isDeleting && deletingFamily && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-rose-200 dark:border-rose-900 max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs cursor-pointer"
+          onClick={() => setIsDeleting(false)}
+        >
+          <div 
+            className="bg-white dark:bg-slate-900 rounded-3xl border border-rose-200 dark:border-rose-900 max-w-md w-full p-6 space-y-4 shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center gap-3 text-rose-600">
               <div className="h-10 w-10 rounded-2xl bg-rose-500/10 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5" />

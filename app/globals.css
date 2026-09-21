@@ -114,6 +114,16 @@ body {
   border-radius: 0 !important;
 }
 
+button, 
+[role="button"], 
+select, 
+input[type="checkbox"], 
+input[type="radio"], 
+a,
+label[for] {
+  cursor: pointer;
+}
+
 .font-header {
   font-family: 'IBM Plex Sans Arabic', sans-serif;
 }
