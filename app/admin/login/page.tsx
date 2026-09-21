@@ -32,7 +32,7 @@ export const adminLoginSchema = z.object({
   password: z
     .string()
     .min(6, 'كلمة المرور يجب أن لا تقل عن 6 أحرف'),
-  rememberMe: z.boolean().default(true),
+  rememberMe: z.boolean(),
 });
 
 export type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
