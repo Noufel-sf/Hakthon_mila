@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Depot } from '@/lib/types';
 import { 
@@ -19,6 +19,8 @@ interface DepotCardProps {
 }
 
 export default function DepotCard({ depot }: DepotCardProps) {
+  const router = useRouter();
+
   // Determine image based on depot id or wilaya
   const getDepotImage = (id: string, wilaya: string) => {
     if (id.includes('mila') || wilaya.includes('ميلة')) {
@@ -39,7 +41,10 @@ export default function DepotCard({ depot }: DepotCardProps) {
   const occupancy = depot.occupancyPercentage ?? depot.totalCapacityPercent ?? 0;
 
   return (
-    <div className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs hover:border-[#0E4B35] transition-colors flex flex-col justify-between group">
+    <div 
+      onClick={() => router.push(`/depots/${depot.id}`)}
+      className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs hover:border-[#0E4B35] hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
+    >
       
       <div>
         {/* ================= TOP: DEPOT IMAGE ================= */}
@@ -84,6 +89,7 @@ export default function DepotCard({ depot }: DepotCardProps) {
                 href={depot.googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
                 className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-none bg-[#0E4B35] hover:bg-[#093525] text-white text-xs font-bold font-header shadow-xs transition-colors"
                 title="فتح موقع المستودع على Google Maps"
               >
@@ -186,13 +192,12 @@ export default function DepotCard({ depot }: DepotCardProps) {
         <span className="text-[11px] text-slate-400">
           تحديث: {depot.lastUpdated}
         </span>
-        <Link
-          href={`/depots/${depot.id}`}
-          className="inline-flex items-center gap-1.5 text-xs font-bold font-header text-[#0E4B35] dark:text-emerald-400 hover:text-[#093525] transition-colors"
+        <div
+          className="inline-flex items-center gap-1.5 text-xs font-bold font-header text-[#0E4B35] dark:text-emerald-400 group-hover:translate-x-[-4px] transition-transform"
         >
           <span>عرض الجرد الكامل</span>
           <ChevronLeft className="w-4 h-4" />
-        </Link>
+        </div>
       </div>
 
     </div>

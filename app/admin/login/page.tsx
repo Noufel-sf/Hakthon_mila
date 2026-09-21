@@ -100,7 +100,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full  flex flex-col justify-between antialiased selection:bg-[#0E4B35] selection:text-white">
+    <div className="min-h-screen w-full  flex flex-col justify-between antialiased">
       {/* Top Header Bar with return link */}
       <header className="w-full border-b border-slate-200/80 dark:border-slate-800/80  px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <Link 
@@ -114,7 +114,7 @@ export default function AdminLoginPage() {
         <div className="flex items-center gap-2">
 
           <span className="text-[11px] font-mono font-bold px-2 py-0.5 bg-[#0E4B35]/10 text-[#0E4B35] dark:text-emerald-400 border border-[#0E4B35]/20 rounded-none">
-            بوابة الإشراف الميداني v2.4
+            بوابة الإشراف الميداني 
           </span>
         </div>
       </header>
@@ -123,7 +123,7 @@ export default function AdminLoginPage() {
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 my-6">
         <div className="w-full max-w-md">
           {/* Card Border & Container */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-300/80 dark:border-slate-800 rounded-none shadow-sm transition-colors">
+          <div className="  border border-slate-300/80 dark:border-slate-800 rounded-none shadow-sm transition-colors">
             
             {/* Split Top Accent Line (Crisis Red + Algerian Green) */}
             <div className="flex h-1.5 w-full">

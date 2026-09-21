@@ -41,12 +41,12 @@ export default function Navbar() {
         
         {/* Right: Brand Logo (RTL layout) */}
         <Link href="/" aria-label="الرئيسية - منصة البوصلة + لإغاثة الكوارث" className="flex items-center gap-2.5 group shrink-0">
-          <div className="h-9 w-9 rounded-full bg-[#03120D] border border-[#03120D] flex items-center justify-center text-white shadow-2xs group-hover:scale-105 transition-transform">
+          <div className="h-9 w-9 rounded-full bg-primary border border-primary flex items-center justify-center text-white shadow-2xs group-hover:scale-105 transition-transform">
             <Compass className="w-5 h-5 text-white" />
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="font-header text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">
-              البوصلة <span className="text-[#03120D] dark:text-emerald-400">+</span>
+              البوصلة <span className="text-primary">+</span>
             </span>
             <span className="text-[10px] font-bold font-mono tracking-wider text-[#03120D] dark:text-white hidden sm:inline px-1.5 py-0.5 bg-[#03120D]/10 dark:bg-white/10 rounded border border-[#03120D]/20 dark:border-white/20">
               DZ

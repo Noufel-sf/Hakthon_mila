@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { mapSummaryToDepot } from '@/lib/store';
 import { useDepotsQuery, useNeedsQuery } from '@/hooks/queries';
 import { 
@@ -20,6 +21,7 @@ import {
 import { Button } from '@/components/ui/Button';
 
 export default function DepotsDirectoryPage() {
+  const router = useRouter();
   const { data: depotList = [], isLoading: isLoadingDepots } = useDepotsQuery();
   const { data: needsList = [], isLoading: isLoadingNeeds } = useNeedsQuery();
 
@@ -128,7 +130,8 @@ export default function DepotsDirectoryPage() {
             return (
               <div
                 key={depot.id}
-                className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs hover:border-[#0E4B35] transition-colors space-y-4"
+                onClick={() => router.push(`/depots/${depot.id}`)}
+                className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs hover:border-[#0E4B35] hover:shadow-md transition-all space-y-4 cursor-pointer group"
               >
                 {/* Depot Card Header: Name, Location Badge & Capacity */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -145,7 +148,7 @@ export default function DepotsDirectoryPage() {
                       </span>
                     </div>
 
-                    <h2 className="font-header text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                    <h2 className="font-header text-xl sm:text-2xl font-bold text-slate-900 dark:text-white group-hover:text-[#0E4B35] transition-colors tracking-tight">
                       {depot.name}
                     </h2>
                   </div>
@@ -225,6 +228,7 @@ export default function DepotsDirectoryPage() {
                         href={depot.googleMapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
                         className="w-full sm:w-auto"
                       >
                         <Button variant="primary" size="sm" className="w-full text-xs font-header font-bold shadow-xs">
@@ -235,12 +239,12 @@ export default function DepotsDirectoryPage() {
                       </a>
                     )}
 
-                    <Link href={`/depots/${depot.id}`} className="w-full sm:w-auto">
-                      <Button variant="secondary" size="sm" className="w-full text-xs font-header font-bold">
+                    <div className="w-full sm:w-auto">
+                      <Button variant="secondary" size="sm" className="w-full text-xs font-header font-bold group-hover:bg-[#0E4B35] group-hover:text-white transition-colors pointer-events-none">
                         <span>التفاصيل والجرد الكامل</span>
-                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
                       </Button>
-                    </Link>
+                    </div>
                   </div>
                 </div>
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AidCategory, NeedResponse, DepotSummaryResponse, Priority } from '@/lib/types';
 import { api } from '@/lib/api';
 import { AID_CATEGORIES, getItemNameAr, getUnitNameAr, PRIORITY_LABELS } from '@/lib/constants';
@@ -46,6 +47,7 @@ interface AggregatedItem {
 }
 
 export default function NeedsPage() {
+  const router = useRouter();
   const { data: needs = [], isLoading: isLoadingNeeds } = useNeedsQuery();
   const { data: depots = [], isLoading: isLoadingDepots } = useDepotsQuery();
   const isLoading = isLoadingNeeds || isLoadingDepots;
@@ -216,11 +218,19 @@ export default function NeedsPage() {
             const fulfillmentPct = Math.min(100, Math.round((item.totalStock / (item.totalNeed || 1)) * 100));
             const hasCriticalDeficit = item.totalDeficit > 0;
             const isSurplus = item.totalStock >= item.totalNeed * 1.3;
+            const targetDepotId = item.depotsNeeding[0]?.depotId || item.depotsSurplus[0]?.depotId;
 
             return (
               <div
                 key={`${item.name}-${itemIdx}`}
-                className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs hover:border-[#0E4B35] transition-colors space-y-4"
+                onClick={() => {
+                  if (targetDepotId) {
+                    router.push(`/depots/${targetDepotId}`);
+                  }
+                }}
+                className={`rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs hover:border-[#0E4B35] hover:shadow-md transition-all space-y-4 group ${
+                  targetDepotId ? 'cursor-pointer' : ''
+                }`}
               >
                 {/* Need Card Header: Name, Category & Status Badge */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -236,7 +246,7 @@ export default function NeedsPage() {
                       )}
                     </div>
 
-                    <h2 className="font-header text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                    <h2 className="font-header text-xl sm:text-2xl font-bold text-slate-900 dark:text-white group-hover:text-[#0E4B35] transition-colors tracking-tight">
                       {item.name}
                     </h2>
                   </div>
@@ -297,16 +307,17 @@ export default function NeedsPage() {
                         return (
                           <div
                             key={`${depot.depotId}-${dIdx}`}
-                            className="p-3.5 rounded-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/depots/${depot.depotId}`);
+                            }}
+                            className="p-3.5 rounded-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-[#0E4B35] hover:shadow-xs transition-all space-y-2 text-xs cursor-pointer group/sub"
                           >
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                               <div className="flex items-center gap-2">
-                                <Link 
-                                  href={`/depots/${depot.depotId}`} 
-                                  className="font-header font-bold text-slate-900 dark:text-white hover:text-[#0E4B35] transition-colors text-sm"
-                                >
+                                <span className="font-header font-bold text-slate-900 dark:text-white group-hover/sub:text-[#0E4B35] transition-colors text-sm">
                                   {depot.depotName}
-                                </Link>
+                                </span>
                                 {depot.wilaya && (
                                   <span className="text-slate-500 font-mono text-xs">
                                     • ولاية {depot.wilaya}
@@ -331,6 +342,7 @@ export default function NeedsPage() {
                                     href={depot.mapsUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
                                     className="inline-flex items-center gap-1 text-[11px] font-header font-bold text-white bg-[#0E4B35] hover:bg-[#093525] px-2.5 py-1 rounded-none transition-colors"
                                   >
                                     <span>Google Maps</span>
@@ -338,12 +350,10 @@ export default function NeedsPage() {
                                   </a>
                                 )}
 
-                                <Link href={`/depots/${depot.depotId}`}>
-                                  <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-[#0E4B35] bg-slate-200/80 dark:bg-slate-800 px-2.5 py-1 rounded-none transition-colors">
-                                    تفاصيل المستودع
-                                    <ChevronLeft className="w-3 h-3" />
-                                  </span>
-                                </Link>
+                                <div className="inline-flex items-center gap-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 group-hover/sub:text-[#0E4B35] bg-slate-200/80 dark:bg-slate-800 px-2.5 py-1 rounded-none transition-colors pointer-events-none">
+                                  <span>تفاصيل المستودع</span>
+                                  <ChevronLeft className="w-3 h-3 group-hover/sub:-translate-x-0.5 transition-transform" />
+                                </div>
                               </div>
                             </div>
 
@@ -366,6 +376,19 @@ export default function NeedsPage() {
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
                     <span className="text-[#0E4B35] dark:text-emerald-400 font-header font-bold">✅ مستودعات بها وفرة:</span>
                     <span className="truncate">{item.depotsSurplus.map(d => `${d.depotName} (فائض ${d.surplus.toLocaleString('ar-DZ')})`).join('، ')}</span>
+                  </div>
+                )}
+
+                {/* Footer Action Indicator */}
+                {targetDepotId && (
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                    <span className="text-slate-400 text-[11px]">
+                      انقر في أي مكان في البطاقة للانتقال إلى تفاصيل وجرد المستودع
+                    </span>
+                    <div className="inline-flex items-center gap-1 font-header font-bold text-[#0E4B35] dark:text-emerald-400 group-hover:translate-x-[-3px] transition-transform">
+                      <span>عرض تفاصيل المستودع والجرد</span>
+                      <ChevronLeft className="w-4 h-4" />
+                    </div>
                   </div>
                 )}
               </div>
