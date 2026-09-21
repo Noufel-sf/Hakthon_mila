@@ -1,41 +1,76 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { WifiOff, Wifi, RefreshCw } from 'lucide-react';
+import { WifiOff, RefreshCw } from 'lucide-react';
 
 export default function PwaRegister() {
   const [isOffline, setIsOffline] = useState<boolean>(false);
 
   useEffect(() => {
-    // 1. Service Worker registration
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .then((registration) => {
-            console.log('[PWA] Service Worker active with scope:', registration.scope);
-          })
-          .catch((error) => {
-            console.warn('[PWA] Service Worker registration failed:', error);
-          });
-      });
+    if (typeof window === 'undefined') return;
+
+    // 1. Service Worker immediate registration
+    if ('serviceWorker' in navigator) {
+      const registerSW = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('[PWA] Service Worker registered with scope:', registration.scope);
+
+          // Warm up core routes in background while online
+          if (navigator.onLine) {
+            const routesToWarm = ['/', '/needs', '/depots', '/map', '/offline'];
+            routesToWarm.forEach((r) => {
+              fetch(r, { cache: 'force-cache' }).catch(() => {});
+            });
+          }
+        } catch (error) {
+          console.warn('[PWA] Service Worker registration failed:', error);
+        }
+      };
+
+      if (document.readyState === 'complete') {
+        registerSW();
+      } else {
+        window.addEventListener('load', registerSW);
+      }
     }
 
-    // 2. Network connectivity listeners
+    // 2. Connectivity listeners
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
 
-    if (typeof window !== 'undefined') {
-      setIsOffline(!navigator.onLine);
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
-    }
+    setIsOffline(!navigator.onLine);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // 3. Seamless Offline Navigation Fallback
+    // When offline, if Next.js soft-routing fails to fetch RSC chunks, fallback to browser navigation
+    const handleGlobalClick = (e: MouseEvent) => {
+      if (navigator.onLine) return;
+
+      const target = (e.target as HTMLElement)?.closest('a');
+      if (!target) return;
+
+      const href = target.getAttribute('href');
+      if (
+        href &&
+        href.startsWith('/') &&
+        !href.startsWith('//') &&
+        !href.startsWith('/api') &&
+        target.target !== '_blank'
+      ) {
+        // Force full page navigation to let Service Worker serve the cached HTML directly
+        e.preventDefault();
+        window.location.assign(href);
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick, true);
 
     return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
-      }
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('click', handleGlobalClick, true);
     };
   }, []);
 
@@ -51,7 +86,7 @@ export default function PwaRegister() {
         <div className="flex items-center gap-2">
           <WifiOff className="w-4 h-4 shrink-0 animate-pulse" />
           <span>
-            أنت تعمل حالياً دون اتصال بالإنترنت (Offline) — البيانات المعروضة مأخوذة من الذاكرة المحلية للتطبيق.
+            أنت تعمل حالياً دون اتصال بالإنترنت (Offline) — يتم التصفح بالكامل من الذاكرة المحلية المخزنة.
           </span>
         </div>
 
