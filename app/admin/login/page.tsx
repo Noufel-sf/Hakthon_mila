@@ -100,9 +100,9 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f8fafc] dark:bg-[#070b12] flex flex-col justify-between antialiased selection:bg-[#0E4B35] selection:text-white">
+    <div className="min-h-screen w-full  flex flex-col justify-between antialiased selection:bg-[#0E4B35] selection:text-white">
       {/* Top Header Bar with return link */}
-      <header className="w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="w-full border-b border-slate-200/80 dark:border-slate-800/80  px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <Link 
           href="/" 
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-header font-bold text-slate-600 dark:text-slate-300 hover:text-[#0E4B35] dark:hover:text-white transition-colors"
@@ -112,6 +112,7 @@ export default function AdminLoginPage() {
         </Link>
 
         <div className="flex items-center gap-2">
+
           <span className="text-[11px] font-mono font-bold px-2 py-0.5 bg-[#0E4B35]/10 text-[#0E4B35] dark:text-emerald-400 border border-[#0E4B35]/20 rounded-none">
             بوابة الإشراف الميداني v2.4
           </span>

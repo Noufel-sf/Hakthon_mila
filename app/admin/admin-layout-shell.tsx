@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/Badge';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 export default function AdminLayoutShell({
   children,
@@ -57,39 +58,10 @@ export default function AdminLayoutShell({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  // Click-outside and Escape key handling
-  const datePickerRef = React.useRef<HTMLDivElement>(null);
-  const notificationsRef = React.useRef<HTMLDivElement>(null);
-  const mobileMenuRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
-        setShowDatePicker(false);
-      }
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
-        setNotificationsOpen(false);
-      }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
-        setMobileMenuOpen(false);
-      }
-    }
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setShowDatePicker(false);
-        setNotificationsOpen(false);
-        setMobileMenuOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
+  // Click-outside and Escape key handling using custom hook
+  const datePickerRef = useClickOutside<HTMLDivElement>(() => setShowDatePicker(false), { enabled: showDatePicker });
+  const notificationsRef = useClickOutside<HTMLDivElement>(() => setNotificationsOpen(false), { enabled: notificationsOpen });
+  const mobileMenuRef = useClickOutside<HTMLDivElement>(() => setMobileMenuOpen(false), { enabled: mobileMenuOpen });
 
   // Find expiring items count in current depot for red badge
   const expiringCount = currentDepot?.batches?.filter(b => b.status === 'expiring_soon')?.length || 0;
