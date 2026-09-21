@@ -84,7 +84,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-24 text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-sm animate-pulse">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-none bg-primary/10 text-primary font-bold text-sm animate-pulse">
           <RefreshCw className="w-4 h-4 animate-spin" />
           <span>جاري جلب تفاصيل المستودع مباشرة من الخادم...</span>
         </div>
@@ -96,7 +96,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
   if (!publicDepot && !adminDepot) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 rounded-none bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
           <Warehouse className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">المستودع غير موجود</h2>
@@ -151,16 +151,16 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
               {depotName}
             </h1>
             {wilaya && (
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+              <span className="px-3 py-1 rounded-none text-xs font-bold bg-primary/10 text-primary border border-primary/20">
                 ولاية {wilaya}
               </span>
             )}
             {commune && (
-              <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              <span className="px-2.5 py-1 rounded-none text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                 بلدية {commune}
               </span>
             )}
-            <span className="px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <span className="px-2.5 py-1 rounded-none text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
               #{numericId}
             </span>
           </div>
@@ -208,7 +208,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
       {/* Info Cards Row (Purely Real Fields) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Address Card */}
-        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 flex flex-col justify-between shadow-xs">
+        <div className="rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 flex flex-col justify-between shadow-xs">
           <div>
             <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-semibold mb-1">
               <MapPin className="w-4 h-4 text-primary" />
@@ -229,7 +229,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
                 href={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/50 px-3 py-1.5 rounded-xl transition-all"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/50 px-3 py-1.5 rounded-none transition-all"
               >
                 <Navigation className="w-3.5 h-3.5" />
                 <span>فتح نقطة التفريغ في Google Maps</span>
@@ -240,7 +240,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Contact & Manager */}
-        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 flex flex-col justify-between shadow-xs">
+        <div className="rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 flex flex-col justify-between shadow-xs">
           <div>
             <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-semibold mb-1">
               <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -266,7 +266,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Capacity & Usage (Real Data from Admin API) */}
-        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3 flex flex-col justify-between shadow-xs">
+        <div className="rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3 flex flex-col justify-between shadow-xs">
           <div>
             <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-semibold mb-1">
               <Warehouse className="w-4 h-4 text-amber-500" />
@@ -283,9 +283,9 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
               )}
             </div>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+          <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-none overflow-hidden">
             <div 
-              className={`h-full rounded-full transition-all duration-500 ${
+              className={`h-full rounded-none transition-all duration-500 ${
                 occupancyPercentage > 80 ? 'bg-rose-500' : occupancyPercentage > 50 ? 'bg-primary' : 'bg-emerald-500'
               }`}
               style={{ width: `${Math.min(100, occupancyPercentage)}%` }}
@@ -296,7 +296,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* Guidance Notice Banner */}
       {urgentDeficits.length > 0 ? (
-        <div className="rounded-3xl border border-[#FDD0D6] dark:border-[#3D1016] bg-[#FFF5F6] dark:bg-[#1E080C] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+        <div className="rounded-none border border-[#FDD0D6] dark:border-[#3D1016] bg-[#FFF5F6] dark:bg-[#1E080C] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
             <div>
@@ -311,7 +311,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       ) : (
-        <div className="rounded-3xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 p-5 flex items-center gap-3">
+        <div className="rounded-none border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 p-5 flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
           <div>
             <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
@@ -336,7 +336,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {needs.length > 0 ? (
-          <div className="overflow-x-auto rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+          <div className="overflow-x-auto rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
             <table className="w-full text-right text-sm">
               <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                 <tr>
@@ -367,7 +367,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
 
                       {/* Category */}
                       <td className="py-4 px-5">
-                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                        <span className="px-2.5 py-1 rounded-none text-xs font-bold bg-primary/10 text-primary border border-primary/20">
                           {need.category}
                         </span>
                       </td>
@@ -387,12 +387,12 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
                       {/* Deficit / Progress */}
                       <td className="py-4 px-5">
                         {isDeficit ? (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                            <span className="h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse"></span>
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                            <span className="h-1.5 w-1.5 rounded-none bg-rose-600 animate-pulse"></span>
                             <span>عجز {need.shortage} {arUnit}</span>
                           </div>
                         ) : (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             <span>مكتفي ✅</span>
                           </div>
@@ -408,7 +408,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
 
                       {/* Priority */}
                       <td className="py-4 px-5">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                        <span className={`px-2.5 py-1 rounded-none text-xs font-bold ${
                           need.priority === 'CRITICAL' 
                             ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
                             : need.priority === 'HIGH'
@@ -422,7 +422,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
                       {/* Field Notes */}
                       <td className="py-4 px-5 text-xs text-slate-600 dark:text-slate-300 max-w-xs leading-relaxed">
                         {need.notes ? (
-                          <span className="block bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                          <span className="block bg-slate-50 dark:bg-slate-800/80 p-2 rounded-none border border-slate-200/60 dark:border-slate-700/60">
                             {need.notes}
                           </span>
                         ) : (
@@ -436,7 +436,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
             </table>
           </div>
         ) : (
-          <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+          <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-none border border-slate-200 dark:border-slate-800">
             <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
             <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
               لا توجد طلبات احتياج مسجلة حالياً لهذا المستودع
@@ -470,11 +470,11 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
               return (
                 <div 
                   key={`${supp.category}-${sIdx}`}
-                  className="p-4 rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2"
+                  className="p-4 rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-2xl">{catMeta?.icon || '📦'}</span>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                       {statusLabel}
                     </span>
                   </div>
@@ -507,7 +507,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+          <div className="overflow-x-auto rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
             <table className="w-full text-right text-sm">
               <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                 <tr>
@@ -566,7 +566,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
 
                       {/* Status */}
                       <td className="py-4 px-5">
-                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                        <span className="px-2.5 py-1 rounded-none text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
                           {inv.status === 'AVAILABLE' ? 'جاهز للتوزيع' : inv.status}
                         </span>
                       </td>

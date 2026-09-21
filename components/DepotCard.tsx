@@ -7,17 +7,12 @@ import { Depot } from '@/lib/types';
 import { 
   MapPin, 
   Phone, 
-  ArrowLeft, 
   AlertCircle, 
   CheckCircle2, 
   ExternalLink,
-  Warehouse,
   ShieldCheck,
-  ChevronLeft,
-  Navigation
+  ChevronLeft
 } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
-import { Progress } from '@/components/ui/progress';
 
 interface DepotCardProps {
   depot: Depot;
@@ -41,49 +36,45 @@ export default function DepotCard({ depot }: DepotCardProps) {
     item => item.targetNeed - item.currentStock > 0
   );
 
-  const sufficientItems = depot.items.filter(
-    item => item.currentStock >= item.targetNeed
-  );
-
   const occupancy = depot.occupancyPercentage ?? depot.totalCapacityPercent ?? 0;
 
   return (
-    <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 dark:hover:shadow-black/60 hover:-translate-y-1 flex flex-col justify-between group">
+    <div className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs hover:border-[#0E4B35] transition-colors flex flex-col justify-between group">
       
       <div>
-        {/* ================= TOP: DEPOT IMAGE WITH PRIMARY COLOR ACCENTS ================= */}
-        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+        {/* ================= TOP: DEPOT IMAGE ================= */}
+        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100 dark:bg-slate-800 rounded-none border-b border-slate-200 dark:border-slate-800">
           <Image
             src={depotImage}
             alt={`مستودع إغاثة ${depot.name} - ولاية ${depot.wilaya}`}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover rounded-none"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
 
           {/* Elegant Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
 
-          {/* Top Glassmorphic Badges on Image */}
+          {/* Top Badges on Image */}
           <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none">
             
-            {/* Wilaya & Code Pill */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/20 text-white text-xs font-bold font-header shadow-md">
-              <span className="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+            {/* Wilaya & Code Box */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-slate-950/80 border border-white/20 text-white text-xs font-bold font-header shadow-xs">
+              <span className="h-1.5 w-1.5 bg-[#0E4B35] dark:bg-emerald-400"></span>
               <span>ولاية {depot.wilaya}</span>
               <span className="text-white/60 font-mono text-[10px] mr-1">({depot.code})</span>
             </div>
 
             {/* Status Chip */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/70 backdrop-blur-md border border-emerald-400/30 text-emerald-300 text-[11px] font-bold shadow-md">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-[#0E4B35] text-white text-[11px] font-bold shadow-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-white" />
               <span>جاهز للتفريغ</span>
             </div>
           </div>
 
           {/* Bottom Floating Stats Bar inside Image */}
           <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-white pointer-events-none">
-            <div className="px-3 py-1 rounded-xl bg-slate-950/70 backdrop-blur-md border border-white/10 flex items-center gap-2 text-xs font-semibold">
+            <div className="px-2.5 py-1 rounded-none bg-slate-950/80 border border-white/10 flex items-center gap-2 text-xs font-semibold">
               <span className="text-slate-300">نسبة الإشغال:</span>
               <span className="font-header font-black text-white">{occupancy}%</span>
             </div>
@@ -93,7 +84,7 @@ export default function DepotCard({ depot }: DepotCardProps) {
                 href={depot.googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary hover:bg-[#07261C] text-white text-xs font-bold font-header shadow-md transition-all hover:scale-105"
+                className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-none bg-[#0E4B35] hover:bg-[#093525] text-white text-xs font-bold font-header shadow-xs transition-colors"
                 title="فتح موقع المستودع على Google Maps"
               >
                 <span>Google Maps</span>
@@ -103,12 +94,12 @@ export default function DepotCard({ depot }: DepotCardProps) {
           </div>
         </div>
 
-        {/* ================= CARD BODY: SMALL ESSENTIAL DETAILS ================= */}
+        {/* ================= CARD BODY ================= */}
         <div className="p-5 sm:p-6 space-y-4">
           
           {/* Depot Name */}
           <div>
-            <h3 className="text-lg sm:text-xl font-black font-header text-slate-900 dark:text-white group-hover:text-primary transition-colors leading-tight">
+            <h3 className="text-lg sm:text-xl font-black font-header text-slate-900 dark:text-white group-hover:text-[#0E4B35] transition-colors leading-tight">
               {depot.name}
             </h3>
             {depot.description && (
@@ -121,7 +112,7 @@ export default function DepotCard({ depot }: DepotCardProps) {
           {/* Address & Manager details */}
           <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary shrink-0" />
+              <MapPin className="w-4 h-4 text-[#0E4B35] shrink-0" />
               <span className="truncate">{depot.address || depot.location?.address}</span>
             </div>
 
@@ -142,20 +133,20 @@ export default function DepotCard({ depot }: DepotCardProps) {
               <span>سعة التخزين الحالية</span>
               <span className="font-header font-bold text-slate-800 dark:text-slate-200">{occupancy}% ممتلئ</span>
             </div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-none h-2 overflow-hidden">
               <div 
-                className={`h-full rounded-full transition-all duration-500 ${
-                  occupancy > 80 ? 'bg-rose-500' : occupancy > 50 ? 'bg-primary' : 'bg-emerald-500'
+                className={`h-full rounded-none transition-all duration-500 ${
+                  occupancy > 80 ? 'bg-[#C52233]' : occupancy > 50 ? 'bg-[#0E4B35]' : 'bg-emerald-600'
                 }`}
                 style={{ width: `${occupancy}%` }}
               ></div>
             </div>
           </div>
 
-          {/* Critical Shortages Box (Small details below image) */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 border border-slate-200/60 dark:border-slate-800 space-y-2">
+          {/* Critical Shortages Box */}
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-none p-3 border border-slate-200 dark:border-slate-800 space-y-2">
             <div className="flex items-center justify-between text-xs font-bold font-header">
-              <span className="text-primary flex items-center gap-1.5">
+              <span className="text-[#C52233] flex items-center gap-1.5">
                 <AlertCircle className="w-3.5 h-3.5" />
                 أكبر نواقص هذا المستودع:
               </span>
@@ -171,7 +162,7 @@ export default function DepotCard({ depot }: DepotCardProps) {
                   return (
                     <span
                       key={item.id}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-none bg-rose-50 text-[#C52233] border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/50"
                     >
                       <span>{item.name}:</span>
                       <strong className="underline font-header font-bold">عجز {deficit} {item.unit}</strong>
@@ -180,7 +171,7 @@ export default function DepotCard({ depot }: DepotCardProps) {
                 })}
               </div>
             ) : (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <p className="text-xs text-[#0E4B35] dark:text-emerald-400 flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 جميع الاحتياجات الأساسية متوفرة حالياً
               </p>
@@ -191,13 +182,13 @@ export default function DepotCard({ depot }: DepotCardProps) {
       </div>
 
       {/* ================= FOOTER ACTION ================= */}
-      <div className="px-5 sm:px-6 py-3.5 bg-slate-50/60 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+      <div className="px-5 sm:px-6 py-3.5 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <span className="text-[11px] text-slate-400">
           تحديث: {depot.lastUpdated}
         </span>
         <Link
           href={`/depots/${depot.id}`}
-          className="inline-flex items-center gap-1.5 text-xs font-bold font-header text-primary hover:text-[#006233] transition-all group-hover:-translate-x-1"
+          className="inline-flex items-center gap-1.5 text-xs font-bold font-header text-[#0E4B35] dark:text-emerald-400 hover:text-[#093525] transition-colors"
         >
           <span>عرض الجرد الكامل</span>
           <ChevronLeft className="w-4 h-4" />

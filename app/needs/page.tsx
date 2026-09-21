@@ -10,18 +10,11 @@ import {
   Search, 
   AlertCircle, 
   CheckCircle2, 
-  TrendingUp, 
-  MapPin, 
-  Warehouse,
-  ExternalLink,
-  Navigation,
-  ChevronLeft,
-  Info,
-  RefreshCw,
-  Sparkles,
-  FileText
+  ExternalLink, 
+  ChevronLeft, 
+  Info, 
+  FileText 
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
 
 interface DepotNeedDetail {
@@ -54,22 +47,19 @@ export default function NeedsPage() {
   const [needs, setNeeds] = useState<NeedResponse[]>([]);
   const [depots, setDepots] = useState<DepotSummaryResponse[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const fetchNeedsData = async () => {
     try {
-      setIsRefreshing(true);
-      const [needsList, depotList] = await Promise.all([
+      const [needsRes, depotsRes] = await Promise.all([
         api.needs.list().catch(() => []),
         api.depots.list().catch(() => []),
       ]);
-      setNeeds(needsList || []);
-      setDepots(depotList || []);
-    } catch (err) {
-      console.warn('[Needs Page] Error loading needs:', err);
+      setNeeds(needsRes || []);
+      setDepots(depotsRes || []);
+    } catch {
+      // Graceful error handling
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
   };
 
@@ -133,19 +123,11 @@ export default function NeedsPage() {
       existing.totalNeed += need.requestedQuantity;
       existing.totalDeficit += deficit;
       if (deficit > 0) {
-        const existD = existing.depotsNeeding.find(d => d.depotId === String(need.depotId));
-        if (existD) {
-          existD.deficit += deficit;
-          if (need.notes && !existD.notes) existD.notes = need.notes;
-        } else {
-          existing.depotsNeeding.push(needDetail);
-        }
+        existing.depotsNeeding.push(needDetail);
       }
       if (surplus > 0) {
-        const existS = existing.depotsSurplus.find(d => d.depotId === String(need.depotId));
-        if (existS) {
-          existS.surplus += surplus;
-        } else {
+        const alreadyInSurplus = existing.depotsSurplus.some(d => d.depotId === String(need.depotId));
+        if (!alreadyInSurplus) {
           existing.depotsSurplus.push({ 
             depotId: String(need.depotId), 
             depotName: need.depotName || depotInfo?.name || `مستودع #${need.depotId}`, 
@@ -172,18 +154,16 @@ export default function NeedsPage() {
   const sortedItems = [...filteredItems].sort((a, b) => b.totalDeficit - a.totalDeficit);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-16 space-y-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-16 space-y-8">
       
       {/* Centered Page Header */}
-      <div className="flex flex-col items-center mt-5 text-center space-y-3">
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-header font-bold">
-            <ClipboardList className="w-3.5 h-3.5" />
-            <span>المرصد الميداني لاحتياجات ونواقص الإغاثة</span>
-          </div>
+      <div className="flex flex-col items-center mt-4 text-center space-y-3">
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0E4B35]/10 text-[#0E4B35] dark:text-emerald-400 border border-[#0E4B35]/20 text-xs font-header font-bold rounded-none">
+          <ClipboardList className="w-3.5 h-3.5" />
+          <span>المرصد الميداني لاحتياجات ونواقص الإغاثة</span>
         </div>
         
-        <h1 className="font-header text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+        <h1 className="font-header text-3xl sm:text-5xl font-black text-slate-950 dark:text-white tracking-tight">
           احتياجات ونواقص المستودعات
         </h1>
         
@@ -193,15 +173,15 @@ export default function NeedsPage() {
       </div>
 
       {/* Centered Filter and Search Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xs space-y-4">
-        {/* Category Filter Pills */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none p-5 shadow-xs space-y-4">
+        {/* Category Filter Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
             onClick={() => setSelectedCategory('all')}
-            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-header font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 text-xs sm:text-sm font-header font-bold transition-all cursor-pointer rounded-none border ${
               selectedCategory === 'all'
-                ? 'bg-primary text-white shadow-sm shadow-primary/25'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                ? 'bg-[#0E4B35] text-white border-[#0E4B35]'
+                : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
             }`}
           >
             جميع الأصناف ({allItems.length})
@@ -214,10 +194,10 @@ export default function NeedsPage() {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-header font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-4 py-2 text-xs sm:text-sm font-header font-semibold flex items-center gap-1.5 transition-all cursor-pointer rounded-none border ${
                   isSelected
-                    ? 'bg-primary text-white font-bold shadow-sm shadow-primary/25'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    ? 'bg-[#0E4B35] text-white font-bold border-[#0E4B35]'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <span>{cat.icon}</span>
@@ -235,17 +215,17 @@ export default function NeedsPage() {
             placeholder="ابحث عن مادة أو صنف محدد..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full pr-11 pl-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-none pr-11 pl-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#0E4B35] transition-colors"
           />
         </div>
       </div>
 
-      {/* Main Needs Cards List */}
-      <div className="space-y-5">
+      {/* Main Needs Cards List: Sharp Box Layout */}
+      <div className="space-y-4">
         {isLoading && sortedItems.length === 0 ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-44 rounded-[2rem] bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-800" />
+              <div key={i} className="h-44 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-none animate-pulse" />
             ))}
           </div>
         ) : sortedItems.length > 0 ? (
@@ -257,13 +237,13 @@ export default function NeedsPage() {
             return (
               <div
                 key={`${item.name}-${itemIdx}`}
-                className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all space-y-5"
+                className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs hover:border-[#0E4B35] transition-colors space-y-4"
               >
                 {/* Need Card Header: Name, Category & Status Badge */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="px-3 py-0.5 rounded-full text-xs font-header font-bold bg-primary/10 text-primary border border-primary/20">
+                      <span className="px-2.5 py-0.5 rounded-none text-xs font-header font-bold bg-[#0E4B35]/10 text-[#0E4B35] dark:text-emerald-400 border border-[#0E4B35]/20">
                         {item.category}
                       </span>
                       {item.nameFr && (
@@ -281,16 +261,16 @@ export default function NeedsPage() {
                   {/* Status Badges */}
                   <div className="self-start sm:self-auto">
                     {hasCriticalDeficit ? (
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-header font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                        <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse"></span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-header font-bold bg-rose-50 dark:bg-rose-950/40 text-[#C52233] dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                        <span className="h-2 w-2 rounded-none bg-[#C52233]"></span>
                         <span>عجز إجمالي: {item.totalDeficit.toLocaleString('ar-DZ')} {item.unit}</span>
                       </span>
                     ) : isSurplus ? (
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-header font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-header font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
                         <span>فائض مستقر (لا حاجة للتبرع) ✅</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-header font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-header font-bold bg-emerald-50 dark:bg-emerald-950/40 text-[#0E4B35] dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
                         <span>اكتفاء نسبي مغطى ✅</span>
                       </span>
                     )}
@@ -298,7 +278,7 @@ export default function NeedsPage() {
                 </div>
 
                 {/* Stock vs Target Need Progress Bar */}
-                <div className="bg-slate-50 dark:bg-slate-950/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2.5">
+                <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-none border border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-slate-600 dark:text-slate-300">
                       المتوفر حالياً: <strong className="font-mono text-slate-900 dark:text-white font-bold">{item.totalStock.toLocaleString('ar-DZ')} {item.unit}</strong>
@@ -306,41 +286,41 @@ export default function NeedsPage() {
                     <span className="text-slate-400">
                       الاحتياج المقدر: <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{item.totalNeed.toLocaleString('ar-DZ')} {item.unit}</span>
                     </span>
-                    <span className="font-mono font-bold text-primary text-xs">
+                    <span className="font-mono font-bold text-[#0E4B35] dark:text-emerald-400 text-xs">
                       {fulfillmentPct}% تغطية
                     </span>
                   </div>
 
-                  <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-none overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${hasCriticalDeficit ? 'bg-rose-600' : 'bg-primary'}`}
+                      className={`h-full rounded-none transition-all duration-500 ${hasCriticalDeficit ? 'bg-[#C52233]' : 'bg-[#0E4B35]'}`}
                       style={{ width: `${fulfillmentPct}%` }}
                     ></div>
                   </div>
                 </div>
 
-                {/* Depots Needing This Item (Detailed Real Data) */}
+                {/* Depots Needing This Item */}
                 {item.depotsNeeding.length > 0 && (
                   <div className="space-y-3 pt-1">
-                    <span className="text-xs font-header font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                    <span className="text-xs font-header font-bold text-[#C52233] flex items-center gap-1.5">
                       <AlertCircle className="w-3.5 h-3.5" />
                       المستودعات التي تعاني من نقص مباشر (وجّه شاحنتك إليها):
                     </span>
 
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 gap-2.5">
                       {item.depotsNeeding.map((depot, dIdx) => {
                         const priorityMeta = PRIORITY_LABELS[depot.priority] || { label: depot.priority, color: 'slate' };
 
                         return (
                           <div
                             key={`${depot.depotId}-${dIdx}`}
-                            className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200/80 dark:border-slate-800 space-y-2 text-xs"
+                            className="p-3.5 rounded-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2 text-xs"
                           >
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                               <div className="flex items-center gap-2">
                                 <Link 
                                   href={`/depots/${depot.depotId}`} 
-                                  className="font-header font-bold text-slate-900 dark:text-white hover:text-primary transition-colors text-sm"
+                                  className="font-header font-bold text-slate-900 dark:text-white hover:text-[#0E4B35] transition-colors text-sm"
                                 >
                                   {depot.depotName}
                                 </Link>
@@ -349,9 +329,9 @@ export default function NeedsPage() {
                                     • ولاية {depot.wilaya}
                                   </span>
                                 )}
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold ${
                                   depot.priority === 'CRITICAL' 
-                                    ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300' 
+                                    ? 'bg-rose-100 dark:bg-rose-950 text-[#C52233] dark:text-rose-300' 
                                     : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
                                 }`}>
                                   {priorityMeta.label}
@@ -359,7 +339,7 @@ export default function NeedsPage() {
                               </div>
 
                               <div className="flex items-center gap-2 self-start sm:self-auto">
-                                <span className="font-header font-bold text-rose-600 dark:text-rose-400 font-mono text-xs">
+                                <span className="font-header font-bold text-[#C52233] font-mono text-xs">
                                   نقص {depot.deficit.toLocaleString('ar-DZ')} {item.unit}
                                 </span>
 
@@ -368,7 +348,7 @@ export default function NeedsPage() {
                                     href={depot.mapsUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 text-[11px] font-header font-bold text-white bg-primary hover:bg-primary/90 px-2.5 py-1 rounded-lg transition-colors"
+                                    className="inline-flex items-center gap-1 text-[11px] font-header font-bold text-white bg-[#0E4B35] hover:bg-[#093525] px-2.5 py-1 rounded-none transition-colors"
                                   >
                                     <span>Google Maps</span>
                                     <ExternalLink className="w-2.5 h-2.5" />
@@ -376,7 +356,7 @@ export default function NeedsPage() {
                                 )}
 
                                 <Link href={`/depots/${depot.depotId}`}>
-                                  <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:text-primary bg-slate-200/80 dark:bg-slate-800 px-2.5 py-1 rounded-lg transition-colors">
+                                  <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-[#0E4B35] bg-slate-200/80 dark:bg-slate-800 px-2.5 py-1 rounded-none transition-colors">
                                     تفاصيل المستودع
                                     <ChevronLeft className="w-3 h-3" />
                                   </span>
@@ -386,7 +366,7 @@ export default function NeedsPage() {
 
                             {/* Real Field Note from the Ground */}
                             {depot.notes && (
-                              <div className="flex items-start gap-1.5 p-2 rounded-xl bg-amber-500/10 text-amber-900 dark:text-amber-200 border border-amber-500/20 text-[11px] leading-relaxed">
+                              <div className="flex items-start gap-1.5 p-2 rounded-none bg-amber-50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-200 border border-amber-300/40 text-[11px] leading-relaxed">
                                 <FileText className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
                                 <span><strong>ملاحظة ميدانية:</strong> {depot.notes}</span>
                               </div>
@@ -401,7 +381,7 @@ export default function NeedsPage() {
                 {/* Surplus Depots Notice */}
                 {item.depotsSurplus.length > 0 && (
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                    <span className="text-emerald-600 dark:text-emerald-400 font-header font-bold">✅ مستودعات بها وفرة (لا داعي للإرسال إليها):</span>
+                    <span className="text-[#0E4B35] dark:text-emerald-400 font-header font-bold">✅ مستودعات بها وفرة:</span>
                     <span className="truncate">{item.depotsSurplus.map(d => `${d.depotName} (فائض ${d.surplus.toLocaleString('ar-DZ')})`).join('، ')}</span>
                   </div>
                 )}
@@ -409,7 +389,7 @@ export default function NeedsPage() {
             );
           })
         ) : (
-          <div className="text-center py-16 bg-white dark:bg-slate-900/40 rounded-[2rem] border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none space-y-3">
             <Info className="w-10 h-10 text-slate-400 mx-auto" />
             <h3 className="font-header text-lg font-bold text-slate-800 dark:text-white">
               لا توجد نتائج مطابقة للبحث
@@ -422,7 +402,7 @@ export default function NeedsPage() {
                 setSelectedCategory('all');
                 setSearchQuery('');
               }}
-              className="mt-2 px-5 py-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-xs font-header font-bold transition-all"
+              className="mt-2 px-5 py-2 rounded-none bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-xs font-header font-bold transition-all"
             >
               إعادة تعيين الفلاتر
             </button>

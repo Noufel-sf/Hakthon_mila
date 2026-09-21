@@ -7,32 +7,24 @@ import { api } from '@/lib/api';
 import { 
   Warehouse, 
   Search, 
-  Info,
-  MapPin,
-  Phone,
-  Navigation,
-  ExternalLink,
-  ArrowLeft,
-  AlertCircle,
-  CheckCircle2,
-  Layers,
-  Clock,
-  ChevronLeft,
-  RefreshCw,
-  Sparkles
+  Info, 
+  MapPin, 
+  Phone, 
+  Navigation, 
+  ExternalLink, 
+  AlertCircle, 
+  CheckCircle2, 
+  Clock, 
+  ChevronLeft 
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Progress } from '@/components/ui/progress';
 
 export default function DepotsDirectoryPage() {
   const depots = useReliefStore((state) => state.depots);
   const [isLoading, setIsLoading] = useState<boolean>(depots.length === 0);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const fetchDepotsData = async () => {
     try {
-      setIsRefreshing(true);
       const [depotList, needsList] = await Promise.all([
         api.depots.list().catch(() => []),
         api.needs.list().catch(() => []),
@@ -41,11 +33,10 @@ export default function DepotsDirectoryPage() {
         const mapped = depotList.map(d => mapSummaryToDepot(d, needsList, []));
         useReliefStore.getState().setDepots(mapped);
       }
-    } catch (err) {
-      console.warn('[Depots Page] Failed to fetch depots:', err);
+    } catch {
+      // Graceful error handling
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
   };
 
@@ -70,18 +61,16 @@ export default function DepotsDirectoryPage() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 space-y-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 space-y-8">
       
       {/* Centered Page Header */}
-      <div className="flex flex-col items-center mt-5 text-center space-y-3">
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-header font-bold">
-            <Warehouse className="w-3.5 h-3.5" />
-            <span>دليل مستودعات ونقاط التفريغ المعتمدة</span>
-          </div>
+      <div className="flex flex-col items-center mt-4 text-center space-y-3">
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0E4B35]/10 text-[#0E4B35] dark:text-emerald-400 border border-[#0E4B35]/20 text-xs font-header font-bold rounded-none">
+          <Warehouse className="w-3.5 h-3.5" />
+          <span>دليل مراكز الاستقبال ونقاط التفريغ المعتمدة</span>
         </div>
         
-        <h1 className="font-header text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+        <h1 className="font-header text-3xl sm:text-5xl font-black text-slate-950 dark:text-white tracking-tight">
           مستودعات الإغاثة الميدانية
         </h1>
         
@@ -91,15 +80,15 @@ export default function DepotsDirectoryPage() {
       </div>
 
       {/* Centered Filter and Search Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xs space-y-4">
-        {/* Wilaya Filter Pills */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none p-5 shadow-xs space-y-4">
+        {/* Wilaya Filter Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
             onClick={() => setSelectedWilaya('all')}
-            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-header font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 text-xs sm:text-sm font-header font-bold transition-all cursor-pointer rounded-none border ${
               selectedWilaya === 'all'
-                ? 'bg-primary text-white shadow-sm shadow-primary/25'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                ? 'bg-[#0E4B35] text-white border-[#0E4B35]'
+                : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
             }`}
           >
             جميع الولايات ({depots.length})
@@ -112,10 +101,10 @@ export default function DepotsDirectoryPage() {
               <button
                 key={w}
                 onClick={() => setSelectedWilaya(w)}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-header font-semibold transition-all cursor-pointer ${
+                className={`px-4 py-2 text-xs sm:text-sm font-header font-semibold transition-all cursor-pointer rounded-none border ${
                   isSelected
-                    ? 'bg-primary text-white font-bold shadow-sm shadow-primary/25'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    ? 'bg-[#0E4B35] text-white font-bold border-[#0E4B35]'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
                 }`}
               >
                 ولاية {w} ({count})
@@ -132,17 +121,17 @@ export default function DepotsDirectoryPage() {
             placeholder="ابحث عن مستودع، بلدية، أو مادة ناقصة..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full pr-11 pl-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-none pr-11 pl-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#0E4B35] transition-colors"
           />
         </div>
       </div>
 
-      {/* Depots List: Only One Depot per Row (Clean, minimal, focused on essentials) */}
-      <div className="space-y-5">
+      {/* Depots List: Sharp Box Layout */}
+      <div className="space-y-4">
         {isLoading && depots.length === 0 ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-48 rounded-[2rem] bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-800" />
+              <div key={i} className="h-44 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-none animate-pulse" />
             ))}
           </div>
         ) : filteredDepots.length > 0 ? (
@@ -154,16 +143,16 @@ export default function DepotsDirectoryPage() {
             return (
               <div
                 key={depot.id}
-                className="rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all space-y-5"
+                className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs hover:border-[#0E4B35] transition-colors space-y-4"
               >
                 {/* Depot Card Header: Name, Location Badge & Capacity */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                      <span className="px-2 py-0.5 rounded-none text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                         {depot.code}
                       </span>
-                      <span className="px-3 py-0.5 rounded-full text-xs font-header font-bold bg-primary/10 text-primary border border-primary/20">
+                      <span className="px-2.5 py-0.5 rounded-none text-xs font-header font-bold bg-[#0E4B35]/10 text-[#0E4B35] dark:text-emerald-400 border border-[#0E4B35]/20">
                         ولاية {depot.wilaya}
                       </span>
                       <span className="text-xs text-slate-400 font-mono">
@@ -177,13 +166,13 @@ export default function DepotsDirectoryPage() {
                   </div>
 
                   {/* Occupancy Badge */}
-                  <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-50 dark:bg-slate-950/60 px-3.5 py-1.5 rounded-full border border-slate-100 dark:border-slate-800">
-                    <span className={`h-2 w-2 rounded-full ${
+                  <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-none border border-slate-200 dark:border-slate-800">
+                    <span className={`h-2 w-2 rounded-none ${
                       depot.totalCapacityPercent > 80 
-                        ? 'bg-rose-500' 
+                        ? 'bg-[#C52233]' 
                         : depot.totalCapacityPercent > 50 
                         ? 'bg-amber-500' 
-                        : 'bg-emerald-500'
+                        : 'bg-[#0E4B35]'
                     }`}></span>
                     <span className="text-xs font-header font-bold text-slate-700 dark:text-slate-200">
                       نسبة الإشغال: <span className="font-mono">{depot.totalCapacityPercent}%</span>
@@ -194,19 +183,19 @@ export default function DepotsDirectoryPage() {
                 {/* Essential Info Row: Address & Contact */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary shrink-0" />
+                    <MapPin className="w-4 h-4 text-[#0E4B35] shrink-0" />
                     <span className="truncate">{depot.address}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <Phone className="w-4 h-4 text-[#0E4B35] shrink-0" />
                     <span>{depot.manager} • <span dir="ltr" className="font-mono text-slate-700 dark:text-slate-200 font-bold">{depot.phone}</span></span>
                   </div>
                 </div>
 
-                {/* Urgent Deficit Quick Tags (Clean 1-line display) */}
+                {/* Urgent Deficit Quick Tags */}
                 <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                  <span className="font-header font-bold text-primary flex items-center gap-1 shrink-0">
+                  <span className="font-header font-bold text-[#C52233] flex items-center gap-1 shrink-0">
                     <AlertCircle className="w-3.5 h-3.5" />
                     أبرز النواقص:
                   </span>
@@ -217,7 +206,7 @@ export default function DepotsDirectoryPage() {
                       return (
                         <span
                           key={item.id}
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-header font-bold bg-primary/10 text-primary border border-primary/20"
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-none text-xs font-header font-bold bg-rose-50 text-[#C52233] border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/50"
                         >
                           <span>{item.name}</span>
                           <span className="font-mono">(نقص {deficit} {item.unit})</span>
@@ -225,7 +214,7 @@ export default function DepotsDirectoryPage() {
                       );
                     })
                   ) : (
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-header font-bold flex items-center gap-1">
+                    <span className="text-xs text-[#0E4B35] dark:text-emerald-400 font-header font-bold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       مكتفي بالكامل حالياً
                     </span>
@@ -274,7 +263,7 @@ export default function DepotsDirectoryPage() {
             );
           })
         ) : (
-          <div className="text-center py-16 bg-white dark:bg-slate-900/40 rounded-[2rem] border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none space-y-3">
             <Info className="w-10 h-10 text-slate-400 mx-auto" />
             <h3 className="font-header text-lg font-bold text-slate-800 dark:text-white">
               لا توجد مستودعات مطابقة للبحث
@@ -287,7 +276,7 @@ export default function DepotsDirectoryPage() {
                 setSelectedWilaya('all');
                 setSearchQuery('');
               }}
-              className="mt-2 px-5 py-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-xs font-header font-bold transition-all"
+              className="mt-2 px-5 py-2 rounded-none bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-xs font-header font-bold transition-all"
             >
               إعادة تعيين الفلاتر
             </button>
@@ -298,4 +287,3 @@ export default function DepotsDirectoryPage() {
     </div>
   );
 }
-

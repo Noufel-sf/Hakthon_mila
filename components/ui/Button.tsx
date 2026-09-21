@@ -14,20 +14,20 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
+  const baseStyles = 'inline-flex items-center justify-center gap-2 font-bold rounded-none transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-950 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
   const variantStyles = {
-    primary: 'bg-[#03120D] hover:bg-[#07261C] text-white shadow-md shadow-[#03120D]/20 focus:ring-[#03120D]',
-    secondary: 'bg-slate-100 hover:bg-slate-200 dark:bg-[#08281e] dark:hover:bg-[#0b3628] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-[#0e3b2d] focus:ring-[#03120D]',
-    outline: 'border border-slate-300 dark:border-[#0e3b2d] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#08281e] focus:ring-[#03120D]',
-    danger: 'bg-[#D21034] hover:bg-[#b50d2c] text-white shadow-md shadow-[#D21034]/20 focus:ring-[#D21034]',
-    success: 'bg-[#03120D] hover:bg-[#07261C] text-white shadow-md shadow-[#03120D]/20 focus:ring-[#03120D]',
+    primary: 'bg-[#0E4B35] hover:bg-[#093525] text-white shadow-xs focus:ring-[#0E4B35]',
+    secondary: 'bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-white dark:border-slate-700 focus:ring-[#0E4B35]',
+    outline: 'bg-white border-2 border-[#0E4B35] text-[#0E4B35] hover:bg-[#0E4B35] hover:text-white dark:bg-transparent dark:border-emerald-500 dark:text-emerald-400 focus:ring-[#0E4B35]',
+    danger: 'bg-[#C52233] hover:bg-[#A71B2A] text-white shadow-xs focus:ring-[#C52233]',
+    success: 'bg-[#0E4B35] hover:bg-[#093525] text-white shadow-xs focus:ring-[#0E4B35]',
   };
 
   const sizeStyles = {
     sm: 'text-xs px-3 py-1.5',
-    md: 'text-sm px-4 py-2.5',
-    lg: 'text-base px-6 py-3',
+    md: 'text-sm px-5 py-2.5',
+    lg: 'text-base px-7 py-3',
   };
 
   return (

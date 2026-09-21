@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HeartHandshake, Phone, MapPin, Mail, Compass } from 'lucide-react';
+import { Phone, MapPin, Mail, HeartHandshake } from 'lucide-react';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -13,19 +13,19 @@ export default function Footer() {
   }
 
   return (
-    <footer aria-label="تذييل الصفحة ومعلومات التواصل" className="w-full pt-10 pb-12 mt-auto">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+    <footer aria-label="تذييل الصفحة ومعلومات التواصل" className="w-full pt-10 pb-12 mt-auto border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           
-          {/* Card 2 (Left in LTR, Left in RTL screenshot): Contact, Navigation & Copyright */}
-          <div className="lg:col-span-8 rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 sm:p-9 shadow-xs flex flex-col justify-between space-y-8">
+          {/* Card 2: Contact, Navigation & Copyright */}
+          <div className="lg:col-span-8 rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 sm:p-9 shadow-xs flex flex-col justify-between space-y-8">
             
             {/* Top Links and Contact Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               
               {/* Contact Us Column */}
               <div className="space-y-4">
-                <h4 className="font-header font-bold text-base text-slate-900 dark:text-white">
+                <h4 className="font-header font-bold text-base text-slate-900 dark:text-white border-r-2 border-[#0E4B35] pr-2">
                   تواصل معنا
                 </h4>
                 
@@ -47,28 +47,28 @@ export default function Footer() {
 
               {/* Navigation Column */}
               <div className="space-y-4">
-                <h4 className="font-header font-bold text-base text-slate-900 dark:text-white">
+                <h4 className="font-header font-bold text-base text-slate-900 dark:text-white border-r-2 border-[#0E4B35] pr-2">
                   لتنسيق أفضل
                 </h4>
                 
                 <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                   <li>
-                    <Link href="/depots" className="hover:text-[#03120D] dark:hover:text-white transition-colors">
+                    <Link href="/depots" className="hover:text-[#0E4B35] dark:hover:text-emerald-400 transition-colors">
                       دليل المستودعات الميدانية
                     </Link>
                   </li>
                   <li>
-                    <Link href="/needs" className="hover:text-[#03120D] dark:hover:text-white transition-colors">
+                    <Link href="/needs" className="hover:text-[#0E4B35] dark:hover:text-emerald-400 transition-colors">
                       مرصد النواقص والاحتياجات
                     </Link>
                   </li>
                   <li>
-                    <Link href="/admin" className="hover:text-[#03120D] dark:hover:text-white transition-colors">
+                    <Link href="/admin" className="hover:text-[#0E4B35] dark:hover:text-emerald-400 transition-colors">
                       لوحة إدارة المستودع الذكي
                     </Link>
                   </li>
                   <li>
-                    <Link href="/admin/intake" className="hover:text-[#03120D] dark:hover:text-white transition-colors">
+                    <Link href="/admin/intake" className="hover:text-[#0E4B35] dark:hover:text-emerald-400 transition-colors">
                       تفريغ وتوجيه الشاحنات (Staging)
                     </Link>
                   </li>
@@ -77,52 +77,38 @@ export default function Footer() {
 
             </div>
 
-            {/* Bottom Row: Copyright and Socials */}
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-              <span>© 2026 البوصلة + (Al-Bawsala +) — هاكاثون ميلة للإغاثة الذكية 🇩🇿</span>
-              
-              <div className="flex items-center gap-4 text-slate-400">
-                {/* Twitter / X Icon */}
-                <a href="#" aria-label="Twitter" className="hover:text-[#03120D] dark:hover:text-white transition-colors">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </a>
-                {/* LinkedIn Icon */}
-                <a href="#" aria-label="LinkedIn" className="hover:text-[#03120D] dark:hover:text-white transition-colors">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28M5.07 18.5h2.78v-8.37H5.07v8.37z" />
-                  </svg>
-                </a>
-              </div>
+            {/* Bottom Row: Copyright */}
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+              <span>© 2026 البوصلة الجزائر — منصة التضامن وإغاثة الكوارث 🇩🇿</span>
+              <span className="text-[11px] text-slate-400">هاكاثون ميلة للإغاثة الذكية</span>
             </div>
 
           </div>
 
-          {/* Card 1 (Right in RTL screenshot): Brand Mission & CTA */}
-          <div className="lg:col-span-4 rounded-[2rem] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 sm:p-9 shadow-xs flex flex-col justify-between space-y-6">
+          {/* Card 1: Brand Mission & CTA */}
+          <div className="lg:col-span-4 rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 sm:p-9 shadow-xs flex flex-col justify-between space-y-6">
             
             {/* Top Brand Logo */}
             <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-full bg-[#03120D] text-white flex items-center justify-center font-bold">
-                <Compass className="w-4 h-4 text-white" />
+              <div className="h-9 w-9 bg-[#0E4B35] text-white flex items-center justify-center font-bold rounded-none">
+                <HeartHandshake className="w-5 h-5 text-white" />
               </div>
               <span className="font-header text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                البوصلة <span className="text-[#03120D] dark:text-emerald-400">+</span>
+                البوصلة الجزائر
               </span>
             </div>
 
-            {/* Meaningful Arabic Mission Text */}
-            <p className="font-sub text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              البوصلة + خلاتك ترتاح — كلشي منظم، شفاف ومباشر. وجّه تبرعك بناءً على العجز الحقيقي وتفادى تكدس المساعدات وتلفها في الميدان.
+            {/* Arabic Mission Text */}
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              منصة تنسيق التضامن والإغاثة الميدانية أثناء الكوارث الطبيعية. مهمتنا توجيه المساعدات للمكان والوقت والاحتياج الصحيح.
             </p>
 
             {/* Primary Action Button */}
             <Link
               href="/needs"
-              className="w-full py-3.5 px-6 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-header font-bold text-sm text-center shadow-md hover:shadow-lg transition-all"
+              className="w-full py-3 px-6 rounded-none bg-[#0E4B35] hover:bg-[#093525] text-white font-header font-bold text-sm text-center shadow-xs transition-colors"
             >
-              استكشف النواقص — مجاناً
+              استكشف النواقص والاحتياجات
             </Link>
 
           </div>

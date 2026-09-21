@@ -4,71 +4,78 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #1e293b;
+  --foreground: #0f172a;
   
   --card: #ffffff;
-  --card-foreground: #1e293b;
+  --card-foreground: #0f172a;
   
   --popover: #ffffff;
-  --popover-foreground: #1e293b;
+  --popover-foreground: #0f172a;
   
-  /* Primary Color: Algerian Deep Green #03120D */
-  --primary: #016946;
+  /* Primary Color: Algerian Deep Forest Green from reference */
+  --primary: #0E4B35;
   --primary-foreground: #ffffff;
-  --brand: #03120D;
-  --brand-hover: #07261C;
-  --brand-light: #EBF4F0;
+  --brand: #0E4B35;
+  --brand-hover: #093525;
+  --brand-light: #EBF3F0;
+  
+  /* Alert / Crisis Red */
+  --alert-red: #C52233;
+  --alert-red-hover: #A71B2A;
   
   --secondary: #f8fafc;
-  --secondary-foreground: #03120D;
+  --secondary-foreground: #0E4B35;
   
   --muted: #f1f5f9;
   --muted-foreground: #475569;
   
-  --accent: #EBF4F0;
-  --accent-foreground: #03120D;
+  --accent: #EBF3F0;
+  --accent-foreground: #0E4B35;
   
-  --destructive: #D21034;
+  --destructive: #C52233;
   --destructive-foreground: #ffffff;
   
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #03120D;
+  --ring: #0E4B35;
   
-  --radius: 1rem;
+  --radius: 0px;
 }
 
 .dark {
-  --background: #03120D;
+  --background: #091a13;
   --foreground: #ffffff;
   
-  --card: #08241b;
+  --card: #0d261c;
   --card-foreground: #ffffff;
   
-  --popover: #08241b;
+  --popover: #0d261c;
   --popover-foreground: #ffffff;
   
-  --primary: #03120D;
+  --primary: #156649;
   --primary-foreground: #ffffff;
-  --brand: #03120D;
-  --brand-hover: #07261C;
-  --brand-light: rgba(3, 18, 13, 0.4);
+  --brand: #156649;
+  --brand-hover: #0E4B35;
+  --brand-light: rgba(14, 75, 53, 0.4);
   
-  --secondary: #08281e;
+  --alert-red: #E03144;
+  --alert-red-hover: #C52233;
+  
+  --secondary: #103326;
   --secondary-foreground: #ffffff;
   
-  --muted: #08281e;
+  --muted: #103326;
   --muted-foreground: #94a3b8;
   
-  --accent: #0b3628;
+  --accent: #133d2d;
   --accent-foreground: #ffffff;
   
-  --destructive: #D21034;
+  --destructive: #E03144;
   --destructive-foreground: #ffffff;
   
-  --border: #0e3b2d;
-  --input: #0e3b2d;
-  --ring: #03120D;
+  --border: #164634;
+  --input: #164634;
+  --ring: #156649;
 }
 
 @theme inline {
@@ -81,6 +88,8 @@
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
   --color-brand-light: var(--brand-light);
+  --color-alert-red: var(--alert-red);
+  --color-alert-red-hover: var(--alert-red-hover);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -97,6 +106,12 @@ body {
   color: var(--foreground);
   font-family: var(--font-header);
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+*,
+::before,
+::after {
+  border-radius: 0 !important;
 }
 
 .font-header {
