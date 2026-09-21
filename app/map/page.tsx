@@ -241,7 +241,7 @@ export default function ReliefMapPage() {
           <div>
             <div className="font-header text-sm font-black tracking-tight flex items-center gap-2">
               <span>أين أوجه شاحنتي الإغاثية؟</span>
-              <span className="text-[10px] bg-emerald-600 px-1.5 py-0.2 font-mono uppercase font-bold">Smart Routing</span>
+              <span className="text-[10px] bg-emerald-600 px-1.5 py-0.2 font-mono uppercase text-white font-bold">Smart Routing</span>
             </div>
             <div className="text-xs ">
               اختر نوع الحمولة لمعاينة وتحديد المستودع الجزائري الأكثر حاجة إليها فورياً على الخريطة:
@@ -261,7 +261,7 @@ export default function ReliefMapPage() {
                 className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 border rounded-none ${
                   isSelected
                     ? 'bg-[#0E4B35] text-white border-emerald-400 shadow-sm scale-105'
-                    : 'bg-primary text-white  hover:bg-primary hover:border-slate-500'
+                    : 'bg-primary text-white  hover:bg-primary'
                 }`}
               >
                 <span>{cat.icon}</span>

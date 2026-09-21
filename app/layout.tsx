@@ -6,6 +6,8 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import QueryProvider from "@/components/QueryProvider";
 import JsonLd from "@/components/JsonLd";
+import PwaRegister from "@/components/PwaRegister";
+import PwaInstallPrompt from "@/components/PwaInstallPrompt";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bawsalaplus.vercel.app";
 
@@ -103,6 +105,12 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/logo2.PNG",
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "البوصلة +",
+  },
   category: "humanitarian",
   classification: "منصة إغاثة إنسانية وإدارة كوارث",
 };
@@ -177,10 +185,12 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-background text-foreground font-sans antialiased selection:bg-[#006233] selection:text-white">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <QueryProvider>
+            <PwaRegister />
             <Toaster richColors position="top-center" dir="rtl" />
             <PublicBackgroundWrapper>
               {children}
             </PublicBackgroundWrapper>
+            <PwaInstallPrompt />
           </QueryProvider>
         </ThemeProvider>
       </body>
