@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { 
   Compass, 
   Lock, 
@@ -18,104 +21,82 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-/*
 // ============================================================================
-// [BACKEND AUTH INTEGRATION NOTE - FOR FUTURE USE]
+// Zod Schema for Admin Authentication
 // ============================================================================
-// As per specifications, Zod validation and live backend auth API logic are 
-// commented out below until the backend authentication endpoints are deployed.
-//
-// import { z } from 'zod';
-//
-// export const adminLoginSchema = z.object({
-//   email: z.string().min(1, 'البريد الإلكتروني مطلوب').email('يرجى إدخال بريد إلكتروني صالح'),
-//   password: z.string().min(6, 'كلمة المرور يجب أن لا تقل عن 6 أحرف'),
-//   rememberMe: z.boolean().default(false),
-// });
-//
-// export type AdminLoginInput = z.infer<typeof adminLoginSchema>;
-// ============================================================================
-*/
+export const adminLoginSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'البريد الإلكتروني مطلوب')
+    .email('يرجى إدخال بريد إلكتروني صالح'),
+  password: z
+    .string()
+    .min(6, 'كلمة المرور يجب أن لا تقل عن 6 أحرف'),
+  rememberMe: z.boolean().default(true),
+});
+
+export type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  // Initialize react-hook-form with zodResolver
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<AdminLoginFormValues>({
+    resolver: zodResolver(adminLoginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: true,
+    },
+  });
 
   // Quick helper to autofill demo credentials for testing
   const handleAutofillDemo = () => {
-    setEmail('admin@bawsala.dz');
-    setPassword('admin2026');
-    setErrorMsg(null);
+    setValue('email', 'admin@bawsala.dz', { shouldValidate: true });
+    setValue('password', 'admin2026', { shouldValidate: true });
+    setValue('rememberMe', true);
+    setServerError(null);
     toast.info('تم ملء بيانات المشرف التجريبية');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
+  const onSubmit = async (data: AdminLoginFormValues) => {
+    setServerError(null);
 
-    // Basic client validation (without Zod for now)
-    if (!email.trim()) {
-      setErrorMsg('يرجى إدخال البريد الإلكتروني أو اسم المستخدم.');
-      return;
-    }
-    if (!password.trim()) {
-      setErrorMsg('يرجى إدخال كلمة المرور.');
-      return;
-    }
+    /*
+    // ========================================================================
+    // [BACKEND AUTHENTICATION API - TO ACTIVATE ONCE BACKEND IS DEPLOYED]
+    // ========================================================================
+    // try {
+    //   const response = await api.auth.login({
+    //     email: data.email,
+    //     password: data.password,
+    //     rememberMe: data.rememberMe,
+    //   });
+    //
+    //   if (response?.token) {
+    //     // Save session token in HTTP-only cookie or authorization header
+    //     document.cookie = `admin_token=${response.token}; path=/; max-age=${data.rememberMe ? 604800 : 86400}; SameSite=Lax;`;
+    //     apiClient.defaults.headers.common['Authorization'] = `Bearer ${response.token}`;
+    //   }
+    // } catch (err: any) {
+    //   setServerError(err?.response?.data?.message || 'تعذر تسجيل الدخول، تأكد من صحة البيانات.');
+    //   return;
+    // }
+    // ========================================================================
+    */
 
-    setIsLoading(true);
+    // Simulated short delay for smooth UI feedback
+    await new Promise((resolve) => setTimeout(resolve, 450));
 
-    try {
-      /*
-      // ========================================================================
-      // BACKEND API INTEGRATION (COMMENTED OUT UNTIL BACKEND IS READY):
-      // ========================================================================
-      // 1. Zod runtime validation:
-      // const parsed = adminLoginSchema.safeParse({ email, password, rememberMe });
-      // if (!parsed.success) {
-      //   setErrorMsg(parsed.error.errors[0]?.message || 'بيانات غير صالحة');
-      //   setIsLoading(false);
-      //   return;
-      // }
-      //
-      // 2. Call backend authentication endpoint:
-      // const response = await api.auth.login({
-      //   email: parsed.data.email,
-      //   password: parsed.data.password,
-      // });
-      //
-      // 3. Save auth tokens:
-      // if (response?.token) {
-      //   localStorage.setItem('admin_token', response.token);
-      //   document.cookie = `admin_token=${response.token}; path=/; max-age=${rememberMe ? 604800 : 86400}; SameSite=Lax;`;
-      // }
-      // ========================================================================
-      */
-
-      // Simulated network authentication delay for smooth UX
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Store local authentication flag
-      try {
-        localStorage.setItem('admin_authenticated', 'true');
-        localStorage.setItem('admin_user_email', email);
-      } catch (err) {
-        console.warn('Storage unavailable', err);
-      }
-
-      toast.success('تم تسجيل الدخول بنجاح! مرحباً بك في لوحة القيادة.');
-      router.push('/admin');
-    } catch (err: any) {
-      setErrorMsg('حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.');
-      toast.error('تعذر تسجيل الدخول');
-    } finally {
-      setIsLoading(false);
-    }
+    toast.success('تم التحقق بنجاح! مرحباً بك في لوحة القيادة.');
+    router.push('/admin');
   };
 
   return (
@@ -171,18 +152,18 @@ export default function AdminLoginPage() {
                 </p>
               </div>
 
-              {/* Error Notice if any */}
-              {errorMsg && (
+              {/* Server Error Notice if any */}
+              {serverError && (
                 <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2 rounded-none animate-fadeIn">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span className="font-medium">{errorMsg}</span>
+                  <span className="font-medium">{serverError}</span>
                 </div>
               )}
 
-              {/* Login Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              {/* React Hook Form with Zod */}
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 
-                {/* Email / Username Field */}
+                {/* Email Field */}
                 <div className="space-y-1.5 text-right">
                   <label 
                     htmlFor="admin-email" 
@@ -193,15 +174,23 @@ export default function AdminLoginPage() {
                   <div className="relative flex items-center">
                     <input
                       id="admin-email"
-                      type="text"
+                      type="email"
                       autoComplete="username"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
                       placeholder="admin@bawsala.dz"
-                      className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-none pr-10 pl-3 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#0E4B35] transition-colors"
+                      {...register('email')}
+                      className={`w-full bg-slate-50 dark:bg-slate-800/80 border rounded-none pr-10 pl-3 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-colors ${
+                        errors.email 
+                          ? 'border-rose-500 focus:border-rose-600' 
+                          : 'border-slate-300 dark:border-slate-700 focus:border-[#0E4B35]'
+                      }`}
                     />
                     <Mail className="w-4 h-4 text-slate-400 absolute right-3 pointer-events-none" />
                   </div>
+                  {errors.email && (
+                    <p className="text-[11px] font-medium text-rose-600 dark:text-rose-400 pt-0.5">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Password Field */}
@@ -226,10 +215,13 @@ export default function AdminLoginPage() {
                       id="admin-password"
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-none pr-10 pl-10 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#0E4B35] transition-colors"
+                      {...register('password')}
+                      className={`w-full bg-slate-50 dark:bg-slate-800/80 border rounded-none pr-10 pl-10 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-colors ${
+                        errors.password 
+                          ? 'border-rose-500 focus:border-rose-600' 
+                          : 'border-slate-300 dark:border-slate-700 focus:border-[#0E4B35]'
+                      }`}
                     />
                     <Lock className="w-4 h-4 text-slate-400 absolute right-3 pointer-events-none" />
                     <button
@@ -241,6 +233,11 @@ export default function AdminLoginPage() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  {errors.password && (
+                    <p className="text-[11px] font-medium text-rose-600 dark:text-rose-400 pt-0.5">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Remember Me Checkbox */}
@@ -248,8 +245,7 @@ export default function AdminLoginPage() {
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
+                      {...register('rememberMe')}
                       className="h-4 w-4 rounded-none accent-[#0E4B35] border-slate-300 dark:border-slate-700 cursor-pointer"
                     />
                     <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">
@@ -266,10 +262,10 @@ export default function AdminLoginPage() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="w-full mt-2 py-3 px-4 bg-[#0E4B35] hover:bg-[#093525] text-white font-header font-bold text-sm rounded-none transition-all shadow-xs disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {isLoading ? (
+                  {isSubmitting ? (
                     <>
                       <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       <span>جاري التحقق والدخول...</span>
