@@ -209,11 +209,6 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>خادم حي مباشر</span>
-            </span>
-
             <Link
               href="/depots"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#03120D] dark:text-white hover:underline"

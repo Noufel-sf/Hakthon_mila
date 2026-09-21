@@ -79,22 +79,12 @@ export default function ExpiryManagementPage() {
             <h1 className="text-2xl sm:text-3xl font-black font-header text-slate-900 dark:text-white">
               تتبع الصلاحية وتدوير المخزون (FIFO Tracking)
             </h1>
-            <Badge variant="rose" size="md">
-              {currentDepot?.name || 'مستودع إغاثة'}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                متابعة الصلاحية (FIFO)
+              </span>
+            </div>
           </div>
-
-          <button
-            onClick={() => {
-              fetchLiveExpiringInventory();
-            }}
-            disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>خادم حي</span>
-            <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           متابعة دقيقة لدفعات المواد الغذائية والحليب والأدوية لضمان توزيعها وفق مبدأ (FIFO: الأقرب انتهاءً يُوزع أولاً) وتفادي تلف أي مساعدة.

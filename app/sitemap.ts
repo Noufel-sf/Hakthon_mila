@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { api } from '@/lib/api';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://bawsala-plus.dz';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://bawsalaplus.vercel.app';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -36,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         if (depot.id) {
           routes.push({
             url: `${SITE_URL}/depots/${depot.id}`,
-            lastModified: depot.updatedAt ? new Date(depot.updatedAt) : now,
+            lastModified: now,
             changeFrequency: 'daily',
             priority: 0.8,
           });

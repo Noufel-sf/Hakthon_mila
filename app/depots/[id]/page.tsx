@@ -99,9 +99,9 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         <div className="w-16 h-16 rounded-full bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
           <Warehouse className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">المستودع غير موجود على الخادم الحي</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">المستودع غير موجود</h2>
         <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto text-sm">
-          لم يتم العثور على مستودع بالمعرف ({resolvedParams.id}) في قاعدة البيانات الحية.
+          لم يتم العثور على مستودع بالمعرف ({resolvedParams.id}).
         </p>
         <Link href="/depots">
           <Button variant="primary">العودة لدليل المستودعات المتاحة</Button>
@@ -162,10 +162,6 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
             )}
             <span className="px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
               #{numericId}
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>خادم حي</span>
             </span>
           </div>
           {depotDesc && (

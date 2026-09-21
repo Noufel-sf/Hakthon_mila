@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import JsonLd from '@/components/JsonLd';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://bawsala-plus.dz';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://bawsalaplus.vercel.app';
 
 export const metadata: Metadata = {
   title: 'مرصد الاحتياجات والنواقص الميدانية',
