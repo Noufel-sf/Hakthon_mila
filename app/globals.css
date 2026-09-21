@@ -163,3 +163,77 @@ h1, h2, h3, h4, h5, h6 {
 .dark .floating-card-shadow {
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(255, 255, 255, 0.05);
 }
+
+/* ============================================================================
+   Animated Floating Hero Doodle Icons (CSS Only)
+   ============================================================================ */
+@keyframes hero-float-1 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(6deg);
+  }
+}
+
+@keyframes hero-float-2 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(12px) rotate(-6deg);
+  }
+}
+
+@keyframes hero-float-3 {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.08);
+  }
+}
+
+@keyframes hero-wobble-slow {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0px);
+  }
+  25% {
+    transform: rotate(8deg) translateY(-6px);
+  }
+  75% {
+    transform: rotate(-6deg) translateY(4px);
+  }
+}
+
+@keyframes hero-pulse-soft {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+.animate-hero-float-1 {
+  animation: hero-float-1 5.2s ease-in-out infinite;
+}
+
+.animate-hero-float-2 {
+  animation: hero-float-2 6.8s ease-in-out infinite;
+}
+
+.animate-hero-float-3 {
+  animation: hero-float-3 4.5s ease-in-out infinite;
+}
+
+.animate-hero-wobble-slow {
+  animation: hero-wobble-slow 7.5s ease-in-out infinite;
+}
+
+.animate-hero-pulse-soft {
+  animation: hero-pulse-soft 3.2s ease-in-out infinite;
+}
+

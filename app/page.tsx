@@ -96,12 +96,66 @@ export default function HomePage() {
       {/* 🌟 HERO SECTION (Inspired directly by the screenshot: Simple, clean, less text, Zain & Amiri Quran fonts) */}
       <div className="relative pt-12 pb-10 sm:pt-16 sm:pb-14 flex flex-col items-center text-center overflow-hidden">
         
-        {/* Subtle delicate background sparkles and soft ambient glow */}
-        <div className="absolute top-1/4 right-1/6 text-primary dark:text-primary text-sm select-none pointer-events-none animate-pulse">✦</div>
-        <div className="absolute top-1/3 left-1/5 text-primary dark:text-primary text-xs select-none pointer-events-none">✦</div>
-        <div className="absolute bottom-1/4 right-1/4 text-primary dark:text-primary text-base select-none pointer-events-none">✦</div>
-        <div className="absolute top-1/6 left-1/3 w-1.5 h-1.5 rounded-full bg-primary/40 pointer-events-none"></div>
-        <div className="absolute top-1/2 right-1/3 w-1 h-1 rounded-full bg-primary/40 pointer-events-none"></div>
+        {/* 🎨 ANIMATED HERO DOODLE ICONS (CSS Only — Inspired by reference landing page) */}
+        
+        {/* Top-Left: Doodle Sunburst */}
+        <div className="absolute top-3 sm:top-6 left-3 sm:left-8 lg:left-14 pointer-events-none select-none animate-hero-pulse-soft z-0">
+          <svg className="w-11 h-11 sm:w-15 sm:h-15 text-primary dark:text-primary opacity-80" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="32" cy="32" r="11" />
+            <line x1="32" y1="6" x2="32" y2="13" />
+            <line x1="32" y1="51" x2="32" y2="58" />
+            <line x1="6" y1="32" x2="13" y2="32" />
+            <line x1="51" y1="32" x2="58" y2="32" />
+            <line x1="14" y1="14" x2="19" y2="19" />
+            <line x1="45" y1="45" x2="50" y2="50" />
+            <line x1="14" y1="50" x2="19" y2="45" />
+            <line x1="45" y1="19" x2="50" y2="14" />
+          </svg>
+        </div>
+
+        {/* Upper-Left: 4-Point Sparkle Twinkle */}
+        <div className="absolute top-14 sm:top-20 left-16 sm:left-28 lg:left-40 pointer-events-none select-none animate-hero-float-1 z-0">
+          <svg className="w-8 h-8 sm:w-11 sm:h-11 text-primary dark:text-primary opacity-70" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M24 4 C24 16 16 24 4 24 C16 24 24 32 24 44 C24 32 32 24 44 24 C32 24 24 16 24 4 Z" />
+            <circle cx="38" cy="10" r="1.5" fill="currentColor" stroke="none" />
+            <circle cx="10" cy="38" r="1.5" fill="currentColor" stroke="none" />
+          </svg>
+        </div>
+
+        {/* Mid-Left: Curly Looped Arrow */}
+        <div className="absolute top-36 sm:top-44 left-3 sm:left-12 lg:left-20 pointer-events-none select-none animate-hero-wobble-slow z-0">
+          <svg className="w-10 h-10 sm:w-14 sm:h-14 text-slate-800 dark:text-slate-200 opacity-75" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 48 C 10 38, 26 34, 22 26 C 18 18, 32 16, 36 24 C 40 32, 46 16, 52 12" />
+            <path d="M44 11 L53 11 L53 20" />
+          </svg>
+        </div>
+
+        {/* Far Top-Right: Sprouting Seedling Plant */}
+        <div className="absolute top-3 sm:top-5 right-3 sm:right-8 lg:right-14 pointer-events-none select-none animate-hero-float-3 z-0">
+          <svg className="w-10 h-10 sm:w-14 sm:h-14 text-primary dark:text-primary opacity-75" viewBox="0 0 60 60" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="8" y1="52" x2="52" y2="52" />
+            <path d="M30 52 C30 36 30 24 30 18" />
+            <path d="M30 20 C22 10 12 18 20 28 C26 34 30 26 30 20 Z" />
+            <path d="M30 24 C38 12 50 18 42 30 C36 38 30 28 30 24 Z" />
+          </svg>
+        </div>
+
+        {/* Upper-Right: Doodle Pine Tree */}
+        <div className="absolute top-8 sm:top-14 right-16 sm:right-28 lg:right-40 pointer-events-none select-none animate-hero-float-2 z-0">
+          <svg className="w-10 h-10 sm:w-13 sm:h-13 text-primary dark:text-primary opacity-80" viewBox="0 0 54 64" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M27 6 L12 24 L20 24 L8 42 L22 42 L16 52 L38 52 L32 42 L46 42 L34 24 L42 24 Z" />
+            <line x1="27" y1="52" x2="27" y2="60" />
+          </svg>
+        </div>
+
+        {/* Lower-Right: Doodle Floating Leaf */}
+        <div className="absolute top-38 sm:top-48 right-5 sm:right-16 lg:right-24 pointer-events-none select-none animate-hero-float-1 z-0">
+          <svg className="w-9 h-9 sm:w-12 sm:h-12 text-primary dark
+          :text-primary opacity-70" viewBox="0 0 54 54" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 42 C12 42 16 26 30 14 C44 2 48 8 46 18 C44 28 32 40 12 42 Z" />
+            <line x1="12" y1="42" x2="34" y2="20" />
+          </svg>
+        </div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-5 px-4">
           
