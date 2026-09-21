@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Alexandria, Cairo } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import PublicBackgroundWrapper from "@/components/PublicBackgroundWrapper";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ApiSyncProvider from "@/components/ApiSyncProvider";
@@ -179,12 +178,9 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <ApiSyncProvider>
             <Toaster richColors position="top-center" dir="rtl" />
-            {/* <LiveCrisisTicker /> */}
-            <Navbar />
-            <main className="flex-1 pb-16">
+            <PublicBackgroundWrapper>
               {children}
-            </main>
-            <Footer />
+            </PublicBackgroundWrapper>
           </ApiSyncProvider>
         </ThemeProvider>
       </body>

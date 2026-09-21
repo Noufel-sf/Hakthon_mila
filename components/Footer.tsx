@@ -13,7 +13,7 @@ export default function Footer() {
   }
 
   return (
-    <footer aria-label="تذييل الصفحة ومعلومات التواصل" className="w-full pt-10 pb-12 mt-auto border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950">
+    <footer aria-label="تذييل الصفحة ومعلومات التواصل" className="w-full pt-10 pb-12 mt-auto border-t border-slate-200/80 dark:border-slate-800 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           
