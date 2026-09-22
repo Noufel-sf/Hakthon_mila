@@ -1,6 +1,6 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { use, useState } from 'react';
 import Link from 'next/link';
 import { 
   useDepotDetailsQuery, 
@@ -34,7 +34,9 @@ import {
   Package,
   Layers,
   Calendar,
-  FileText
+  FileText,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
@@ -73,6 +75,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
   const availableSupplies = publicDepot?.availableSupplies || [];
   const isLoading = isLoadingPublic && isLoadingAdmin;
   const isRefreshing = isRefreshingPublic || isRefreshingAdmin;
+  const [needsViewMode, setNeedsViewMode] = useState<'table' | 'grid'>('table');
 
   const fetchLiveDepotDetails = () => {
     refetchPublic();
@@ -173,17 +176,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
 
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={fetchLiveDepotDetails}
-            disabled={isRefreshing}
-            className="border-slate-200 dark:border-slate-700"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-primary ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>تحديث البيانات الحية</span>
-          </Button>
-
+    
           {googleMapsUrl && (
             <a
               href={googleMapsUrl}
@@ -324,117 +317,269 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       )}
 
-      {/* ================= SECTION 1: REAL NEEDS TABLE ================= */}
+      {/* ================= SECTION 1: REAL NEEDS TABLE & GRID ================= */}
       <div className="space-y-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            جدول الاحتياجات الميدانية والنواقص (Live Needs & Shortages)
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            بيان صادر من الميدان يوضح حجم المطلوب، المتوفر حالياً، والعجز الفعلي المطلوب تغطيته
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              جدول الاحتياجات الميدانية والنواقص (Live Needs & Shortages)
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              بيان صادر من الميدان يوضح حجم المطلوب، المتوفر حالياً، والعجز الفعلي المطلوب تغطيته
+            </p>
+          </div>
+
+          {/* View Mode Toggle: Table vs Grid */}
+          {needs.length > 0 && (
+            <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 self-start sm:self-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => setNeedsViewMode('table')}
+                className={`px-3 py-1.5 text-xs font-header font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  needsViewMode === 'table'
+                    ? 'bg-[#0E4B35] text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+                <span>عرض الجدول</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setNeedsViewMode('grid')}
+                className={`px-3 py-1.5 text-xs font-header font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  needsViewMode === 'grid'
+                    ? 'bg-[#0E4B35] text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>شبكة البطاقات ({needs.length})</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {needs.length > 0 ? (
-          <div className="overflow-x-auto rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-            <table className="w-full text-right text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-4 px-5">المادة / الصنف</th>
-                  <th className="py-4 px-5">الفئة</th>
-                  <th className="py-4 px-5">المتوفر حالياً</th>
-                  <th className="py-4 px-5">المطلوب</th>
-                  <th className="py-4 px-5">حالة العجز</th>
-                  <th className="py-4 px-5">الأولوية</th>
-                  <th className="py-4 px-5">ملاحظات الميدان</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
-                {needs.map((need, idx) => {
-                  const arName = getItemNameAr(need.itemName);
-                  const arUnit = getUnitNameAr(need.unit);
-                  const isDeficit = need.shortage > 0;
-                  const fulfillmentPct = Math.min(100, Math.round((need.currentAvailableQuantity / (need.requestedQuantity || 1)) * 100));
-                  const priorityMeta = PRIORITY_LABELS[need.priority] || { label: need.priority, color: 'slate' };
+          needsViewMode === 'table' ? (
+            /* TABLE VIEW */
+            <div className="overflow-x-auto rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+              <table className="w-full text-right text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-4 px-5">المادة / الصنف</th>
+                    <th className="py-4 px-5">الفئة</th>
+                    <th className="py-4 px-5">المتوفر حالياً</th>
+                    <th className="py-4 px-5">المطلوب</th>
+                    <th className="py-4 px-5">حالة العجز</th>
+                    <th className="py-4 px-5">الأولوية</th>
+                    <th className="py-4 px-5">ملاحظات الميدان</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
+                  {needs.map((need, idx) => {
+                    const arName = getItemNameAr(need.itemName);
+                    const arUnit = getUnitNameAr(need.unit);
+                    const isDeficit = need.shortage > 0;
+                    const fulfillmentPct = Math.min(100, Math.round((need.currentAvailableQuantity / (need.requestedQuantity || 1)) * 100));
+                    const priorityMeta = PRIORITY_LABELS[need.priority] || { label: need.priority, color: 'slate' };
 
-                  return (
-                    <tr key={`${need.id || idx}`} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                      {/* Item Name */}
-                      <td className="py-4 px-5 font-bold text-slate-900 dark:text-white">
-                        <span className="text-base block">{arName}</span>
-                        <span className="text-xs font-normal text-slate-400 font-mono">{need.itemName}</span>
-                      </td>
+                    return (
+                      <tr key={`${need.id || idx}`} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                        {/* Item Name */}
+                        <td className="py-4 px-5 font-bold text-slate-900 dark:text-white">
+                          <span className="text-base block">{arName}</span>
+                          <span className="text-xs font-normal text-slate-400 font-mono">{need.itemName}</span>
+                        </td>
 
-                      {/* Category */}
-                      <td className="py-4 px-5">
-                        <span className="px-2.5 py-1 rounded-none text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                        {/* Category */}
+                        <td className="py-4 px-5">
+                          <span className="px-2.5 py-1 rounded-none text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                            {need.category}
+                          </span>
+                        </td>
+
+                        {/* Current Stock */}
+                        <td className="py-4 px-5 font-mono font-bold text-slate-900 dark:text-white">
+                          {need.currentAvailableQuantity.toLocaleString('ar-DZ')}
+                          <span className="text-xs font-normal text-slate-400 mr-1.5">{arUnit}</span>
+                        </td>
+
+                        {/* Target Need */}
+                        <td className="py-4 px-5 font-mono text-slate-500 dark:text-slate-400">
+                          {need.requestedQuantity.toLocaleString('ar-DZ')}
+                          <span className="text-xs font-normal text-slate-400 mr-1.5">{arUnit}</span>
+                        </td>
+
+                        {/* Deficit / Progress */}
+                        <td className="py-4 px-5">
+                          {isDeficit ? (
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                              <span className="h-1.5 w-1.5 rounded-none bg-rose-600 animate-pulse"></span>
+                              <span>عجز {need.shortage} {arUnit}</span>
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>مكتفي ✅</span>
+                            </div>
+                          )}
+                          <div className="w-28 mt-1.5">
+                            <Progress 
+                              value={fulfillmentPct} 
+                              className="h-1 bg-slate-100 dark:bg-slate-800"
+                              indicatorClassName={isDeficit ? "bg-rose-600" : "bg-primary"}
+                            />
+                          </div>
+                        </td>
+
+                        {/* Priority */}
+                        <td className="py-4 px-5">
+                          <span className={`px-2.5 py-1 rounded-none text-xs font-bold ${
+                            need.priority === 'CRITICAL' 
+                              ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                              : need.priority === 'HIGH'
+                              ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                              : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
+                          }`}>
+                            {priorityMeta.label}
+                          </span>
+                        </td>
+
+                        {/* Field Notes */}
+                        <td className="py-4 px-5 text-xs text-slate-600 dark:text-slate-300 max-w-xs leading-relaxed">
+                          {need.notes ? (
+                            <span className="block bg-slate-50 dark:bg-slate-800/80 p-2 rounded-none border border-slate-200/60 dark:border-slate-700/60">
+                              {need.notes}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            /* GRID CARDS VIEW */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {needs.map((need, idx) => {
+                const arName = getItemNameAr(need.itemName);
+                const arUnit = getUnitNameAr(need.unit);
+                const isDeficit = need.shortage > 0;
+                const fulfillmentPct = Math.min(100, Math.round((need.currentAvailableQuantity / (need.requestedQuantity || 1)) * 100));
+                const priorityMeta = PRIORITY_LABELS[need.priority] || { label: need.priority, color: 'slate' };
+
+                return (
+                  <div
+                    key={`grid-need-${need.id || idx}`}
+                    className="rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs hover:border-[#0E4B35] dark:hover:border-emerald-600 transition-all flex flex-col justify-between space-y-4"
+                  >
+                    {/* Card Header: Category & Priority Badges */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="px-2.5 py-0.5 rounded-none text-xs font-bold bg-primary/10 text-primary border border-primary/20">
                           {need.category}
                         </span>
-                      </td>
 
-                      {/* Current Stock */}
-                      <td className="py-4 px-5 font-mono font-bold text-slate-900 dark:text-white">
-                        {need.currentAvailableQuantity.toLocaleString('ar-DZ')}
-                        <span className="text-xs font-normal text-slate-400 mr-1.5">{arUnit}</span>
-                      </td>
-
-                      {/* Target Need */}
-                      <td className="py-4 px-5 font-mono text-slate-500 dark:text-slate-400">
-                        {need.requestedQuantity.toLocaleString('ar-DZ')}
-                        <span className="text-xs font-normal text-slate-400 mr-1.5">{arUnit}</span>
-                      </td>
-
-                      {/* Deficit / Progress */}
-                      <td className="py-4 px-5">
-                        {isDeficit ? (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                            <span className="h-1.5 w-1.5 rounded-none bg-rose-600 animate-pulse"></span>
-                            <span>عجز {need.shortage} {arUnit}</span>
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>مكتفي ✅</span>
-                          </div>
-                        )}
-                        <div className="w-28 mt-1.5">
-                          <Progress 
-                            value={fulfillmentPct} 
-                            className="h-1 bg-slate-100 dark:bg-slate-800"
-                            indicatorClassName={isDeficit ? "bg-rose-600" : "bg-primary"}
-                          />
-                        </div>
-                      </td>
-
-                      {/* Priority */}
-                      <td className="py-4 px-5">
-                        <span className={`px-2.5 py-1 rounded-none text-xs font-bold ${
-                          need.priority === 'CRITICAL' 
-                            ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
-                            : need.priority === 'HIGH'
-                            ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
-                            : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
-                        }`}>
-                          {priorityMeta.label}
+                        <span
+                          className={`px-2.5 py-0.5 rounded-none text-xs font-bold flex items-center gap-1 ${
+                            need.priority === 'CRITICAL'
+                              ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                              : need.priority === 'HIGH'
+                              ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                              : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
+                          }`}
+                        >
+                          {need.priority === 'CRITICAL' && (
+                            <span className="w-1.5 h-1.5 rounded-none bg-rose-600 animate-ping"></span>
+                          )}
+                          <span>{priorityMeta.label}</span>
                         </span>
-                      </td>
+                      </div>
 
-                      {/* Field Notes */}
-                      <td className="py-4 px-5 text-xs text-slate-600 dark:text-slate-300 max-w-xs leading-relaxed">
-                        {need.notes ? (
-                          <span className="block bg-slate-50 dark:bg-slate-800/80 p-2 rounded-none border border-slate-200/60 dark:border-slate-700/60">
-                            {need.notes}
+                      {/* Item Names */}
+                      <div>
+                        <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                          {arName}
+                        </h3>
+                        <p className="text-xs font-mono text-slate-400 mt-0.5">
+                          {need.itemName}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Deficit Callout Box */}
+                    <div>
+                      {isDeficit ? (
+                        <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 p-2.5 flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs font-bold text-rose-700 dark:text-rose-300">
+                            <span className="w-2 h-2 rounded-none bg-rose-600 animate-pulse"></span>
+                            <span>عجز ميداني مطلوب:</span>
+                          </div>
+                          <span className="font-mono font-black text-sm text-rose-700 dark:text-rose-300">
+                            {need.shortage.toLocaleString('ar-DZ')} {arUnit}
                           </span>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 p-2.5 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <span>حالة المخزون:</span>
+                          </div>
+                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                            مكتفي ومغطى بالكامل ✅
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quantities Breakdown & Progress */}
+                    <div className="space-y-2 bg-slate-50/70 dark:bg-slate-800/40 p-3 border border-slate-100 dark:border-slate-800">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-slate-400 block text-[11px]">المتوفر حالياً:</span>
+                          <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
+                            {need.currentAvailableQuantity.toLocaleString('ar-DZ')} {arUnit}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block text-[11px]">المطلوب الكلي:</span>
+                          <span className="font-mono text-slate-600 dark:text-slate-300 text-sm">
+                            {need.requestedQuantity.toLocaleString('ar-DZ')} {arUnit}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 pt-1">
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                          <span>نسبة تغطية الاحتياج</span>
+                          <span className="font-mono font-bold">{fulfillmentPct}%</span>
+                        </div>
+                        <Progress
+                          value={fulfillmentPct}
+                          className="h-1.5 bg-slate-200 dark:bg-slate-700"
+                          indicatorClassName={isDeficit ? "bg-rose-600" : "bg-emerald-600"}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Field Notes (if any) */}
+                    {need.notes && (
+                      <div className="text-xs bg-slate-50 dark:bg-slate-800/80 p-2.5 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 leading-relaxed">
+                        <span className="font-bold text-slate-700 dark:text-slate-200 block text-[11px] mb-0.5">
+                          ملاحظة الميدان:
+                        </span>
+                        <span>{need.notes}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )
         ) : (
           <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-none border border-slate-200 dark:border-slate-800">
             <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
