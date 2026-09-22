@@ -76,6 +76,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
   const isLoading = isLoadingPublic && isLoadingAdmin;
   const isRefreshing = isRefreshingPublic || isRefreshingAdmin;
   const [needsViewMode, setNeedsViewMode] = useState<'table' | 'grid'>('table');
+  const [batchesViewMode, setBatchesViewMode] = useState<'table' | 'grid'>('table');
 
   const fetchLiveDepotDetails = () => {
     refetchPublic();
@@ -639,93 +640,216 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       )}
 
-      {/* ================= SECTION 3: REAL INVENTORY BATCHES ================= */}
+      {/* ================= SECTION 3: REAL INVENTORY BATCHES (TABLE & GRID) ================= */}
       {inventory.length > 0 && (
         <div className="space-y-4 pt-4 border-t border-slate-200/80 dark:border-slate-800">
-          <div>
-            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <Package className="w-5 h-5 text-primary" />
-              <span>سجل الشحنات والطرود المخزنة فعلياً (Live Stored Batches)</span>
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              تفاصيل الدفعات المخزنة، أرقام الشحنات (Batch Numbers)، وتواريخ الصلاحية الفعلية
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                <Package className="w-5 h-5 text-primary" />
+                <span>سجل الشحنات والطرود المخزنة فعلياً (Live Stored Batches)</span>
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                تفاصيل الدفعات المخزنة، أرقام الشحنات (Batch Numbers)، وتواريخ الصلاحية الفعلية
+              </p>
+            </div>
+
+            {/* View Mode Toggle: Table vs Grid */}
+            <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 self-start sm:self-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => setBatchesViewMode('table')}
+                className={`px-3 py-1.5 text-xs font-header font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  batchesViewMode === 'table'
+                    ? 'bg-[#0E4B35] text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+                <span>عرض الجدول</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setBatchesViewMode('grid')}
+                className={`px-3 py-1.5 text-xs font-header font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  batchesViewMode === 'grid'
+                    ? 'bg-[#0E4B35] text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>شبكة البطاقات ({inventory.length})</span>
+              </button>
+            </div>
           </div>
 
-          <div className="overflow-x-auto rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-            <table className="w-full text-right text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-4 px-5">رقم الشحنة (Batch)</th>
-                  <th className="py-4 px-5">المادة</th>
-                  <th className="py-4 px-5">الكمية المخزنة</th>
-                  <th className="py-4 px-5">تاريخ الاستلام</th>
-                  <th className="py-4 px-5">تاريخ انتهاء الصلاحية</th>
-                  <th className="py-4 px-5">الحالة</th>
-                  <th className="py-4 px-5">الملاحظات</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
-                {inventory.map((inv, idx) => {
-                  const arName = getItemNameAr(inv.itemName);
-                  const arUnit = getUnitNameAr(inv.unit);
+          {batchesViewMode === 'table' ? (
+            /* TABLE VIEW */
+            <div className="overflow-x-auto rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+              <table className="w-full text-right text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-4 px-5">رقم الشحنة (Batch)</th>
+                    <th className="py-4 px-5">المادة</th>
+                    <th className="py-4 px-5">الكمية المخزنة</th>
+                    <th className="py-4 px-5">تاريخ الاستلام</th>
+                    <th className="py-4 px-5">تاريخ انتهاء الصلاحية</th>
+                    <th className="py-4 px-5">الحالة</th>
+                    <th className="py-4 px-5">الملاحظات</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
+                  {inventory.map((inv, idx) => {
+                    const arName = getItemNameAr(inv.itemName);
+                    const arUnit = getUnitNameAr(inv.unit);
 
-                  return (
-                    <tr key={`${inv.id || idx}`} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                      {/* Batch Number */}
-                      <td className="py-4 px-5 font-mono text-xs font-bold text-primary">
-                        {inv.batchNumber || `BATCH-${inv.id}`}
-                      </td>
+                    return (
+                      <tr key={`${inv.id || idx}`} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                        {/* Batch Number */}
+                        <td className="py-4 px-5 font-mono text-xs font-bold text-primary">
+                          {inv.batchNumber || `BATCH-${inv.id}`}
+                        </td>
 
-                      {/* Item Name */}
-                      <td className="py-4 px-5 font-bold text-slate-900 dark:text-white">
-                        <span className="block">{arName}</span>
-                        <span className="text-xs font-normal text-slate-400 font-mono">{inv.itemName}</span>
-                      </td>
+                        {/* Item Name */}
+                        <td className="py-4 px-5 font-bold text-slate-900 dark:text-white">
+                          <span className="block">{arName}</span>
+                          <span className="text-xs font-normal text-slate-400 font-mono">{inv.itemName}</span>
+                        </td>
 
-                      {/* Quantity */}
-                      <td className="py-4 px-5 font-mono font-bold text-slate-900 dark:text-white">
-                        {inv.quantity.toLocaleString('ar-DZ')}
-                        <span className="text-xs font-normal text-slate-400 mr-1.5">{arUnit}</span>
-                      </td>
+                        {/* Quantity */}
+                        <td className="py-4 px-5 font-mono font-bold text-slate-900 dark:text-white">
+                          {inv.quantity.toLocaleString('ar-DZ')}
+                          <span className="text-xs font-normal text-slate-400 mr-1.5">{arUnit}</span>
+                        </td>
 
-                      {/* Received Date */}
-                      <td className="py-4 px-5 font-mono text-xs text-slate-500 dark:text-slate-400">
-                        {inv.receivedDate || '—'}
-                      </td>
+                        {/* Received Date */}
+                        <td className="py-4 px-5 font-mono text-xs text-slate-500 dark:text-slate-400">
+                          {inv.receivedDate || '—'}
+                        </td>
 
-                      {/* Expiration Date */}
-                      <td className="py-4 px-5 text-xs">
+                        {/* Expiration Date */}
+                        <td className="py-4 px-5 text-xs">
+                          {inv.expirationDate ? (
+                            <span className={`font-mono font-bold ${
+                              inv.isExpired ? 'text-rose-600' : inv.isExpiringSoon ? 'text-amber-600' : 'text-slate-600 dark:text-slate-300'
+                            }`}>
+                              {inv.expirationDate}
+                              {inv.isExpiringSoon && ' (قريب الانتهاء ⚠️)'}
+                              {inv.isExpired && ' (منتهي الصلاحية 🚨)'}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">غير قابل للتلف</span>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-4 px-5">
+                          <span className="px-2.5 py-1 rounded-none text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                            {inv.status === 'AVAILABLE' ? 'جاهز للتوزيع' : inv.status}
+                          </span>
+                        </td>
+
+                        {/* Notes */}
+                        <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400 max-w-xs">
+                          {inv.notes || '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            /* GRID CARDS VIEW */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {inventory.map((inv, idx) => {
+                const arName = getItemNameAr(inv.itemName);
+                const arUnit = getUnitNameAr(inv.unit);
+
+                return (
+                  <div
+                    key={`grid-batch-${inv.id || idx}`}
+                    className="rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs hover:border-[#0E4B35] dark:hover:border-emerald-600 transition-all flex flex-col justify-between space-y-4"
+                  >
+                    {/* Header: Batch Number & Status */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="px-2.5 py-1 rounded-none font-mono text-xs font-bold bg-slate-100 dark:bg-slate-800 text-primary dark:text-emerald-400 border border-slate-200 dark:border-slate-700">
+                          {inv.batchNumber || `BATCH-${inv.id}`}
+                        </span>
+
+                        <span className="px-2.5 py-0.5 rounded-none text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                          {inv.status === 'AVAILABLE' ? 'جاهز للتوزيع ✅' : inv.status}
+                        </span>
+                      </div>
+
+                      {/* Item Names */}
+                      <div>
+                        <h4 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                          {arName}
+                        </h4>
+                        <p className="text-xs font-mono text-slate-400 mt-0.5">
+                          {inv.itemName}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Stored Quantity Callout */}
+                    <div className="bg-[#0E4B35]/5 dark:bg-emerald-950/20 border border-[#0E4B35]/20 dark:border-emerald-900/40 p-3 flex items-center justify-between">
+                      <span className="text-xs text-slate-600 dark:text-slate-300 font-bold">
+                        الكمية المخزنة:
+                      </span>
+                      <span className="text-lg font-mono font-black text-primary dark:text-emerald-400">
+                        {inv.quantity.toLocaleString('ar-DZ')}{' '}
+                        <span className="text-xs font-normal text-slate-500 dark:text-slate-400">{arUnit}</span>
+                      </span>
+                    </div>
+
+                    {/* Dates & Logistics Details */}
+                    <div className="space-y-2 bg-slate-50/70 dark:bg-slate-800/40 p-3 border border-slate-100 dark:border-slate-800 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-400">تاريخ الاستلام:</span>
+                        <span className="font-mono font-bold text-slate-700 dark:text-slate-200">
+                          {inv.receivedDate || '—'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+                        <span className="text-slate-400">تاريخ انتهاء الصلاحية:</span>
                         {inv.expirationDate ? (
-                          <span className={`font-mono font-bold ${
-                            inv.isExpired ? 'text-rose-600' : inv.isExpiringSoon ? 'text-amber-600' : 'text-slate-600 dark:text-slate-300'
-                          }`}>
+                          <span
+                            className={`font-mono font-bold ${
+                              inv.isExpired
+                                ? 'text-rose-600 dark:text-rose-400'
+                                : inv.isExpiringSoon
+                                ? 'text-amber-600 dark:text-amber-400'
+                                : 'text-slate-700 dark:text-slate-200'
+                            }`}
+                          >
                             {inv.expirationDate}
-                            {inv.isExpiringSoon && ' (قريب الانتهاء ⚠️)'}
-                            {inv.isExpired && ' (منتهي الصلاحية 🚨)'}
+                            {inv.isExpiringSoon && ' ⚠️'}
+                            {inv.isExpired && ' 🚨'}
                           </span>
                         ) : (
-                          <span className="text-slate-400">غير قابل للتلف</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">غير قابل للتلف</span>
                         )}
-                      </td>
+                      </div>
+                    </div>
 
-                      {/* Status */}
-                      <td className="py-4 px-5">
-                        <span className="px-2.5 py-1 rounded-none text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
-                          {inv.status === 'AVAILABLE' ? 'جاهز للتوزيع' : inv.status}
+                    {/* Field Notes (if any) */}
+                    {inv.notes && (
+                      <div className="text-xs bg-slate-50 dark:bg-slate-800/80 p-2.5 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 leading-relaxed">
+                        <span className="font-bold text-slate-700 dark:text-slate-200 block text-[11px] mb-0.5">
+                          ملاحظة الشحنة:
                         </span>
-                      </td>
-
-                      {/* Notes */}
-                      <td className="py-4 px-5 text-xs text-slate-500 dark:text-slate-400 max-w-xs">
-                        {inv.notes || '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <span>{inv.notes}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
