@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -17,8 +18,9 @@ import {
   FileText 
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-
 import { useNeedsQuery, useDepotsQuery } from '@/hooks/queries';
+import LiveTelemetryBadge from '@/components/LiveTelemetryBadge';
+import SmartEmptyState from '@/components/SmartEmptyState';
 
 interface DepotNeedDetail {
   needId: number | string;
@@ -48,9 +50,20 @@ interface AggregatedItem {
 
 export default function NeedsPage() {
   const router = useRouter();
-  const { data: needs = [], isLoading: isLoadingNeeds } = useNeedsQuery();
-  const { data: depots = [], isLoading: isLoadingDepots } = useDepotsQuery();
+  const { 
+    data: needs = [], 
+    isLoading: isLoadingNeeds, 
+    refetch: refetchNeeds, 
+    isFetching: isFetchingNeeds 
+  } = useNeedsQuery();
+  const { 
+    data: depots = [], 
+    isLoading: isLoadingDepots, 
+    refetch: refetchDepots, 
+    isFetching: isFetchingDepots 
+  } = useDepotsQuery();
   const isLoading = isLoadingNeeds || isLoadingDepots;
+  const isRefreshing = isFetchingNeeds || isFetchingDepots;
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -155,6 +168,17 @@ export default function NeedsPage() {
         <p className="font-sub text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
           جدول تفصيلي ومباشر يوضح حجم العجز الفعلي في كل مادة عبر جميع المستودعات، مع الملاحظات الميدانية لتوجيه القوافل بدقة.
         </p>
+
+        {/* Live Telemetry Heartbeat */}
+        <div className="pt-1">
+          <LiveTelemetryBadge
+            onRefresh={() => {
+              refetchNeeds();
+              refetchDepots();
+            }}
+            isRefreshing={isRefreshing}
+          />
+        </div>
       </div>
 
       {/* Centered Filter and Search Bar */}
@@ -254,8 +278,8 @@ export default function NeedsPage() {
                   {/* Status Badges */}
                   <div className="self-start sm:self-auto">
                     {hasCriticalDeficit ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-header font-bold bg-rose-50 dark:bg-rose-950/40 text-[#C52233] dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                        <span className="h-2 w-2 rounded-none bg-[#C52233]"></span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-header font-bold bg-rose-50 dark:bg-rose-950/40 text-[#C52233] dark:text-rose-300 border border-rose-200 dark:border-rose-900 animate-radar-crisis">
+                        <span className="h-2 w-2 rounded-none bg-[#C52233] animate-pulse"></span>
                         <span>عجز إجمالي: {item.totalDeficit.toLocaleString('ar-DZ')} {item.unit}</span>
                       </span>
                     ) : isSurplus ? (
@@ -325,7 +349,7 @@ export default function NeedsPage() {
                                 )}
                                 <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold ${
                                   depot.priority === 'CRITICAL' 
-                                    ? 'bg-rose-100 dark:bg-rose-950 text-[#C52233] dark:text-rose-300' 
+                                    ? 'bg-rose-100 dark:bg-rose-950 text-[#C52233] dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-radar-crisis' 
                                     : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
                                 }`}>
                                   {priorityMeta.label}
@@ -333,7 +357,7 @@ export default function NeedsPage() {
                               </div>
 
                               <div className="flex items-center gap-2 self-start sm:self-auto">
-                                <span className="font-header font-bold text-[#C52233] font-mono text-xs">
+                                <span className="font-header font-bold text-[#C52233] font-mono text-xs px-2 py-0.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 animate-radar-crisis">
                                   نقص {depot.deficit.toLocaleString('ar-DZ')} {item.unit}
                                 </span>
 
@@ -395,24 +419,18 @@ export default function NeedsPage() {
             );
           })
         ) : (
-          <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none space-y-3">
-            <Info className="w-10 h-10 text-slate-400 mx-auto" />
-            <h3 className="font-header text-lg font-bold text-slate-800 dark:text-white">
-              لا توجد نتائج مطابقة للبحث
-            </h3>
-            <p className="font-sub text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-              جرب مسح شريط البحث أو اختيار صنف آخر للاطلاع على قائمة الاحتياجات.
-            </p>
-            <button
-              onClick={() => {
-                setSelectedCategory('all');
-                setSearchQuery('');
-              }}
-              className="mt-2 px-5 py-2 rounded-none bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-xs font-header font-bold transition-all"
-            >
-              إعادة تعيين الفلاتر
-            </button>
-          </div>
+          <SmartEmptyState
+            searchQuery={searchQuery}
+            selectedCategory={selectedCategory !== 'all' ? selectedCategory : undefined}
+            onReset={() => {
+              setSelectedCategory('all');
+              setSearchQuery('');
+            }}
+            onSelectCategory={(cat) => {
+              setSelectedCategory(cat);
+              setSearchQuery('');
+            }}
+          />
         )}
       </div>
 

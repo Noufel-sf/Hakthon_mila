@@ -237,3 +237,36 @@ h1, h2, h3, h4, h5, h6 {
   animation: hero-pulse-soft 3.2s ease-in-out infinite;
 }
 
+/* Radar Ripple Micro-Interactions */
+@keyframes radar-ripple-crisis {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
+@keyframes radar-ripple-live {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-radar-crisis {
+  animation: radar-ripple-crisis 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-radar-live {
+  animation: radar-ripple-live 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+

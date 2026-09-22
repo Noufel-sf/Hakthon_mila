@@ -21,11 +21,15 @@ import {
   LayoutGrid
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import LiveTelemetryBadge from '@/components/LiveTelemetryBadge';
+import SmartEmptyState from '@/components/SmartEmptyState';
 
 export default function DepotsDirectoryPage() {
   const router = useRouter();
-  const { data: depotList = [], isLoading: isLoadingDepots } = useDepotsQuery();
-  const { data: needsList = [], isLoading: isLoadingNeeds } = useNeedsQuery();
+  const { data: depotList = [], isLoading: isLoadingDepots, refetch: refetchDepots, isFetching: isFetchingDepots } = useDepotsQuery();
+  const { data: needsList = [], isLoading: isLoadingNeeds, refetch: refetchNeeds, isFetching: isFetchingNeeds } = useNeedsQuery();
+
+  const isRefreshing = isFetchingDepots || isFetchingNeeds;
 
   const depots = useMemo(() => {
     return depotList.map((d) => mapSummaryToDepot(d, needsList, []));
@@ -67,8 +71,19 @@ export default function DepotsDirectoryPage() {
           بيان شامل ومباشر لجميع المستودعات الميدانية، نسب إشغالها الحالية، النواقص الحرجة، ونقاط التفريغ المباشرة على Google Maps.
         </p>
 
+        {/* Live Telemetry Badge */}
+        <div className="pt-1">
+          <LiveTelemetryBadge
+            onRefresh={() => {
+              refetchDepots();
+              refetchNeeds();
+            }}
+            isRefreshing={isRefreshing}
+          />
+        </div>
+
         {/* View Switcher: Cards vs Field Map */}
-        <div className="flex items-center justify-center gap-2 pt-2">
+        <div className="flex items-center justify-center gap-2 pt-1">
           <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
             <span className="px-4 py-1.5 text-xs font-header font-bold bg-[#0E4B35] text-white flex items-center gap-1.5 shadow-xs">
               <LayoutGrid className="w-3.5 h-3.5" />
@@ -128,71 +143,79 @@ export default function DepotsDirectoryPage() {
           <Search className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="ابحث عن مستودع، بلدية، أو مادة ناقصة..."
+            placeholder="ابحث باسم المستودع، البلدية، المادة، أو المسؤول..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-none pr-11 pl-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#0E4B35] transition-colors"
+            className="w-full pl-4 pr-11 py-2.5 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-none text-sm font-sub focus:outline-none focus:border-[#0E4B35] focus:ring-1 focus:ring-[#0E4B35] text-slate-900 dark:text-white"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              مسح
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Depots List: Sharp Box Layout */}
-      <div className="space-y-4">
-        {isLoading && depots.length === 0 ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-44 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-none animate-pulse" />
-            ))}
-          </div>
-        ) : filteredDepots.length > 0 ? (
-          filteredDepots.map((depot) => {
-            const criticalItems = depot.items.filter(
-              item => item.targetNeed - item.currentStock > 0
-            );
+      {/* Depots List / Cards */}
+      <div className="space-y-4 pb-16">
+        {filteredDepots.length > 0 ? (
+          filteredDepots.map(depot => {
+            const criticalItems = depot.items.filter(i => {
+              const deficit = i.targetNeed - i.currentStock;
+              return deficit > 0;
+            });
 
             return (
               <div
                 key={depot.id}
                 onClick={() => router.push(`/depots/${depot.id}`)}
-                className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs hover:border-[#0E4B35] hover:shadow-md transition-all space-y-4 cursor-pointer group"
+                className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none p-5 sm:p-6 transition-all duration-200 hover:border-[#0E4B35]/60 hover:shadow-md cursor-pointer space-y-4"
               >
-                {/* Depot Card Header: Name, Location Badge & Capacity */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-none text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                        {depot.code}
+                {/* Header Row */}
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2.5 py-0.5 bg-[#0E4B35]/10 text-[#0E4B35] dark:text-emerald-400 text-xs font-header font-bold rounded-none border border-[#0E4B35]/20">
+                        ولاية {depot.wilaya} • {depot.municipality}
                       </span>
-                      <span className="px-2.5 py-0.5 rounded-none text-xs font-header font-bold bg-[#0E4B35]/10 text-[#0E4B35] dark:text-emerald-400 border border-[#0E4B35]/20">
-                        ولاية {depot.wilaya}
-                      </span>
-                      <span className="text-xs text-slate-400 font-mono">
-                        {depot.municipality}
+                      <span className="text-xs font-mono text-slate-400 dark:text-slate-500">
+                        {depot.id}
                       </span>
                     </div>
 
-                    <h2 className="font-header text-xl sm:text-2xl font-bold text-slate-900 dark:text-white group-hover:text-[#0E4B35] transition-colors tracking-tight">
+                    <h2 className="font-header text-xl sm:text-2xl font-black text-slate-900 dark:text-white group-hover:text-[#0E4B35] dark:group-hover:text-emerald-400 transition-colors">
                       {depot.name}
                     </h2>
                   </div>
 
-                  {/* Occupancy Badge */}
-                  <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-none border border-slate-200 dark:border-slate-800">
-                    <span className={`h-2 w-2 rounded-none ${
-                      depot.totalCapacityPercent > 80 
-                        ? 'bg-[#C52233]' 
-                        : depot.totalCapacityPercent > 50 
-                        ? 'bg-amber-500' 
-                        : 'bg-[#0E4B35]'
-                    }`}></span>
-                    <span className="text-xs font-header font-bold text-slate-700 dark:text-slate-200">
-                      نسبة الإشغال: <span className="font-mono">{depot.totalCapacityPercent}%</span>
-                    </span>
+                  {/* Occupancy Indicator */}
+                  <div className="flex items-center gap-3 self-start sm:self-auto bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2 border border-slate-200 dark:border-slate-700">
+                    <div className="text-right">
+                      <div className="text-[11px] font-sub text-slate-400">نسبة الإشغال</div>
+                      <div className="text-base font-mono font-bold text-slate-900 dark:text-white">
+                        {depot.totalCapacityPercent}%
+                      </div>
+                    </div>
+                    <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          depot.totalCapacityPercent >= 90
+                            ? 'bg-[#C52233]'
+                            : depot.totalCapacityPercent >= 70
+                            ? 'bg-amber-500'
+                            : 'bg-[#0E4B35]'
+                        }`}
+                        style={{ width: `${Math.min(depot.totalCapacityPercent, 100)}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Essential Info Row: Address & Contact */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                {/* Location & Contact Meta */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-sub">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-[#0E4B35] shrink-0" />
                     <span className="truncate">{depot.address}</span>
@@ -204,7 +227,7 @@ export default function DepotsDirectoryPage() {
                   </div>
                 </div>
 
-                {/* Urgent Deficit Quick Tags */}
+                {/* Urgent Deficit Quick Tags with Radar Ripple */}
                 <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
                   <span className="font-header font-bold text-[#C52233] flex items-center gap-1 shrink-0">
                     <AlertCircle className="w-3.5 h-3.5" />
@@ -217,7 +240,7 @@ export default function DepotsDirectoryPage() {
                       return (
                         <span
                           key={item.id}
-                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-none text-xs font-header font-bold bg-rose-50 text-[#C52233] border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/50"
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-none text-xs font-header font-bold bg-rose-50 text-[#C52233] border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/50 animate-radar-crisis"
                         >
                           <span>{item.name}</span>
                           <span className="font-mono">(نقص {deficit} {item.unit})</span>
@@ -275,24 +298,18 @@ export default function DepotsDirectoryPage() {
             );
           })
         ) : (
-          <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none space-y-3">
-            <Info className="w-10 h-10 text-slate-400 mx-auto" />
-            <h3 className="font-header text-lg font-bold text-slate-800 dark:text-white">
-              لا توجد مستودعات مطابقة للبحث
-            </h3>
-            <p className="font-sub text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-              جرب مسح شريط البحث أو اختيار ولاية أخرى للاطلاع على المستودعات المتاحة.
-            </p>
-            <button
-              onClick={() => {
-                setSelectedWilaya('all');
-                setSearchQuery('');
-              }}
-              className="mt-2 px-5 py-2 rounded-none bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-xs font-header font-bold transition-all"
-            >
-              إعادة تعيين الفلاتر
-            </button>
-          </div>
+          <SmartEmptyState
+            searchQuery={searchQuery}
+            selectedWilaya={selectedWilaya !== 'all' ? selectedWilaya : undefined}
+            onReset={() => {
+              setSelectedWilaya('all');
+              setSearchQuery('');
+            }}
+            onSelectWilaya={(w) => {
+              setSelectedWilaya(w);
+              setSearchQuery('');
+            }}
+          />
         )}
       </div>
 

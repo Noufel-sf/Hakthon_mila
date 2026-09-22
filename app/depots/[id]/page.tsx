@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
+import LiveTelemetryBadge from '@/components/LiveTelemetryBadge';
 
 export default function DepotDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -173,6 +174,13 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
               {depotDesc}
             </p>
           )}
+
+          <div className="pt-2">
+            <LiveTelemetryBadge
+              onRefresh={fetchLiveDepotDetails}
+              isRefreshing={isRefreshing}
+            />
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -415,7 +423,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
                         {/* Deficit / Progress */}
                         <td className="py-4 px-5">
                           {isDeficit ? (
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900 animate-radar-crisis">
                               <span className="h-1.5 w-1.5 rounded-none bg-rose-600 animate-pulse"></span>
                               <span>عجز {need.shortage} {arUnit}</span>
                             </div>
@@ -438,7 +446,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
                         <td className="py-4 px-5">
                           <span className={`px-2.5 py-1 rounded-none text-xs font-bold ${
                             need.priority === 'CRITICAL' 
-                              ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                              ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-radar-crisis'
                               : need.priority === 'HIGH'
                               ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                               : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
@@ -488,7 +496,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
                         <span
                           className={`px-2.5 py-0.5 rounded-none text-xs font-bold flex items-center gap-1 ${
                             need.priority === 'CRITICAL'
-                              ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                              ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-radar-crisis'
                               : need.priority === 'HIGH'
                               ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                               : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
@@ -515,7 +523,7 @@ export default function DepotDetailPage({ params }: { params: Promise<{ id: stri
                     {/* Deficit Callout Box */}
                     <div>
                       {isDeficit ? (
-                        <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 p-2.5 flex items-center justify-between">
+                        <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 p-2.5 flex items-center justify-between animate-radar-crisis">
                           <div className="flex items-center gap-2 text-xs font-bold text-rose-700 dark:text-rose-300">
                             <span className="w-2 h-2 rounded-none bg-rose-600 animate-pulse"></span>
                             <span>عجز ميداني مطلوب:</span>

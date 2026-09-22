@@ -24,6 +24,7 @@ import {
   PackageCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import LiveTelemetryBadge from '@/components/LiveTelemetryBadge';
 
 // Quick convoy items for "أين أوجه شاحنتي؟"
 const CONVOY_CATEGORIES: { id: AidCategory; label: string; icon: string }[] = [
@@ -35,8 +36,8 @@ const CONVOY_CATEGORIES: { id: AidCategory; label: string; icon: string }[] = [
 ];
 
 export default function ReliefMapPage() {
-  const { data: depotList = [], isLoading: isLoadingDepots } = useDepotsQuery();
-  const { data: needsList = [], isLoading: isLoadingNeeds } = useNeedsQuery();
+  const { data: depotList = [], isLoading: isLoadingDepots, refetch: refetchDepots, isFetching: isFetchingDepots } = useDepotsQuery();
+  const { data: needsList = [], isLoading: isLoadingNeeds, refetch: refetchNeeds, isFetching: isFetchingNeeds } = useNeedsQuery();
 
   const [selectedWilaya, setSelectedWilaya] = useState<string>('all');
   const [selectedDepotId, setSelectedDepotId] = useState<string | number | null>(null);
@@ -175,8 +176,15 @@ export default function ReliefMapPage() {
           </p>
         </div>
 
-        {/* Action Switch to Grid View */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Action Switch & Telemetry */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <LiveTelemetryBadge
+            onRefresh={() => {
+              refetchDepots();
+              refetchNeeds();
+            }}
+            isRefreshing={isFetchingDepots || isFetchingNeeds}
+          />
           <Link href="/depots">
             <Button variant="outline" className="rounded-none gap-2 font-bold text-xs h-10 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800">
               <LayoutGrid className="w-4 h-4 text-slate-500" />
@@ -198,7 +206,7 @@ export default function ReliefMapPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-950/60 p-3.5 flex items-center gap-3">
+        <div className={`bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-950/60 p-3.5 flex items-center gap-3 ${criticalHotspotsCount > 0 ? 'animate-radar-crisis' : ''}`}>
           <div className="w-10 h-10 bg-rose-600/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-black text-lg border border-rose-600/30">
             {criticalHotspotsCount}
           </div>
