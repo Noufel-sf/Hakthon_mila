@@ -4,6 +4,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import MobileBottomNav from '@/components/MobileBottomNav';
 
 export default function PublicBackgroundWrapper({
   children,
@@ -32,10 +33,11 @@ export default function PublicBackgroundWrapper({
       {/* Content / Components */}
       <div className="relative z-10 flex flex-col min-h-screen flex-1">
         <Navbar />
-        <main className="flex-1 pb-16">
+        <main className="flex-1 pb-24 md:pb-16">
           {children}
         </main>
         <Footer />
+        <MobileBottomNav />
       </div>
     </div>
   );

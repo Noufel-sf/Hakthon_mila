@@ -1,23 +1,19 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AidCategory, NeedResponse, DepotSummaryResponse, Priority } from '@/lib/types';
-import { api } from '@/lib/api';
+import { AidCategory, Priority } from '@/lib/types';
 import { AID_CATEGORIES, getItemNameAr, getUnitNameAr, PRIORITY_LABELS } from '@/lib/constants';
-import { 
-  ClipboardList, 
-  Search, 
-  AlertCircle, 
-  CheckCircle2, 
+import {
+  ClipboardList,
+  Search,
+  AlertCircle,
+  
   ExternalLink, 
   ChevronLeft, 
-  Info, 
   FileText 
 } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
 import { useNeedsQuery, useDepotsQuery } from '@/hooks/queries';
 import LiveTelemetryBadge from '@/components/LiveTelemetryBadge';
 import SmartEmptyState from '@/components/SmartEmptyState';
