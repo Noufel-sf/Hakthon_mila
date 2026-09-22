@@ -135,13 +135,15 @@ export default function Navbar() {
             onClick={() => setMobileMenuOpen(prev => !prev)}
             aria-label={mobileMenuOpen ? 'إغلاق القائمة' : 'فتح القائمة الرئيسية'}
             aria-expanded={mobileMenuOpen}
-            className="md:hidden inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-[#0E4B35]"
+            className="md:hidden inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-[#0E4B35]"
           >
-            {mobileMenuOpen ? (
-              <X className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-            ) : (
-              <Menu className="w-4 h-4" />
-            )}
+            <span className={`inline-flex transition-transform duration-200 ${mobileMenuOpen ? 'rotate-90' : 'rotate-0'}`}>
+              {mobileMenuOpen ? (
+                <X className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+              ) : (
+                <Menu className="w-4 h-4" />
+              )}
+            </span>
           </button>
         </div>
 
@@ -149,7 +151,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-2 border border-slate-200/90 dark:border-slate-800 bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl shadow-xl p-4 space-y-3 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="md:hidden mt-2 border border-slate-200/90 dark:border-slate-800 bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl shadow-xl p-4 space-y-3 rounded-2xl animate-mobile-drawer">
           <nav aria-label="قائمة الهاتف المحمول" className="space-y-1">
             {navLinks.map(link => {
               const isActive = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
@@ -160,7 +162,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-header text-sm font-bold transition-all ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-header text-sm font-bold transition-all active:scale-[0.98] ${
                     isActive
                       ? 'bg-[#0E4B35] text-white shadow-xs'
                       : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
